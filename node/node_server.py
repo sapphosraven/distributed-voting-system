@@ -312,4 +312,7 @@ async def leader_time_sync_task():
 # Start server if running as main
 if __name__ == "__main__":
     logger.info(f"Starting node server {NODE_ID} on port 5000")
+    # Note: If running from command line directly with uvicorn, you can use the -d flag 
+    # to run as daemon (background process): uvicorn node_server:app --host 0.0.0.0 --port 5000 -d
+    # But this doesn't apply when running programmatically like below
     uvicorn.run("node_server:app", host="0.0.0.0", port=5000, log_level="info")

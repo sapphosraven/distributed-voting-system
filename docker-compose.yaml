@@ -1,4 +1,3 @@
-version: '3'
 
 services:
   # Redis for distributed data storage and communication
