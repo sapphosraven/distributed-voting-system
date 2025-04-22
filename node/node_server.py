@@ -143,12 +143,18 @@ def handle_vote_proposal(message):
     logger.info(f"Received vote proposal from {message['sender']}")
     # We'll implement this fully in the consensus protocol phase
 
+# Replace the existing handle_time_sync function with this one:
+
 def handle_time_sync(message):
     """Handle a time synchronization message"""
     if not node_state.is_leader:  # Only followers sync time
-        new_time = message["data"]["system_time"]
-        node_state.system_time = new_time
-        logger.debug(f"Synchronized time to {new_time}")
+        # The message is already parsed, so we can access system_time directly
+        new_time = message.get("system_time")
+        if new_time:
+            node_state.system_time = new_time
+            logger.debug(f"Synchronized time to {new_time}")
+        else:
+            logger.warning(f"Received time sync message without system_time: {message}")
 
 def handle_leader_election(message):
     """Handle a leader election message"""
