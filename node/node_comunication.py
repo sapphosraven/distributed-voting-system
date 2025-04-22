@@ -145,15 +145,17 @@ class NodeCommunicator:
             parsed = json.loads(message["data"])
             logger.debug(f"Received time sync from {parsed.get('sender')}")
             
-            # If we're not the leader, update our time
-            from node_server import node_state
-            if not node_state.is_leader and "system_time" in parsed:
-                node_state.system_time = parsed["system_time"]
-                logger.debug(f"Synchronized time to {parsed['system_time']}")
-                
+            # Handle system time updates without importing node_state directly
+            # The calling code will need to register a handler for time_sync
+            if "system_time" in parsed:
+                logger.debug(f"Time sync message received with time: {parsed['system_time']}")
+                # Handler will be responsible for updating the time
+                if "time_sync" in self.message_handlers:
+                    self.message_handlers["time_sync"](parsed)
+                    
         except Exception as e:
             logger.error(f"Error handling time sync message: {e}", exc_info=True)
-            
+                
     def _dispatch_message(self, message):
         """Dispatch message to the appropriate handler"""
         message_type = message.get("type")
