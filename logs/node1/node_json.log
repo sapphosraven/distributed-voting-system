@@ -1,1 +1,982 @@
 {"timestamp": "2025-04-27 17:44:16,720", "level": "CRITICAL", "name": "node", "message": "Failed to connect to Redis Cluster: 'dict' object has no attribute 'name'", "exception": "Traceback (most recent call last):\n  File \"/app/node_server.py\", line 52, in <module>\n    r = RedisCluster(startup_nodes=startup_nodes, decode_responses=True)\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/redis/cluster.py\", line 641, in __init__\n    self.nodes_manager = NodesManager(\n                         ^^^^^^^^^^^^^\n  File \"/usr/local/lib/python3.12/site-packages/redis/cluster.py\", line 1341, in __init__\n    self.populate_startup_nodes(startup_nodes)\n  File \"/usr/local/lib/python3.12/site-packages/redis/cluster.py\", line 1468, in populate_startup_nodes\n    self.startup_nodes[n.name] = n\n                       ^^^^^^\nAttributeError: 'dict' object has no attribute 'name'", "taskName": null}
+{"timestamp": "2025-04-27 18:46:45,662", "level": "INFO", "name": "node", "message": "Connected to Redis Cluster at redis-node-1:7000,redis-node-2:7001,redis-node-3:7002", "taskName": null}
+{"timestamp": "2025-04-27 18:46:45,665", "level": "INFO", "name": "node.communication", "message": "NodeCommunicator initialized for node1", "taskName": null}
+{"timestamp": "2025-04-27 18:46:45,666", "level": "INFO", "name": "node", "message": "Initialized node state: node1 as leader", "taskName": null}
+{"timestamp": "2025-04-27 18:46:45,667", "level": "INFO", "name": "node", "message": "Starting node server node1 on port 5000", "taskName": null}
+{"timestamp": "2025-04-27 18:46:45,713", "level": "INFO", "name": "node", "message": "Connected to Redis Cluster at redis-node-1:7000,redis-node-2:7001,redis-node-3:7002", "taskName": "Task-1"}
+{"timestamp": "2025-04-27 18:46:45,716", "level": "INFO", "name": "node.communication", "message": "NodeCommunicator initialized for node1", "taskName": "Task-1"}
+{"timestamp": "2025-04-27 18:46:45,717", "level": "INFO", "name": "node", "message": "Initialized node state: node1 as leader", "taskName": "Task-1"}
+{"timestamp": "2025-04-27 18:46:45,718", "level": "INFO", "name": "node", "message": "\ud83d\ude80 Node node1 starting up with role: leader", "taskName": "Task-2"}
+{"timestamp": "2025-04-27 18:46:45,720", "level": "INFO", "name": "node", "message": "Registered node in Redis Cluster: {'node_id': 'node1', 'role': 'leader', 'start_time': 1745779605.7194793, 'status': 'active', 'host': '1b616619c1db'}", "taskName": "Task-2"}
+{"timestamp": "2025-04-27 18:46:45,721", "level": "INFO", "name": "node.communication", "message": "Node node1 subscribed to all channels", "taskName": "Task-2"}
+{"timestamp": "2025-04-27 18:46:45,722", "level": "DEBUG", "name": "node.communication", "message": "Registered handler for 'vote_proposal' messages", "taskName": "Task-2"}
+{"timestamp": "2025-04-27 18:46:45,722", "level": "DEBUG", "name": "node.communication", "message": "Registered handler for 'time_sync' messages", "taskName": "Task-2"}
+{"timestamp": "2025-04-27 18:46:45,723", "level": "DEBUG", "name": "node.communication", "message": "Registered handler for 'leader_election' messages", "taskName": "Task-2"}
+{"timestamp": "2025-04-27 18:46:45,723", "level": "INFO", "name": "node", "message": "Started background monitoring tasks", "taskName": "Task-2"}
+{"timestamp": "2025-04-27 18:46:45,723", "level": "INFO", "name": "node", "message": "Node node1 is the leader, starting leader-specific tasks", "taskName": "Task-2"}
+{"timestamp": "2025-04-27 18:46:45,724", "level": "INFO", "name": "node.heartbeat", "message": "Starting heartbeat task", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:46:45,727", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:46:45.726794", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:46:45,728", "level": "INFO", "name": "node", "message": "Starting node monitoring task", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:46:45,730", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 0.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:46:45,731", "level": "INFO", "name": "node", "message": "Active nodes changed: {'node2'}", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:46:45,731", "level": "INFO", "name": "node", "message": "Node monitoring: 1 active nodes out of 1 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:46:45,732", "level": "INFO", "name": "node.communication", "message": "Starting message listener for node node1", "taskName": "Task-5"}
+{"timestamp": "2025-04-27 18:46:45,733", "level": "INFO", "name": "node.consensus", "message": "Starting leader time synchronization task", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:46:45,737", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:46:45.736507", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:46:47,937", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:46:47.937117", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:46:50,140", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:46:50.139418", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:46:51,243", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:46:51,245", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:46:51,247", "level": "INFO", "name": "node", "message": "Active nodes changed: {'node3', 'node2'}", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:46:51,248", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:46:52,344", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:46:52.343554", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:46:54,548", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:46:54.547504", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:46:55,740", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:46:55.739639", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:46:56,753", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:46:56,755", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:46:56,757", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:46:56,759", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:46:56.758120", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:46:58,956", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:46:58.955111", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:47:01,160", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:47:01.159157", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:47:02,262", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:47:02,263", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:47:02,264", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:47:03,366", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:47:03.364328", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:47:05,569", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:47:05.568341", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:47:06,671", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:47:06.670603", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:47:07,774", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:47:07,776", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:47:07,777", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:47:07,779", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:47:07.778492", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:47:09,978", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:47:09.976176", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:47:12,182", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:47:12.181227", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:47:13,285", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:47:13,286", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:47:13,287", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:47:14,386", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:47:14.385312", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:47:16,591", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:47:16.589971", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:47:16,674", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:47:16.673591", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:47:18,797", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:47:18,798", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:47:18,799", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:47:18,801", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:47:18.800565", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:47:21,000", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:47:20.999357", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:47:23,204", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:47:23.203247", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:47:24,306", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:47:24,307", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:47:24,308", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:47:25,408", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:47:25.407573", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:47:27,611", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:47:27.610320", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:47:27,613", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:47:27.612541", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:47:29,815", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:47:29,816", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:47:29,817", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:47:29,819", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:47:29.817910", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:47:32,019", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:47:32.018171", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:47:34,223", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:47:34.222259", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:47:35,325", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:47:35,326", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:47:35,327", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:47:36,427", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:47:36.426474", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:47:37,614", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:47:37.613152", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:47:38,631", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:47:38.630103", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:47:40,836", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:47:40,838", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:47:40,840", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:47:40,841", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:47:40.841093", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:47:43,039", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:47:43.038858", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:47:45,243", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:47:45.242570", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:47:46,345", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:47:46,346", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:47:46,347", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:47:47,448", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:47:47.447007", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:47:48,549", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:47:48.549011", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:47:49,652", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:47:49.652097", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:47:51,856", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:47:51,857", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:47:51,858", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:47:51,859", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:47:51.859148", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:47:54,062", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:47:54.061645", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:47:54,074", "level": "INFO", "name": "node.api", "message": "Request started: GET /health", "taskName": "Task-9", "request_id": "545ba419-ead4-4951-bc2d-7d6dd75182c1", "client_ip": "172.18.0.1"}
+{"timestamp": "2025-04-27 18:47:54,080", "level": "DEBUG", "name": "node.api", "message": "Health check requested", "taskName": "starlette.middleware.base.BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.coro"}
+{"timestamp": "2025-04-27 18:47:54,083", "level": "INFO", "name": "node.api", "message": "Health check response: healthy", "taskName": "starlette.middleware.base.BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.coro"}
+{"timestamp": "2025-04-27 18:47:54,087", "level": "INFO", "name": "node.api", "message": "Request completed: GET /health - Status: 200 - Duration: 0.0136s", "taskName": "Task-9", "request_id": "545ba419-ead4-4951-bc2d-7d6dd75182c1", "status_code": 200, "duration": 0.013572931289672852}
+{"timestamp": "2025-04-27 18:47:55,164", "level": "INFO", "name": "node.api", "message": "Request started: GET /favicon.ico", "taskName": "Task-11", "request_id": "8c223fdc-15b0-4025-8059-a75f6c623d93", "client_ip": "172.18.0.1"}
+{"timestamp": "2025-04-27 18:47:55,168", "level": "INFO", "name": "node.api", "message": "Request completed: GET /favicon.ico - Status: 404 - Duration: 0.0041s", "taskName": "Task-11", "request_id": "8c223fdc-15b0-4025-8059-a75f6c623d93", "status_code": 404, "duration": 0.0040836334228515625}
+{"timestamp": "2025-04-27 18:47:56,266", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:47:56.266069", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:47:57,368", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:47:57,369", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:47:57,370", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:47:58,470", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:47:58.469673", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:47:58,553", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:47:58.552893", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:48:00,675", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:48:00.674203", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:48:02,879", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:48:02,881", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:48:02,883", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:48:02,884", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:48:02.883821", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:48:05,084", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:48:05.082885", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:48:07,288", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:48:07.286899", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:48:08,388", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:48:08,389", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:48:08,390", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:48:09,489", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:48:09.488510", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:48:09,491", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:48:09.490953", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:48:11,694", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:48:11.693250", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:48:13,898", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:48:13,900", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:48:13,901", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:48:13,903", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:48:13.902403", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:48:16,102", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:48:16.100730", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:48:18,306", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:48:18.305051", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:48:19,408", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:48:19,409", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:48:19,409", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:48:19,492", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:48:19.491965", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:48:20,511", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:48:20.510057", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:48:22,715", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:48:22.714194", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:48:24,919", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:48:24,922", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:48:24,924", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:48:24,926", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:48:24.925117", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:48:27,123", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:48:27.122065", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:48:29,326", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:48:29.325558", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:48:30,428", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:48:30.427323", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:48:30,431", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:48:30,431", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:48:30,432", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:48:31,531", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:48:31.530175", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:48:33,734", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:48:33.733435", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:48:35,938", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:48:35,939", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:48:35,939", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:48:35,942", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:48:35.940748", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:48:38,141", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:48:38.140569", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:48:40,344", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:48:40.343055", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:48:40,431", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:48:40.430232", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:48:41,448", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:48:41,449", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:48:41,450", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:48:42,549", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:48:42.548716", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:48:44,754", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:48:44.752928", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:48:46,958", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:48:46,960", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:48:46,961", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:48:46,962", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:48:46.962244", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:48:49,162", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:48:49.160824", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:48:51,366", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:48:51.365069", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:48:51,369", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:48:51.368297", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:48:52,468", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:48:52,470", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:48:52,471", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:48:53,571", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:48:53.570028", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:48:55,775", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:48:55.774406", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:48:57,978", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:48:57,979", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:48:57,980", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:48:57,982", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:48:57.981666", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:49:00,182", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:49:00.181744", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:49:01,370", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:49:01.369143", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:49:02,386", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:49:02.385522", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:49:03,489", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:49:03,490", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:49:03,492", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:49:04,590", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:49:04.589545", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:49:06,794", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:49:06.793107", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:49:08,997", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:49:08,999", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:49:09,001", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:49:09,002", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:49:09.002164", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:49:11,200", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:49:11.199420", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:49:12,302", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:49:12.301956", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:49:13,405", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:49:13.404573", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:49:14,507", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:49:14,509", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:49:14,510", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:49:15,609", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:49:15.608813", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:49:17,814", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:49:17.813192", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:49:20,017", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:49:20,018", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:49:20,019", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:49:20,020", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:49:20.019784", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:49:22,221", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:49:22.221152", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:49:22,306", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:49:22.305623", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:49:24,426", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:49:24.425181", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:49:25,528", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:49:25,531", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:49:25,533", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:49:26,631", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:49:26.629819", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:49:28,834", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:49:28.833561", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:49:31,039", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:49:31,041", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:49:31,042", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:49:31,044", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:49:31.043447", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:49:33,242", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:49:33.241728", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:49:33,246", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:49:33.245186", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:49:35,446", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:49:35.445865", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:49:36,549", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:49:36,551", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:49:36,551", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:49:37,651", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:49:37.650364", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:49:39,853", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:49:39.852549", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:49:42,057", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:49:42,058", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:49:42,059", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:49:42,060", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:49:42.059934", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:50:51,470", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:49:43.244584", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:50:51,473", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:50:51.472641", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:50:51,476", "level": "INFO", "name": "node", "message": "Active nodes changed: set()", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:50:51,476", "level": "INFO", "name": "node", "message": "Node monitoring: 0 active nodes out of 0 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:50:51,478", "level": "INFO", "name": "node.api", "message": "Request started: GET /health", "taskName": "Task-16", "request_id": "2c736216-280f-44dc-bdbd-9af6f5533cb8", "client_ip": "172.18.0.1"}
+{"timestamp": "2025-04-27 18:50:51,479", "level": "INFO", "name": "node.api", "message": "Request started: GET /health", "taskName": "Task-17", "request_id": "9d321d3f-dbe0-4b3a-89be-3d51772625de", "client_ip": "172.18.0.1"}
+{"timestamp": "2025-04-27 18:50:51,481", "level": "INFO", "name": "node.api", "message": "Request started: GET /health", "taskName": "Task-18", "request_id": "8d19467e-4e05-4e33-ac93-1c906b755117", "client_ip": "172.18.0.1"}
+{"timestamp": "2025-04-27 18:50:51,483", "level": "DEBUG", "name": "node.api", "message": "Health check requested", "taskName": "starlette.middleware.base.BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.coro"}
+{"timestamp": "2025-04-27 18:50:51,486", "level": "INFO", "name": "node.api", "message": "Health check response: healthy", "taskName": "starlette.middleware.base.BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.coro"}
+{"timestamp": "2025-04-27 18:50:51,487", "level": "DEBUG", "name": "node.api", "message": "Health check requested", "taskName": "starlette.middleware.base.BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.coro"}
+{"timestamp": "2025-04-27 18:50:51,489", "level": "INFO", "name": "node.api", "message": "Health check response: healthy", "taskName": "starlette.middleware.base.BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.coro"}
+{"timestamp": "2025-04-27 18:50:51,490", "level": "DEBUG", "name": "node.api", "message": "Health check requested", "taskName": "starlette.middleware.base.BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.coro"}
+{"timestamp": "2025-04-27 18:50:51,492", "level": "INFO", "name": "node.api", "message": "Health check response: healthy", "taskName": "starlette.middleware.base.BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.coro"}
+{"timestamp": "2025-04-27 18:50:51,493", "level": "INFO", "name": "node.api", "message": "Request completed: GET /health - Status: 200 - Duration: 0.0149s", "taskName": "Task-16", "request_id": "2c736216-280f-44dc-bdbd-9af6f5533cb8", "status_code": 200, "duration": 0.014883756637573242}
+{"timestamp": "2025-04-27 18:50:51,494", "level": "INFO", "name": "node.api", "message": "Request completed: GET /health - Status: 200 - Duration: 0.0149s", "taskName": "Task-17", "request_id": "9d321d3f-dbe0-4b3a-89be-3d51772625de", "status_code": 200, "duration": 0.014945745468139648}
+{"timestamp": "2025-04-27 18:50:51,496", "level": "INFO", "name": "node.api", "message": "Request completed: GET /health - Status: 200 - Duration: 0.0152s", "taskName": "Task-18", "request_id": "8d19467e-4e05-4e33-ac93-1c906b755117", "status_code": 200, "duration": 0.015241622924804688}
+{"timestamp": "2025-04-27 18:50:53,677", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:50:53.676853", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:50:55,881", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:50:55.881144", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:50:56,985", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 0.5s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:50:56,988", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 0.5s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:50:56,990", "level": "INFO", "name": "node", "message": "Active nodes changed: {'node3', 'node2'}", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:50:56,992", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:50:58,085", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:50:58.084687", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:51:00,288", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:51:00.287854", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:51:01,474", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:51:01.472873", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:51:02,494", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.6s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:51:02,496", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.6s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:51:02,497", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:51:02,499", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:51:02.498750", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:51:04,698", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:51:04.697248", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:51:06,903", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:51:06.901203", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:51:08,004", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:51:08,004", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:51:08,005", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:51:09,106", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:51:09.104442", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:51:11,309", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:51:11.308429", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:51:12,410", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:51:12.409968", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:51:13,513", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:51:13,515", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:51:13,515", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:51:13,517", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:51:13.516309", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:51:15,716", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:51:15.715677", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:51:17,921", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:51:17.920542", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:51:17,923", "level": "INFO", "name": "node.api", "message": "Request started: GET /health", "taskName": "Task-23", "request_id": "241559bc-8270-417a-ba71-9041fbc217b0", "client_ip": "172.18.0.1"}
+{"timestamp": "2025-04-27 18:51:17,925", "level": "DEBUG", "name": "node.api", "message": "Health check requested", "taskName": "starlette.middleware.base.BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.coro"}
+{"timestamp": "2025-04-27 18:51:17,927", "level": "INFO", "name": "node.api", "message": "Health check response: healthy", "taskName": "starlette.middleware.base.BaseHTTPMiddleware.__call__.<locals>.call_next.<locals>.coro"}
+{"timestamp": "2025-04-27 18:51:17,928", "level": "INFO", "name": "node.api", "message": "Request completed: GET /health - Status: 200 - Duration: 0.0043s", "taskName": "Task-23", "request_id": "241559bc-8270-417a-ba71-9041fbc217b0", "status_code": 200, "duration": 0.004279613494873047}
+{"timestamp": "2025-04-27 18:51:19,023", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:51:19,024", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:51:19,024", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:51:20,125", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:51:20.124467", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:51:22,330", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:51:22.328204", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:51:22,414", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:51:22.413183", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:51:24,534", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:51:24,535", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:51:24,536", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:51:24,538", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:51:24.537392", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:51:26,736", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:51:26.736261", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:51:28,942", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:51:28.940200", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:51:30,042", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:51:30,043", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:51:30,043", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:51:31,145", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:51:31.144126", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:51:33,349", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:51:33.348243", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:51:33,351", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:51:33.350548", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:51:35,553", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:51:35,555", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:51:35,556", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:51:35,557", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:51:35.556794", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:51:37,756", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:51:37.756222", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:51:39,960", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:51:39.959120", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:51:41,062", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:51:41,063", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:51:41,064", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:51:42,165", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:51:42.163508", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:51:43,351", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:51:43.350345", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:51:44,369", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:51:44.367761", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:51:46,573", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:51:46,574", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:51:46,575", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:51:46,577", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:51:46.576607", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:51:48,776", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:51:48.775049", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:51:50,980", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:51:50.979402", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:51:52,083", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:51:52,084", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:51:52,085", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:51:53,184", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:51:53.184076", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:51:54,286", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:51:54.285675", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:51:55,389", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:51:55.388576", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:51:57,594", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:51:57,595", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:51:57,595", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:51:57,597", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:51:57.596933", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:51:59,796", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:51:59.796027", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:52:02,001", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:52:02.000379", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:52:03,104", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:52:03,105", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:52:03,105", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:52:04,207", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:52:04.204759", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:52:04,291", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:52:04.289913", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:52:06,409", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:52:06.408703", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:52:08,611", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:52:08,613", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:52:08,614", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:52:08,615", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:52:08.615071", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:52:10,814", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:52:10.813380", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:52:13,018", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:52:13.017655", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:52:14,121", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:52:14,122", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:52:14,123", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:52:15,222", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:52:15.221521", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:52:15,224", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:52:15.223361", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:52:17,427", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:52:17.426034", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:52:19,630", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:52:19,631", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:52:19,631", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:52:19,633", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:52:19.632414", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:52:21,834", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:52:21.833360", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:52:24,038", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:52:24.037472", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:52:25,141", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:52:25,143", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:52:25,143", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:52:25,226", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:52:25.224737", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:52:26,243", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:52:26.242146", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:52:28,447", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:52:28.446489", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:52:30,652", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:52:30,654", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:52:30,655", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:52:30,657", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:52:30.656582", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:52:32,855", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:52:32.854827", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:52:35,060", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:52:35.058453", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:52:36,161", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:52:36.160969", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:52:36,163", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:52:36,164", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:52:36,164", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:52:37,264", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:52:37.263002", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:52:39,466", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:52:39.466183", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:52:41,671", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:52:41,673", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:52:41,674", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:52:41,675", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:52:41.674940", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:52:43,875", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:52:43.873692", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:52:46,079", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:52:46.078488", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:52:46,163", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:52:46.162543", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:52:47,182", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:52:47,183", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:52:47,184", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:52:48,284", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:52:48.283170", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:52:50,488", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:52:50.487566", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:52:52,693", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:52:52,695", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:52:52,695", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:52:52,697", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:52:52.696644", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:52:54,896", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:52:54.895454", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:52:57,099", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:52:57.098820", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:52:57,102", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:52:57.101700", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:52:58,202", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:52:58,203", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:52:58,203", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:52:59,304", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:52:59.303420", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:53:01,508", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:53:01.507639", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:53:03,713", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:53:03,715", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:53:03,715", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:53:03,717", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:53:03.716423", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:53:05,916", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:53:05.915708", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:53:07,103", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:53:07.102350", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:53:08,120", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:53:08.120148", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:53:09,222", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:53:09,225", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:53:09,227", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:53:10,324", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:53:10.322796", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:53:12,528", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:53:12.527205", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:53:14,733", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:53:14,734", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:53:14,735", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:53:14,737", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:53:14.737503", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:53:16,936", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:53:16.935914", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:53:18,039", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:53:18.038527", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:53:19,141", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:53:19.140266", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:53:20,244", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:53:20,245", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:53:20,246", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:53:21,345", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:53:21.344745", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:53:23,550", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:53:23.549100", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:53:25,755", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:53:25,756", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:53:25,756", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:53:25,758", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:53:25.757824", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:53:27,959", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:53:27.957853", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:53:28,042", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:53:28.041046", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:53:30,163", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:53:30.162229", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:53:31,266", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:53:31,267", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:53:31,268", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:53:32,367", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:53:32.366662", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:53:34,571", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:53:34.570146", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:53:36,776", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:53:36,777", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:53:36,778", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:53:36,780", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:53:36.779699", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:53:38,978", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:53:38.977134", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:53:38,981", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:53:38.980994", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:53:41,182", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:53:41.181709", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:53:42,285", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:53:42,287", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:53:42,288", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:53:43,388", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:53:43.387005", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:53:45,592", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:53:45.591250", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:53:47,796", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:53:47,797", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:53:47,798", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:53:47,799", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:53:47.799176", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:53:48,982", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:53:48.981569", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:53:50,000", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:53:49.999468", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:53:52,204", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:53:52.203219", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:53:53,306", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:53:53,308", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:53:53,309", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:53:54,409", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:53:54.408228", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:53:56,612", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:53:56.611708", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:53:58,816", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:53:58,818", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:53:58,819", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:53:58,820", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:53:58.819968", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:53:59,918", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:53:59.917340", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:54:01,019", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:54:01.019292", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:54:03,223", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:54:03.222922", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:54:04,326", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:54:04,328", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:54:04,329", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:54:05,428", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:54:05.427076", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:54:07,632", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:54:07.630861", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:54:09,834", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:54:09,835", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:54:09,836", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:54:09,837", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:54:09.837363", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:54:09,919", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:54:09.918588", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:54:12,038", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:54:12.037404", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:54:14,241", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:54:14.240776", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:54:15,344", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:54:15,346", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:54:15,348", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:54:16,445", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:54:16.445020", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:54:18,650", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:54:18.649071", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:54:20,853", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:54:20.852830", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:54:20,856", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:54:20,857", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:54:20,857", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:54:20,858", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:54:20.858512", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:54:23,059", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:54:23.057829", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:54:25,262", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:54:25.261520", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:54:26,366", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:54:26,367", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:54:26,368", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:54:27,467", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:54:27.466968", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:54:29,672", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:54:29.671232", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:54:30,856", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:54:30.856305", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:54:31,875", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:54:31,876", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:54:31,877", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:54:31,879", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:54:31.878582", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:54:34,079", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:54:34.078496", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:54:36,284", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:54:36.282869", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:54:37,387", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:54:37,389", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:54:37,390", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:54:38,485", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:54:38.485281", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:54:40,690", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:54:40.689184", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:54:41,792", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:54:41.791078", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:54:42,895", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:54:42,897", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:54:42,898", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:54:42,899", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:54:42.898716", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:54:45,098", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:54:45.097445", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:54:47,303", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:54:47.302030", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:54:48,406", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:54:48,408", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:54:48,409", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:54:49,507", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:54:49.506326", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:54:51,710", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:54:51.710105", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:54:51,795", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:54:51.794815", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:54:53,914", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:54:53,915", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:54:53,916", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:54:53,917", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:54:53.916771", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:54:56,118", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:54:56.117394", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:54:58,322", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:54:58.321599", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:54:59,425", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:54:59,427", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:54:59,428", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:55:00,526", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:55:00.525486", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:55:02,729", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:55:02.729032", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:55:02,733", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:55:02.732646", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:55:04,935", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:55:04,936", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:55:04,937", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:55:04,939", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:55:04.938614", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:55:07,138", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:55:07.136973", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:55:09,341", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:55:09.340102", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:55:10,444", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:55:10,445", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:55:10,446", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:55:11,546", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:55:11.544937", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:55:12,732", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:55:12.731893", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:55:13,751", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:55:13.749810", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:55:15,955", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:55:15,957", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:55:15,958", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:55:15,959", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:55:15.958921", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:55:18,159", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:55:18.157742", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:55:20,363", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:55:20.362049", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:55:21,466", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:55:21,469", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:55:21,471", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:55:22,567", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:55:22.566395", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:55:23,669", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:55:23.668242", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:55:24,772", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:55:24.770859", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:55:26,978", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:55:26,980", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:55:26,981", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:55:26,983", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:55:26.982645", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:55:29,180", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:55:29.179302", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:55:31,383", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:55:31.382338", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:55:32,485", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:55:32,487", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:55:32,487", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:55:33,586", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:55:33.585412", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:55:33,674", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:55:33.673001", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:55:35,791", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:55:35.789675", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:55:37,994", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:55:37,995", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:55:37,995", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:55:37,996", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:55:37.996100", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:55:40,196", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:55:40.195764", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:55:42,400", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:55:42.399959", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:55:43,502", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:55:43,503", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:55:43,504", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:55:44,604", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:55:44.603698", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:55:44,606", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:55:44.606004", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:55:46,808", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:55:46.808025", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:55:49,013", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:55:49,014", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:55:49,014", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:55:49,015", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:55:49.014931", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:55:51,216", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:55:51.216168", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:55:53,421", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:55:53.420345", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:55:54,524", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:55:54,525", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:55:54,525", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:55:54,608", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:55:54.607144", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:55:55,626", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:55:55.625167", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:55:57,829", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:55:57.828504", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:56:00,033", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:56:00,035", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:56:00,036", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:56:00,037", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:56:00.036681", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:56:02,237", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:56:02.236879", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:56:04,442", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:56:04.440588", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:56:05,543", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:56:05.542500", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:56:05,547", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:56:05,547", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:56:05,548", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:56:06,646", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:56:06.645389", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:56:08,849", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:56:08.848240", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:56:11,055", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:56:11,056", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:56:11,057", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:56:11,059", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:56:11.058390", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:56:13,258", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:56:13.256955", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:56:15,459", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:56:15.459041", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:56:15,547", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:56:15.545611", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:56:16,563", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:56:16,566", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:56:16,567", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:56:17,664", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:56:17.663720", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:56:19,868", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:56:19.867090", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:56:22,071", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:56:22,072", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:56:22,072", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:56:22,073", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:56:22.073428", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:56:24,276", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:56:24.275049", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:56:26,479", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:56:26.478817", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:56:26,482", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:56:26.481449", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:56:27,582", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:56:27,583", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:56:27,584", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:56:28,684", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:56:28.683289", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:56:30,888", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:56:30.887118", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:56:33,092", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:56:33,094", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:56:33,095", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:56:33,096", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:56:33.095864", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:56:35,296", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:56:35.295057", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:56:36,483", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:56:36.482479", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:56:37,500", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:56:37.500046", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:56:38,601", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:56:38,602", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:56:38,602", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:56:39,702", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:56:39.702005", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:56:41,905", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:56:41.905383", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:56:44,110", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:56:44,112", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:56:44,113", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:56:44,114", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:56:44.113976", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:56:46,313", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:56:46.312889", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:56:47,415", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:56:47.415208", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:56:48,518", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:56:48.517399", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:56:49,620", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:56:49,621", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:56:49,622", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:56:50,722", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:56:50.721687", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:56:52,926", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:56:52.925364", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:56:55,132", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:56:55,133", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:56:55,133", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:56:55,135", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:56:55.134454", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:56:57,334", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:56:57.333942", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:56:57,419", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:56:57.418519", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:56:59,538", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:56:59.537243", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:57:00,640", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:57:00,641", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:57:00,642", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:57:01,742", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:57:01.741772", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:57:03,946", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:57:03.945785", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:57:06,150", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:57:06,151", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:57:06,152", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:57:06,153", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:57:06.152917", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:57:08,354", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:57:08.353975", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:57:08,356", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:57:08.355842", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:57:10,558", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:57:10.557441", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:57:11,661", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:57:11,663", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:57:11,664", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:57:12,763", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:57:12.762220", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:57:14,967", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:57:14.966665", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:57:17,172", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:57:17,173", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:57:17,174", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:57:17,175", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:57:17.175445", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:57:18,355", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:57:18.354810", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:57:19,377", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:57:19.376567", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:57:21,581", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:57:21.580739", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:57:22,683", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:57:22,684", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:57:22,685", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:57:23,785", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:57:23.784102", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:57:25,989", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:57:25.988027", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:57:28,195", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:57:28,196", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:57:28,197", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:57:28,198", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:57:28.198424", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:57:29,295", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:57:29.294312", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:57:30,397", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:57:30.396338", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:57:32,600", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:57:32.599743", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:57:33,703", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:57:33,704", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:57:33,705", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:57:34,805", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:57:34.804249", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:57:37,009", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:57:37.008077", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:57:39,211", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:57:39,212", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:57:39,213", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:57:39,214", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:57:39.214250", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:57:39,297", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:57:39.297101", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:57:41,415", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:57:41.414283", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:57:43,620", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:57:43.618354", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:57:44,722", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:57:44,724", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:57:44,725", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:57:45,823", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:57:45.823071", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:57:48,029", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:57:48.027667", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:57:50,233", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:57:50.232032", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:57:50,236", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:57:50,237", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:57:50,237", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:57:50,238", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:57:50.238379", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:57:52,437", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:57:52.436644", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:57:54,642", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:57:54.641474", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:57:55,745", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:57:55,746", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:57:55,747", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:57:56,846", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:57:56.845495", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:57:59,049", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:57:59.048934", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:58:00,236", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:58:00.236094", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:58:01,255", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:58:01,258", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:58:01,260", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:58:01,262", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:58:01.261851", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:58:03,458", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:58:03.456792", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:58:05,662", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:58:05.661742", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:58:06,766", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:58:06,767", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:58:06,768", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:58:07,867", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:58:07.866052", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:58:10,070", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:58:10.068517", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:58:11,171", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:58:11.170965", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:58:12,274", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:58:12,276", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:58:12,277", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:58:12,278", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:58:12.278225", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:58:14,478", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:58:14.476987", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:58:16,682", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:58:16.681090", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:58:17,785", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:58:17,787", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:58:17,788", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:58:18,885", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:58:18.884768", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:58:21,090", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:58:21.089015", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:58:21,176", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:58:21.175211", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:58:23,295", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:58:23,298", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:58:23,299", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:58:23,301", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:58:23.300400", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:58:25,499", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:58:25.498319", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:58:27,703", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:58:27.702430", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:58:28,806", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:58:28,807", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:58:28,808", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:58:29,907", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:58:29.907169", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:58:32,111", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:58:32.110622", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:58:32,114", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:58:32.113963", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:58:34,315", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:58:34,317", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:58:34,318", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:58:34,319", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:58:34.318792", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:58:36,520", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:58:36.519038", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:58:38,723", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:58:38.722125", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:58:39,824", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:58:39,825", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:58:39,826", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:58:40,926", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:58:40.925751", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:58:42,114", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:58:42.113695", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:58:43,130", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:58:43.129236", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:58:45,335", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:58:45,337", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:58:45,338", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:58:45,340", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:58:45.339575", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:58:47,538", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:58:47.537380", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:58:49,741", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:58:49.741007", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:58:50,845", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:58:50,846", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:58:50,847", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:58:51,946", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:58:51.944840", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:58:53,047", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:58:53.046570", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:58:54,149", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:58:54.148764", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:58:56,354", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:58:56,356", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:58:56,357", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:58:56,358", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:58:56.358066", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:58:58,557", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:58:58.556905", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:59:00,761", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:59:00.760939", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:59:01,863", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:59:01,864", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:59:01,865", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:59:02,966", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:59:02.965167", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:59:03,050", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:59:03.049385", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:59:05,170", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:59:05.169460", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:59:07,375", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:59:07,377", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:59:07,378", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:59:07,380", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:59:07.379327", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:59:09,576", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:59:09.575909", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:59:11,780", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:59:11.780058", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:59:12,883", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:59:12,884", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:59:12,885", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:59:13,985", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:59:13.984563", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:59:13,986", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:59:13.986287", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:59:16,190", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:59:16.189396", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:59:18,394", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:59:18,394", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:59:18,395", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:59:18,396", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:59:18.396355", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:59:20,598", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:59:20.597639", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:59:22,802", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:59:22.801347", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:59:23,905", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:59:23,905", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:59:23,906", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:59:23,988", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:59:23.987413", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:59:25,008", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:59:25.006877", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:59:27,213", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:59:27.211683", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:59:29,416", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:59:29,418", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:59:29,419", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:59:29,421", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:59:29.420679", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:59:31,620", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:59:31.619483", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:59:33,824", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:59:33.823334", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:59:34,926", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:59:34.925361", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:59:34,928", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:59:34,929", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:59:34,929", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:59:36,029", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:59:36.028337", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:59:38,232", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:59:38.232323", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:59:40,435", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:59:40,437", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:59:40,438", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:59:40,439", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:59:40.439236", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:59:42,640", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:59:42.639089", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:59:44,844", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:59:44.843099", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:59:44,928", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:59:44.927115", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:59:45,946", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:59:45,946", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:59:45,947", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:59:47,048", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:59:47.047364", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:59:49,252", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:59:49.251464", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:59:51,456", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:59:51,458", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:59:51,458", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:59:51,460", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:59:51.459644", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:59:53,660", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:59:53.658938", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:59:55,863", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T18:59:55.863140", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 18:59:55,866", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:59:55.865943", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 18:59:56,965", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:59:56,966", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:59:56,966", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 18:59:58,068", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T18:59:58.066939", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:00:00,270", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:00:00.270350", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:00:02,476", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:00:02,478", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:00:02,479", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:00:02,481", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:00:02.480464", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:00:04,679", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:00:04.678469", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:00:05,867", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T19:00:05.866292", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 19:00:06,883", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:00:06.883005", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:00:07,987", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:00:07,989", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:00:07,990", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:00:09,087", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:00:09.085691", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:00:11,291", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:00:11.290035", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:00:13,494", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:00:13,496", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:00:13,497", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:00:13,498", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:00:13.497603", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:00:15,698", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:00:15.697578", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:00:16,800", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T19:00:16.799971", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 19:00:17,903", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:00:17.902213", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:00:19,004", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:00:19,005", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:00:19,006", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:00:20,106", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:00:20.105942", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:00:22,310", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:00:22.309643", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:00:24,515", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:00:24,516", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:00:24,517", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:00:24,518", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:00:24.518010", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:00:26,719", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:00:26.717930", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:00:26,803", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T19:00:26.802094", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 19:00:28,924", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:00:28.922676", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:00:30,025", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:00:30,026", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:00:30,026", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:00:31,126", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:00:31.126136", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:00:33,331", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:00:33.330151", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:00:35,534", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:00:35,536", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:00:35,536", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:00:35,537", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:00:35.537066", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:00:37,739", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T19:00:37.738321", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 19:00:37,742", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:00:37.742001", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:00:39,942", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:00:39.941925", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:00:41,046", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:00:41,048", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:00:41,048", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:00:42,147", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:00:42.146508", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:00:44,351", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:00:44.350666", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:00:46,555", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:00:46,555", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:00:46,556", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:00:46,557", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:00:46.557003", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:00:47,743", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T19:00:47.742112", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 19:00:48,759", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:00:48.758811", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:00:50,964", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:00:50.963221", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:00:52,067", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:00:52,068", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:00:52,069", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:00:53,168", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:00:53.167530", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:00:55,372", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:00:55.371371", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:00:57,579", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:00:57,581", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:00:57,583", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:00:57,585", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:00:57.584499", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:00:58,677", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T19:00:58.677328", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 19:00:59,780", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:00:59.779998", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:01:01,985", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:01:01.984513", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:01:03,088", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:01:03,089", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:01:03,090", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:01:04,189", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:01:04.188203", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:01:06,392", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:01:06.391829", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:01:08,595", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:01:08,596", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:01:08,597", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:01:08,598", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:01:08.597644", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:01:08,679", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T19:01:08.678559", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 19:01:10,800", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:01:10.799594", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:01:13,004", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:01:13.003194", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:01:14,106", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:01:14,107", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:01:14,108", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:01:15,208", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:01:15.207561", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:01:17,412", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:01:17.411901", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:01:19,616", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T19:01:19.615197", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 19:01:19,619", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:01:19,620", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:01:19,620", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:01:19,621", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:01:19.621040", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:01:21,820", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:01:21.819361", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:01:24,024", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:01:24.023336", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:01:25,126", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:01:25,128", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:01:25,128", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:01:26,228", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:01:26.227743", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:01:28,432", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:01:28.431770", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:01:29,619", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T19:01:29.618728", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 19:01:30,638", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:01:30,639", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:01:30,640", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:01:30,642", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:01:30.641312", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:01:32,842", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:01:32.841437", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:01:35,046", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:01:35.045364", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:01:36,149", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:01:36,150", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:01:36,150", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:01:37,251", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:01:37.250136", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:01:39,453", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:01:39.452927", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:01:40,556", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T19:01:40.555071", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 19:01:41,658", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:01:41,659", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:01:41,659", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:01:41,661", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:01:41.660798", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:01:43,861", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:01:43.861115", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:01:46,066", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:01:46.065396", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:01:47,169", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:01:47,170", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.2s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:01:47,171", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:01:48,270", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:01:48.269800", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:01:50,474", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:01:50.473392", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:01:50,560", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T19:01:50.559687", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 19:01:52,680", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:01:52,681", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.0s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:01:52,682", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:01:52,683", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:01:52.683526", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:01:54,881", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:01:54.881017", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:01:57,085", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:01:57.084355", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:01:58,188", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:01:58,190", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 2.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:01:58,192", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:01:59,289", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:01:59.288737", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:02:01,493", "level": "DEBUG", "name": "node.consensus", "message": "Leader broadcast system time: 2025-04-27T19:02:01.492995", "taskName": "Task-6"}
+{"timestamp": "2025-04-27 19:02:01,495", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:02:01.494965", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:02:03,698", "level": "DEBUG", "name": "node", "message": "Node node2 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:02:03,699", "level": "DEBUG", "name": "node", "message": "Node node3 is active, last heartbeat 1.1s ago", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:02:03,699", "level": "INFO", "name": "node", "message": "Node monitoring: 2 active nodes out of 2 registered nodes", "taskName": "Task-4"}
+{"timestamp": "2025-04-27 19:02:03,700", "level": "DEBUG", "name": "node.heartbeat", "message": "Heartbeat sent at 2025-04-27T19:02:03.700005", "taskName": "Task-3"}
+{"timestamp": "2025-04-27 19:02:04,799", "level": "INFO", "name": "node", "message": "Node node1 shutting down", "taskName": "Task-2"}
+{"timestamp": "2025-04-27 19:02:04,801", "level": "INFO", "name": "node", "message": "Graceful shutdown completed", "taskName": "Task-2"}

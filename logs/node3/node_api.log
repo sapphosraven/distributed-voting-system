@@ -1,0 +1,6 @@
+2025-04-27 18:51:05,893 - node.api - INFO - Request started: GET /health - [node_server.py:100]
+2025-04-27 18:51:05,898 - node.api - DEBUG - Health check requested - [node_server.py:121]
+2025-04-27 18:51:05,899 - node.api - INFO - Health check response: healthy - [node_server.py:148]
+2025-04-27 18:51:05,901 - node.api - INFO - Request completed: GET /health - Status: 200 - Duration: 0.0083s - [node_server.py:107]
+2025-04-27 18:51:06,987 - node.api - INFO - Request started: GET /favicon.ico - [node_server.py:100]
+2025-04-27 18:51:06,989 - node.api - INFO - Request completed: GET /favicon.ico - Status: 404 - Duration: 0.0020s - [node_server.py:107]

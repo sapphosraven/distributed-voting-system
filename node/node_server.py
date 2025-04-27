@@ -4,7 +4,7 @@ import json
 import uuid
 import uvicorn
 import redis
-from redis.cluster import RedisCluster
+from redis.cluster import RedisCluster, ClusterNode
 import asyncio
 from fastapi import FastAPI, WebSocket, HTTPException, Depends, BackgroundTasks, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -46,7 +46,8 @@ try:
     startup_nodes = []
     for node in REDIS_NODES.split(','):
         host, port = node.split(':')
-        startup_nodes.append({"host": host, "port": int(port)})
+        # Use ClusterNode objects instead of dictionaries
+        startup_nodes.append(ClusterNode(host=host, port=int(port)))
     
     # Connect to Redis Cluster
     r = RedisCluster(startup_nodes=startup_nodes, decode_responses=True)
@@ -152,7 +153,7 @@ async def health_check():
 
 # Message handlers
 def handle_vote_proposal(message):
-    """Handle a vote proposal from anothzzode"""
+    """Handle a vote proposal from another node"""
     logger.info(f"Received vote proposal from {message['sender']}")
     # We'll implement this fully in the consensus protocol phase
 

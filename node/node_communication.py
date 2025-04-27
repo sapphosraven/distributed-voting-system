@@ -8,7 +8,7 @@ from redis.exceptions import RedisError
 logger = logging.getLogger("node.communication")
 
 class NodeCommunicator:
-    """Handles communication between nodes using Redis pub/sub"""
+    """Handles communication between nodes using Redis Cluster pub/sub"""
     
     def __init__(self, redis_client: RedisCluster, node_id: str):
         self.redis = redis_client
