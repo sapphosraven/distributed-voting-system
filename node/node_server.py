@@ -4,11 +4,12 @@ import json
 import uuid
 import uvicorn
 import redis
+from redis.cluster import RedisCluster
 import asyncio
 from fastapi import FastAPI, WebSocket, HTTPException, Depends, BackgroundTasks, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import Dict, List, Optional, Set
+from typing import Dict, List, Optional, Set, Union
 from datetime import datetime
 
 # Import our custom logger
@@ -17,9 +18,8 @@ from logger_config import setup_logger
 # Node configuration from environment variables
 NODE_ID = os.environ.get("NODE_ID", "node1")
 NODE_ROLE = os.environ.get("NODE_ROLE", "follower")
-REDIS_HOST = os.environ.get("REDIS_HOST", "localhost")
-REDIS_PORT = int(os.environ.get("REDIS_PORT", 6379))
-NODE_COUNT = int(os.environ.get("NODE_COUNT", 3))
+# Redis Cluster configuration
+REDIS_NODES = os.environ.get("REDIS_NODES", "localhost:7000,localhost:7001,localhost:7002")
 LOG_DIR = os.environ.get("LOG_DIR", "../logs")
 
 # Set up loggers
@@ -40,18 +40,25 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Redis client
+# Redis Cluster client
 try:
-    r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, decode_responses=True)
-    logger.info(f"Connected to Redis at {REDIS_HOST}:{REDIS_PORT}")
+    # Parse Redis Cluster nodes from environment variable
+    startup_nodes = []
+    for node in REDIS_NODES.split(','):
+        host, port = node.split(':')
+        startup_nodes.append({"host": host, "port": int(port)})
+    
+    # Connect to Redis Cluster
+    r = RedisCluster(startup_nodes=startup_nodes, decode_responses=True)
+    logger.info(f"Connected to Redis Cluster at {REDIS_NODES}")
 except Exception as e:
-    logger.critical(f"Failed to connect to Redis: {e}", exc_info=True)
+    logger.critical(f"Failed to connect to Redis Cluster: {e}", exc_info=True)
     raise
 
 # Import node communicator after Redis setup
 from node_communication import NodeCommunicator
 
-# Initialize communicator
+# Initialize communicator with Redis Cluster
 communicator = NodeCommunicator(r, NODE_ID)
 
 # Node state
@@ -107,17 +114,23 @@ async def log_requests(request: Request, call_next):
                        exc_info=True, extra={"request_id": request_id})
         raise
 
-# Health check endpoint
+# Health check endpoint - Updated to show Redis Cluster status
 @app.get("/health")
 async def health_check():
     api_logger.debug("Health check requested")
     
-    # Check Redis connection
+    # Check Redis Cluster connection and status
     try:
         redis_alive = r.ping()
+        # Get cluster info for health check
+        cluster_info = {
+            "cluster_size": len(r.cluster_nodes()),
+            "cluster_state": r.cluster_info().get("cluster_state", "unknown")
+        }
     except Exception as e:
-        api_logger.error(f"Redis health check failed: {e}")
+        api_logger.error(f"Redis Cluster health check failed: {e}")
         redis_alive = False
+        cluster_info = {"error": str(e)}
     
     # Prepare response
     health_data = {
@@ -128,7 +141,7 @@ async def health_check():
         "votes_processed": node_state.votes_processed,
         "system_time": node_state.system_time,
         "uptime": time.time() - node_state.start_time,
-        "redis_connection": "ok" if redis_alive else "failed"
+        "redis_cluster": cluster_info
     }
     
     api_logger.info(f"Health check response: {health_data['status']}")
@@ -139,11 +152,9 @@ async def health_check():
 
 # Message handlers
 def handle_vote_proposal(message):
-    """Handle a vote proposal from another node"""
+    """Handle a vote proposal from anothzzode"""
     logger.info(f"Received vote proposal from {message['sender']}")
     # We'll implement this fully in the consensus protocol phase
-
-# Replace the existing handle_time_sync function with this one:
 
 def handle_time_sync(message):
     """Handle a time synchronization message"""
@@ -167,7 +178,8 @@ async def startup_event():
     logger.info(f"🚀 Node {NODE_ID} starting up with role: {NODE_ROLE}")
     
     try:
-        # Register in Redis
+        # Register in Redis Cluster - using hash slot aware key generation
+        node_key = f"{{nodes}}.{NODE_ID}"  # Using {} to ensure keys with the same prefix are in the same slot
         node_info = {
             "node_id": NODE_ID,
             "role": NODE_ROLE,
@@ -175,8 +187,8 @@ async def startup_event():
             "status": "active",
             "host": os.environ.get("HOSTNAME", "unknown")
         }
-        r.hset(f"nodes:{NODE_ID}", mapping=node_info)
-        logger.info(f"Registered node in Redis: {node_info}")
+        r.hset(node_key, mapping=node_info)
+        logger.info(f"Registered node in Redis Cluster: {node_info}")
         
         # Initialize communicator
         communicator.initialize()
@@ -204,9 +216,10 @@ async def startup_event():
 async def shutdown_event():
     logger.info(f"Node {NODE_ID} shutting down")
     try:
-        # Notify other nodes about shutdown
-        r.hset(f"nodes:{NODE_ID}", "status", "shutdown")
-        r.expire(f"nodes:{NODE_ID}", 5)  # Short expiry
+        # Notify other nodes about shutdown - using hash slot aware key
+        node_key = f"{{nodes}}.{NODE_ID}"
+        r.hset(node_key, "status", "shutdown")
+        r.expire(node_key, 5)  # Short expiry
         
         # Additional cleanup if needed
         
@@ -221,11 +234,12 @@ async def heartbeat_task():
     
     while True:
         try:
-            # Update heartbeat
+            # Update heartbeat - using hash slot aware key
             current_time = time.time()
-            r.hset(f"nodes:{NODE_ID}", "last_heartbeat", current_time)
-            r.hset(f"nodes:{NODE_ID}", "status", "active")
-            r.expire(f"nodes:{NODE_ID}", 10)  # TTL of 10 seconds
+            node_key = f"{{nodes}}.{NODE_ID}"
+            r.hset(node_key, "last_heartbeat", current_time)
+            r.hset(node_key, "status", "active")
+            r.expire(node_key, 10)  # TTL of 10 seconds
             
             # Reset failure counter after successful heartbeat
             if failures > 0:
@@ -254,11 +268,11 @@ async def check_nodes_task():
             active_nodes = set()
             node_count = 0
             
-            # Scan for all registered nodes
-            for key in r.scan_iter("nodes:*"):
+            # Scan for all registered nodes - using hash slot aware pattern
+            for key in r.scan_iter("{nodes}.*"):
                 node_count += 1
                 node_data = r.hgetall(key)
-                node_id = key.split(":", 1)[1]
+                node_id = key.split(".", 1)[1]  # Extract node_id from key format {nodes}.node1
                 
                 # Skip if it's our own node
                 if node_id == NODE_ID:
@@ -298,7 +312,9 @@ async def leader_time_sync_task():
         if node_state.is_leader:
             try:
                 current_time = time.time()
-                r.set("system:time", current_time)
+                # Store global system time - using hash slot aware key
+                r.set("{system}.time", current_time)
+                # Publish time sync message
                 r.publish("time_sync", json.dumps({
                     "sender": NODE_ID,
                     "system_time": current_time,

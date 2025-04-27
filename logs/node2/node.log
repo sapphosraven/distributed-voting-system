@@ -1,0 +1,14 @@
+2025-04-27 17:44:16,541 - node - CRITICAL - Failed to connect to Redis Cluster: 'dict' object has no attribute 'name' - [node_server.py:55]
+Traceback (most recent call last):
+  File "/app/node_server.py", line 52, in <module>
+    r = RedisCluster(startup_nodes=startup_nodes, decode_responses=True)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/redis/cluster.py", line 641, in __init__
+    self.nodes_manager = NodesManager(
+                         ^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.12/site-packages/redis/cluster.py", line 1341, in __init__
+    self.populate_startup_nodes(startup_nodes)
+  File "/usr/local/lib/python3.12/site-packages/redis/cluster.py", line 1468, in populate_startup_nodes
+    self.startup_nodes[n.name] = n
+                       ^^^^^^
+AttributeError: 'dict' object has no attribute 'name'
