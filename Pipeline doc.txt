@@ -4,130 +4,157 @@ Component: Distributed Processing Layer Team Member: Muhammad Zikrullah Rehman A
 1. Environment Setup & Node Architecture (April 22)
 1.1 Docker Environment Configuration
 Create Docker Compose file to orchestrate 3-5 node containers
-Configure Redis container for distributed data storage and communication
+Configure Redis Cluster with multiple Redis nodes for truly distributed data storage and communication
+Set up Redis Cluster sharding across multiple instances to distribute data and processing load
+Configure high availability with Redis Cluster primary-replica architecture
 Set up volume mounts for persistent data and logs
 Define network configuration for node intercommunication
+
 1.2 Base Node Implementation
 Design core node class structure with necessary attributes and methods
 Implement node identification and role assignment (leader/follower)
 Create logging mechanisms for node activities
 Set up basic health check endpoints for monitoring
+Configure connections to multiple Redis Cluster nodes for fault tolerance
+
 1.3 Node Communication Framework
-Implement Redis-based publish/subscribe system for inter-node messaging
+Implement Redis Cluster publish/subscribe system for truly distributed inter-node messaging
 Design message format for votes, consensus proposals, and heartbeats
-Create node discovery mechanism for dynamic scaling
+Create node discovery mechanism for dynamic scaling using Redis Cluster's topology awareness
+Implement connection failover between Redis Cluster nodes for communication resilience
+
 2. Consensus Protocol Implementation (April 23 - Morning)
 2.1 Proof of Authority (PoA) Consensus Model
-Implement leader election protocol using Redis
-Define rules for leader rotation in case of failure
-Design vote proposal validation mechanisms
-Create vote acceptance criteria and threshold configuration
+Implement leader election protocol using distributed Redis Cluster key-value operations
+Define rules for leader rotation in case of Redis Cluster node or voting node failure
+Design vote proposal validation mechanisms across distributed nodes
+Create vote acceptance criteria and threshold configuration for distributed consensus
+
 2.2 Vote Verification Process
 Implement digital signature verification for incoming votes
 Create vote format validation logic
-Develop duplicate vote detection mechanism
-Implement vote timestamping for ordering
+Develop duplicate vote detection mechanism using Redis Cluster's distributed data structures
+Implement vote timestamping for ordering across distributed nodes
+
 2.3 Consensus Achievement Logic
-Create quorum detection mechanism (majority rule)
-Implement consensus round management
-Design vote finalization protocol
-Create hooks for approved vote transmission
+Create quorum detection mechanism (majority rule) across distributed nodes
+Implement consensus round management with Redis Cluster's atomic operations
+Design vote finalization protocol with distributed commit
+Create hooks for approved vote transmission across the cluster
+
 3. Distributed System Components (April 23 - Afternoon to April 24)
 3.1 Clock Synchronization
 Implement master time source using designated leader node
 Create periodic time sync mechanism for follower nodes
 Design drift detection and correction algorithms
-Implement timestamp validation for vote ordering
+Implement timestamp validation for vote ordering across distributed timelines
+
 3.2 Distributed Mutex Implementation
-Create Redis-based distributed lock manager
-Implement lock acquisition with timeout mechanism
-Design deadlock prevention strategies
-Create lock release protocols with failure handling
+Create Redis Cluster-based distributed lock manager leveraging cluster-wide atomic operations
+Implement lock acquisition with timeout mechanism across sharded data
+Design deadlock prevention strategies for distributed environment
+Create lock release protocols with failure handling across multiple Redis Cluster nodes
+
 3.3 Vote Storage and Retrieval
-Design Redis schema for storing vote data
-Implement vote tallying mechanisms
-Create data partitioning strategy for scalability
-Implement backup and recovery mechanisms
+Design Redis Cluster schema for sharded vote data storage across multiple nodes
+Implement vote tallying mechanisms that aggregate from multiple Redis Cluster shards
+Create data partitioning strategy using Redis Cluster's native sharding capabilities
+Implement backup and recovery mechanisms leveraging Redis Cluster replication
+
 4. Integration with Backend (April 25)
 4.1 Vote Reception Integration
 Create API endpoints for receiving votes from Shahliza's backend
 Implement vote encryption/decryption interface
-Design vote queue management using Redis
-Create acknowledgment mechanism for vote receipt
+Design vote queue management using Redis Cluster's distributed queues
+Create acknowledgment mechanism for vote receipt with distributed confirmation
+
 4.2 Vote Processing Workflow
-Design end-to-end vote processing pipeline
+Design end-to-end vote processing pipeline across distributed nodes
 Implement hooks for vote status updates
 Create audit logging integration points
-Design vote finalization and commitment process
+Design vote finalization and commitment process with distributed transaction guarantees
+
 4.3 Real-time Updates
 Implement WebSocket server for real-time vote count broadcast
-Create Redis channels for vote status notifications
-Design efficient data structure for vote tallies
-Implement filtering mechanisms for different user roles
+Create Redis Cluster pub/sub channels for vote status notifications across all nodes
+Design efficient data structure for distributed vote tallies
+Implement filtering mechanisms for different user roles with distributed access patterns
+
 5. Fault Tolerance & System Reliability (April 26)
 5.1 Node Failure Handling
-Implement heartbeat mechanism for node health monitoring
-Create failure detection protocols
-Design node recovery procedures
-Implement vote reconciliation after node rejoins
+Implement heartbeat mechanism for node health monitoring across the distributed system
+Create failure detection protocols leveraging Redis Cluster's node failure detection
+Design node recovery procedures with automatic data rebalancing
+Implement vote reconciliation after node rejoins the distributed system
+
 5.2 Data Consistency Mechanisms
-Design conflict resolution strategies for vote tallies
-Implement eventual consistency protocols
-Create data validation hooks
-Design state synchronization for recovering nodes
+Design conflict resolution strategies for vote tallies across distributed nodes
+Implement eventual consistency protocols for cross-node data synchronization
+Create data validation hooks with distributed verification
+Design state synchronization for recovering nodes using Redis Cluster's replicas
+
 5.3 Load Balancing
-Implement round-robin assignment for incoming votes
-Create dynamic load distribution based on node health
-Design resource utilization monitoring
-Implement throttling mechanisms for high-volume scenarios
+Implement round-robin assignment for incoming votes across the cluster
+Create dynamic load distribution based on Redis Cluster node health and slot distribution
+Design resource utilization monitoring across all distributed components
+Implement throttling mechanisms for high-volume scenarios with distributed rate limiting
+
 6. Testing & Refinement (April 27)
 6.1 Component Testing
-Create test scripts for consensus protocol
-Design test cases for mutex contention
-Implement clock drift simulation tests
-Test failure recovery scenarios
+Create test scripts for consensus protocol in a multi-node Redis Cluster environment
+Design test cases for mutex contention across distributed locks
+Implement clock drift simulation tests for distributed time synchronization
+Test failure recovery scenarios including Redis Cluster node failures and resharding
+
 6.2 Integration Testing
-Design end-to-end test cases with frontend and backend
-Create load testing scenarios for vote processing
-Implement security testing for vote integrity
-Test real-time update mechanisms
+Design end-to-end test cases with frontend and backend across distributed components
+Create load testing scenarios for vote processing with distributed data
+Implement security testing for vote integrity across the distributed system
+Test real-time update mechanisms with distributed event propagation
+
 6.3 Performance Optimization
-Profile system under load to identify bottlenecks
-Optimize Redis interaction patterns
-Refine consensus communication flow
-Reduce unnecessary processing in critical paths
+Profile system under load to identify bottlenecks in the distributed architecture
+Optimize Redis Cluster interaction patterns for reduced cross-node operations
+Refine consensus communication flow for minimal inter-shard traffic
+Reduce unnecessary processing in critical paths across distributed components
+
 7. Documentation & Demonstration (April 28)
 7.1 System Documentation
-Document node architecture and communication patterns
-Create detailed descriptions of consensus implementation
+Document node architecture and communication patterns with Redis Cluster topology diagrams
+Create detailed descriptions of consensus implementation in a distributed environment
 Document integration points with other system components
-Prepare technical diagrams of the distributed system
+Prepare technical diagrams of the distributed system showing Redis Cluster sharding
+
 7.2 Demo Preparation
-Create visualization of distributed voting process
-Prepare demonstration scenarios showing fault tolerance
-Design simulations showing successful consensus rounds
-Implement dashboard for monitoring system during demo
+Create visualization of distributed voting process showing data flow across Redis Cluster
+Prepare demonstration scenarios showing fault tolerance with Redis Cluster node failures
+Design simulations showing successful consensus rounds across distributed nodes
+Implement dashboard for monitoring distributed system components during demo
+
 7.3 Final Integration
-Conduct final verification of all integration points
+Conduct final verification of all integration points across the distributed architecture
 Ensure proper error handling across system boundaries
-Validate end-to-end security mechanisms
-Confirm real-time updates function correctly
+Validate end-to-end security mechanisms in a distributed environment
+Confirm real-time updates function correctly across all nodes
+
 Integration Points with Other Modules
 Backend Integration (Shahliza)
 
 Receive encrypted votes via agreed API endpoints
 Process vote validation results back to backend
-Share vote tallies for database persistence
-Coordinate authentication status for admin operations
+Share vote tallies for database persistence from distributed Redis Cluster stores
+Coordinate authentication status for admin operations across distributed nodes
+
 Frontend Integration (Areesha)
 
-Provide WebSocket endpoints for real-time vote updates
-Push vote confirmation messages for user feedback
-Supply voting results data for dashboard display
-Share system status for administrative interfaces
+Provide WebSocket endpoints for real-time vote updates from distributed data sources
+Push vote confirmation messages for user feedback with distributed event sourcing
+Supply voting results data for dashboard display with aggregated cluster data
+Share system status for administrative interfaces including Redis Cluster health
+
 Monitoring & Audit
 
-Generate structured logs for potential Solr integration
-Provide system health metrics through monitoring endpoints
-Create audit events for all consensus decisions
-Track and report performance metrics for system evaluation
+Generate structured logs for potential Solr integration with distributed log aggregation
+Provide system health metrics through monitoring endpoints for all distributed components
+Create audit events for all consensus decisions with distributed traceability
+Track and report performance metrics for distributed system evaluation
