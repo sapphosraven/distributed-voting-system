@@ -40,6 +40,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 # Redis Cluster client
 try:
     # Parse Redis Cluster nodes from environment variable
@@ -331,6 +332,7 @@ async def leader_time_sync_task():
             # If no longer the leader, exit this task
             consensus_logger.info("Node is no longer the leader, stopping time sync task")
             break
+        
 
 # Start server if running as main
 if __name__ == "__main__":
