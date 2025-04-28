@@ -40,12 +40,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Define vote data model
-class Vote(BaseModel):
-    voter_id: str
-    election_id: str
-    candidate_id: str
-
 # Redis Cluster client
 try:
     # Parse Redis Cluster nodes from environment variable
@@ -337,3 +331,11 @@ async def leader_time_sync_task():
             # If no longer the leader, exit this task
             consensus_logger.info("Node is no longer the leader, stopping time sync task")
             break
+
+# Start server if running as main
+if __name__ == "__main__":
+    logger.info(f"Starting node server {NODE_ID} on port 5000")
+    # Note: If running from command line directly with uvicorn, you can use the -d flag 
+    # to run as daemon (background process): uvicorn node_server:app --host 0.0.0.0 --port 5000 -d
+    # But this doesn't apply when running programmatically like below
+    uvicorn.run("node_server:app", host="0.0.0.0", port=5000, log_level="info")
