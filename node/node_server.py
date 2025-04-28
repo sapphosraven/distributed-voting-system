@@ -4,12 +4,13 @@ import json
 import uuid
 import uvicorn
 import redis
+import hashlib
 from redis.cluster import RedisCluster, ClusterNode
 import asyncio
-from fastapi import FastAPI, WebSocket, HTTPException, Depends, BackgroundTasks, Request
+from fastapi import FastAPI, WebSocket, HTTPException, Depends, BackgroundTasks, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from typing import Dict, List, Optional, Set, Union
+from pydantic import BaseModel, Field, field_validator
+from typing import Dict, List, Optional, Set, Union, Any
 from datetime import datetime
 
 # Import our custom logger
@@ -78,16 +79,37 @@ class NodeState:
         
 node_state = NodeState()
 
-# Define vote data model
+# Enhanced vote data model with validation
 class Vote(BaseModel):
     voter_id: str
     election_id: str
     candidate_id: str
-    timestamp: float
-    signature: str
+    timestamp: float = Field(default_factory=time.time)
+    signature: str = ""
+    
+    @field_validator('voter_id', 'election_id', 'candidate_id')
+    def check_not_empty(cls, v, info):
+        if not v or not v.strip():
+            raise ValueError(f"{info.field_name} cannot be empty")
+        return v
     
     def __str__(self):
         return f"Vote(voter_id={self.voter_id}, election_id={self.election_id}, candidate_id={self.candidate_id})"
+    
+    def compute_hash(self) -> str:
+        """Compute a hash of the vote data for verification purposes"""
+        content = f"{self.voter_id}:{self.election_id}:{self.candidate_id}:{self.timestamp}"
+        return hashlib.sha256(content.encode()).hexdigest()
+
+# Consensus state tracking
+class ConsensusState:
+    def __init__(self):
+        self.pending_votes: Dict[str, Vote] = {}  # vote_id -> Vote
+        self.vote_approvals: Dict[str, Set[str]] = {}  # vote_id -> {node_ids}
+        self.finalized_votes: Dict[str, Vote] = {}  # vote_id -> Vote
+        self.voter_history: Dict[str, Dict[str, str]] = {}  # voter_id -> {election_id -> vote_id}
+        
+consensus = ConsensusState()
 
 # Middleware for request logging
 @app.middleware("http")
@@ -151,27 +173,344 @@ async def health_check():
         return health_data, 503  # Service Unavailable
     return health_data
 
-# Message handlers
+# Vote API endpoints
+@app.post("/votes", status_code=status.HTTP_202_ACCEPTED)
+async def submit_vote(vote: Vote, background_tasks: BackgroundTasks):
+    """Submit a vote for processing"""
+    api_logger.info(f"Received vote from voter {vote.voter_id} for election {vote.election_id}")
+    
+    # Generate a unique ID for this vote
+    vote_id = f"{vote.election_id}:{vote.voter_id}:{uuid.uuid4()}"
+    
+    # Validate the vote (basic checks)
+    validation_result = await validate_vote(vote)
+    if not validation_result["valid"]:
+        api_logger.warning(f"Vote validation failed: {validation_result['reason']}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=validation_result["reason"]
+        )
+    
+    # Check for duplicate votes
+    if vote.voter_id in consensus.voter_history and vote.election_id in consensus.voter_history[vote.voter_id]:
+        api_logger.warning(f"Duplicate vote detected from {vote.voter_id} for election {vote.election_id}")
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Voter has already cast a vote in this election"
+        )
+    
+    # Store vote in pending votes
+    consensus.pending_votes[vote_id] = vote
+    
+    # Initialize approvals with this node
+    consensus.vote_approvals[vote_id] = {NODE_ID}
+    
+    # Start consensus process in background
+    background_tasks.add_task(start_consensus_process, vote_id, vote)
+    
+    return {"status": "accepted", "vote_id": vote_id}
+
+@app.get("/votes/{vote_id}")
+async def get_vote_status(vote_id: str):
+    """Get the status of a specific vote"""
+    # Check if vote is finalized
+    if vote_id in consensus.finalized_votes:
+        return {
+            "status": "finalized",
+            "vote": consensus.finalized_votes[vote_id]
+        }
+    
+    # Check if vote is pending
+    if vote_id in consensus.pending_votes:
+        node_count = len(node_state.connected_nodes) + 1  # +1 for this node
+        approval_count = len(consensus.vote_approvals.get(vote_id, set()))
+        
+        return {
+            "status": "pending",
+            "approvals": approval_count,
+            "total_nodes": node_count,
+            "approval_percentage": int(100 * approval_count / max(1, node_count))
+        }
+    
+    # Vote not found
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail="Vote not found"
+    )
+
+@app.get("/elections/{election_id}/results")
+async def get_election_results(election_id: str):
+    """Get the current results for an election"""
+    # Filter finalized votes for this election
+    election_votes = [vote for vote in consensus.finalized_votes.values() 
+                      if vote.election_id == election_id]
+    
+    if not election_votes:
+        return {"election_id": election_id, "total_votes": 0, "results": {}}
+    
+    # Count votes per candidate
+    results = {}
+    for vote in election_votes:
+        candidate_id = vote.candidate_id
+        results[candidate_id] = results.get(candidate_id, 0) + 1
+    
+    return {
+        "election_id": election_id,
+        "total_votes": len(election_votes),
+        "results": results
+    }
+
+# Vote validation function
+async def validate_vote(vote: Vote) -> Dict[str, Any]:
+    """Validate a vote for basic issues"""
+    # Here we'd normally verify the digital signature, but simplified for now
+    
+    # Check for missing fields
+    if not vote.voter_id or not vote.election_id or not vote.candidate_id:
+        return {"valid": False, "reason": "Missing required fields"}
+    
+    # Check timestamp is not in the future
+    if vote.timestamp > time.time() + 5:  # 5 seconds tolerance for clock skew
+        return {"valid": False, "reason": "Vote timestamp is in the future"}
+    
+    # Here you would add more validation like checking voter eligibility,
+    # whether the election is active, etc. - this would involve database lookups
+    
+    return {"valid": True}
+
+# Consensus process
+async def start_consensus_process(vote_id: str, vote: Vote):
+    """Start the consensus process for a vote"""
+    logger.info(f"Starting consensus process for vote {vote_id}")
+    
+    # If we're the leader, broadcast the vote proposal to followers
+    if node_state.is_leader:
+        await broadcast_vote_proposal(vote_id, vote)
+    else:
+        # If we're not the leader, forward the vote to the leader
+        # Find the leader node
+        leader_node = None
+        for node_key in r.scan_iter("{nodes}.*"):
+            node_data = r.hgetall(node_key)
+            if node_data.get("role") == "leader" and node_data.get("status") == "active":
+                leader_node = node_data.get("node_id")
+                break
+        
+        if leader_node:
+            logger.info(f"Forwarding vote {vote_id} to leader node {leader_node}")
+            communicator.send_message("vote_proposal", "vote_forward", {
+                "vote_id": vote_id,
+                "vote": vote.dict()
+            })
+        else:
+            logger.warning("No active leader found for vote forwarding")
+    
+    # Check consensus achievement periodically
+    await check_consensus(vote_id)
+
+async def broadcast_vote_proposal(vote_id: str, vote: Vote):
+    """Broadcast a vote proposal to all nodes for approval"""
+    logger.info(f"Broadcasting vote proposal {vote_id} to all nodes")
+    
+    communicator.send_message("vote_proposal", "vote_propose", {
+        "vote_id": vote_id,
+        "vote": vote.dict()
+    })
+
+async def check_consensus(vote_id: str):
+    """Check if consensus has been achieved for a vote"""
+    # Wait a bit to allow for votes to be received
+    await asyncio.sleep(2)
+    
+    # If vote isn't in pending votes anymore, it's already been finalized or rejected
+    if vote_id not in consensus.pending_votes:
+        logger.debug(f"Vote {vote_id} is no longer pending")
+        return
+    
+    # Get total node count (including this node)
+    node_count = len(node_state.connected_nodes) + 1
+    
+    # Get approval count
+    approvals = consensus.vote_approvals.get(vote_id, set())
+    approval_count = len(approvals)
+    
+    # Check if we've reached a majority
+    if approval_count > node_count / 2:
+        logger.info(f"Consensus achieved for vote {vote_id} with {approval_count}/{node_count} approvals")
+        await finalize_vote(vote_id)
+    else:
+        logger.debug(f"Consensus not yet achieved for vote {vote_id}: {approval_count}/{node_count} approvals")
+        
+        # Retry after a delay if we haven't reached consensus
+        if vote_id in consensus.pending_votes:
+            await asyncio.sleep(3)
+            await check_consensus(vote_id)
+
+async def finalize_vote(vote_id: str):
+    """Finalize a vote once consensus is achieved"""
+    if vote_id not in consensus.pending_votes:
+        return
+        
+    vote = consensus.pending_votes[vote_id]
+    
+    # Move vote from pending to finalized
+    consensus.finalized_votes[vote_id] = vote
+    del consensus.pending_votes[vote_id]
+    
+    # Record voter history to prevent duplicate votes
+    if vote.voter_id not in consensus.voter_history:
+        consensus.voter_history[vote.voter_id] = {}
+    consensus.voter_history[vote.voter_id][vote.election_id] = vote_id
+    
+    # Update vote count
+    node_state.votes_processed += 1
+    
+    logger.info(f"Vote {vote_id} finalized and recorded")
+    
+    # If we're the leader, broadcast the finalization to all nodes
+    if node_state.is_leader:
+        communicator.send_message("vote_finalization", "vote_finalized", {
+            "vote_id": vote_id,
+            "vote": vote.dict()
+        })
+
+# Enhanced message handlers
 def handle_vote_proposal(message):
     """Handle a vote proposal from another node"""
-    logger.info(f"Received vote proposal from {message['sender']}")
-    # We'll implement this fully in the consensus protocol phase
+    data = message.get("data", {})
+    sender = message.get("sender", "unknown")
+    
+    # Extract vote data
+    vote_id = data.get("vote_id")
+    vote_data = data.get("vote")
+    
+    if not vote_id or not vote_data:
+        logger.warning(f"Received invalid vote proposal from {sender}: missing vote_id or vote data")
+        return
+    
+    logger.info(f"Received vote proposal {vote_id} from {sender}")
+    
+    # Convert to Vote object
+    try:
+        vote = Vote(**vote_data)
+        
+        # Add to pending votes if not already there
+        if vote_id not in consensus.pending_votes:
+            consensus.pending_votes[vote_id] = vote
+        
+        # Initialize approvals if needed
+        if vote_id not in consensus.vote_approvals:
+            consensus.vote_approvals[vote_id] = set()
+        
+        # Record our approval
+        consensus.vote_approvals[vote_id].add(NODE_ID)
+        
+        # Record sender's approval
+        consensus.vote_approvals[vote_id].add(sender)
+        
+        # Respond with acknowledgment
+        communicator.send_message("vote_response", "vote_acknowledge", {
+            "vote_id": vote_id,
+            "status": "approved"
+        })
+        
+        # If we're the leader, check for consensus
+        if node_state.is_leader:
+            asyncio.create_task(check_consensus(vote_id))
+            
+    except Exception as e:
+        logger.error(f"Error processing vote proposal {vote_id} from {sender}: {e}", exc_info=True)
+
+def handle_vote_acknowledgment(message):
+    """Handle a vote acknowledgment from another node"""
+    data = message.get("data", {})
+    sender = message.get("sender", "unknown")
+    
+    # Extract vote info
+    vote_id = data.get("vote_id")
+    status = data.get("status")
+    
+    if not vote_id:
+        logger.warning(f"Received invalid vote acknowledgment from {sender}: missing vote_id")
+        return
+    
+    if status == "approved":
+        logger.info(f"Received approval for vote {vote_id} from {sender}")
+        
+        # Record approval
+        if vote_id not in consensus.vote_approvals:
+            consensus.vote_approvals[vote_id] = set()
+        
+        consensus.vote_approvals[vote_id].add(sender)
+        
+        # If we're the leader, check for consensus
+        if node_state.is_leader:
+            asyncio.create_task(check_consensus(vote_id))
+    else:
+        logger.warning(f"Received rejection for vote {vote_id} from {sender}")
+
+def handle_vote_finalization(message):
+    """Handle a vote finalization from the leader"""
+    data = message.get("data", {})
+    sender = message.get("sender", "unknown")
+    
+    # Extract vote info
+    vote_id = data.get("vote_id")
+    vote_data = data.get("vote")
+    
+    if not vote_id or not vote_data:
+        logger.warning(f"Received invalid vote finalization from {sender}: missing vote_id or vote data")
+        return
+    
+    logger.info(f"Received vote finalization for {vote_id} from {sender}")
+    
+    try:
+        vote = Vote(**vote_data)
+        
+        # Record in finalized votes
+        consensus.finalized_votes[vote_id] = vote
+        
+        # Remove from pending if present
+        if vote_id in consensus.pending_votes:
+            del consensus.pending_votes[vote_id]
+        
+        # Record voter history
+        if vote.voter_id not in consensus.voter_history:
+            consensus.voter_history[vote.voter_id] = {}
+            
+        consensus.voter_history[vote.voter_id][vote.election_id] = vote_id
+        
+        # Update vote count
+        node_state.votes_processed += 1
+        
+        logger.info(f"Vote {vote_id} finalized based on leader decision")
+        
+    except Exception as e:
+        logger.error(f"Error processing vote finalization {vote_id} from {sender}: {e}")
 
 def handle_time_sync(message):
-    """Handle a time synchronization message"""
-    if not node_state.is_leader:  # Only followers sync time
-        # The message is already parsed, so we can access system_time directly
-        new_time = message.get("system_time")
-        if new_time:
-            node_state.system_time = new_time
-            logger.debug(f"Synchronized time to {new_time}")
-        else:
-            logger.warning(f"Received time sync message without system_time: {message}")
+    """Handle time synchronization messages from the leader"""
+    data = message.get("data", {})
+    sender = message.get("sender", "unknown")
+    
+    if not node_state.is_leader:
+        # Only followers should process time sync
+        system_time = data.get("system_time")
+        if system_time:
+            # Update local system time
+            node_state.system_time = float(system_time)
+            logger.debug(f"Synchronized time with leader: {system_time}")
 
 def handle_leader_election(message):
-    """Handle a leader election message"""
-    logger.info(f"Leader election message from {message['sender']}: {message['data']}")
-    # We'll implement this fully in the consensus protocol phase
+    """Handle leader election messages"""
+    # This will be implemented more fully in the leader election phase
+    data = message.get("data", {})
+    sender = message.get("sender", "unknown")
+    
+    logger.info(f"Received leader election message from {sender}")
+    # Basic acknowledgment for now
+    if "candidate" in data:
+        logger.info(f"Node {data['candidate']} is proposing itself as leader")
 
 # Node discovery and registration
 @app.on_event("startup")
@@ -194,6 +533,8 @@ async def startup_event():
         # Initialize communicator
         communicator.initialize()
         communicator.register_handler("vote_proposal", handle_vote_proposal)
+        communicator.register_handler("vote_response", handle_vote_acknowledgment)
+        communicator.register_handler("vote_finalization", handle_vote_finalization)
         communicator.register_handler("time_sync", handle_time_sync)
         communicator.register_handler("leader_election", handle_leader_election)
         
