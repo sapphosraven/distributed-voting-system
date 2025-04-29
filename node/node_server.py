@@ -155,6 +155,119 @@ def handle_leader_election(message):
     logger.info(f"Leader election message from {message['sender']}: {message['data']}")
     # We'll implement this fully in the consensus protocol phase
 
+@app.post("/elections/{election_id}/reset")
+async def reset_election(election_id: str):
+    """Reset the election by clearing all related data (for testing purposes)"""
+    try:
+        # First, clear the tally from Redis
+        tally_key = f"{{tally}}.{election_id}"
+        result = r.delete(tally_key)
+        logger.warning(f"Reset election {election_id}: tally key deleted (result: {result})")
+        
+        # Also clear any other keys related to this election for completeness
+        election_pattern = f"{{election}}:{election_id}:*"
+        deleted_keys = 0
+        for key in r.scan_iter(election_pattern):
+            r.delete(key)
+            deleted_keys += 1
+        
+        # Clear in-memory state on this node
+        finalized_votes_to_remove = []
+        for vote_id, vote in consensus.finalized_votes.items():
+            if vote.election_id == election_id:
+                finalized_votes_to_remove.append(vote_id)
+        
+        logger.warning(f"Removing {len(finalized_votes_to_remove)} finalized votes for election {election_id}")
+        for vote_id in finalized_votes_to_remove:
+            del consensus.finalized_votes[vote_id]
+        
+        # Also clear voter history for this election
+        voters_cleared = 0
+        for voter_id in list(consensus.voter_history.keys()):
+            if election_id in consensus.voter_history[voter_id]:
+                del consensus.voter_history[voter_id][election_id]
+                voters_cleared += 1
+        
+        # Also clear any pending votes for this election
+        pending_votes_to_remove = []
+        for vote_id, vote in consensus.pending_votes.items():
+            if vote.election_id == election_id:
+                pending_votes_to_remove.append(vote_id)
+        
+        for vote_id in pending_votes_to_remove:
+            del consensus.pending_votes[vote_id]
+            if vote_id in consensus.vote_approvals:
+                del consensus.vote_approvals[vote_id]
+        
+        # Reset vote count for this election in node state
+        # (This is an approximate solution as we don't track per-election counts)
+        if finalized_votes_to_remove:
+            node_state.votes_processed = max(0, node_state.votes_processed - len(finalized_votes_to_remove))
+        
+        # Broadcast reset to other nodes
+        if node_state.is_leader:
+            try:
+                communicator.send_message("election_admin", "reset_election", {
+                    "election_id": election_id,
+                    "timestamp": time.time()
+                })
+            except Exception as e:
+                logger.error(f"Error broadcasting election reset: {e}")
+        
+        reset_info = {
+            "tally_cleared": result == 1,
+            "other_keys_cleared": deleted_keys,
+            "finalized_votes_cleared": len(finalized_votes_to_remove),
+            "voters_cleared": voters_cleared,
+            "pending_votes_cleared": len(pending_votes_to_remove)
+        }
+        
+        logger.warning(f"Election {election_id} has been reset: {reset_info}")
+        
+        return {
+            "status": "success", 
+            "message": f"Election {election_id} has been completely reset",
+            "details": reset_info
+        }
+    except Exception as e:
+        logger.error(f"Error resetting election {election_id}: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to reset election: {str(e)}"
+        )
+
+# Add a message handler for election reset messages
+def handle_election_reset(message):
+    """Handle election reset messages from the leader"""
+    data = message.get("data", {})
+    sender = message.get("sender", "unknown")
+    
+    election_id = data.get("election_id")
+    if not election_id:
+        logger.warning(f"Received invalid election reset message from {sender}: missing election_id")
+        return
+    
+    logger.info(f"Received election reset message for {election_id} from {sender}")
+    
+    try:
+        # Clear in-memory state for this election
+        finalized_votes_to_remove = []
+        for vote_id, vote in consensus.finalized_votes.items():
+            if vote.election_id == election_id:
+                finalized_votes_to_remove.append(vote_id)
+        
+        for vote_id in finalized_votes_to_remove:
+            del consensus.finalized_votes[vote_id]
+        
+        # Clear voter history
+        for voter_id in list(consensus.voter_history.keys()):
+            if election_id in consensus.voter_history[voter_id]:
+                del consensus.voter_history[voter_id][election_id]
+        
+        logger.info(f"Reset {len(finalized_votes_to_remove)} votes for election {election_id} based on message from {sender}")
+    except Exception as e:
+        logger.error(f"Error processing election reset for {election_id}: {e}")
+
 # Node discovery and registration
 @app.on_event("startup")
 async def startup_event():
@@ -177,6 +290,7 @@ async def startup_event():
         communicator.register_handler("vote_proposal", handle_vote_proposal)
         communicator.register_handler("time_sync", handle_time_sync)
         communicator.register_handler("leader_election", handle_leader_election)
+        communicator.register_handler("election_admin", handle_election_reset)  # Add this line
         
         # Start background tasks
         asyncio.create_task(heartbeat_task())

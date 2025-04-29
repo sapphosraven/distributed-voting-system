@@ -130,6 +130,41 @@ def check_election_results(node_port, election_id):
     except Exception as e:
         return {"success": False, "reason": str(e)}
 
+def reset_election(election_id, responsive_nodes):
+    """Reset election data by clearing tallies in Redis"""
+    print_step(f"Resetting election data for {election_id}")
+    
+    success = False
+    for port in responsive_nodes:
+        try:
+            url = f"http://{DEFAULT_HOST}:{port}/elections/{election_id}/reset"
+            response = requests.post(url, timeout=5)
+            
+            if response.status_code == 200:
+                result = response.json()
+                if result.get("status") == "success":
+                    print_success(f"Successfully reset election data on node {port}")
+                    success = True
+                    break  # One successful reset is enough
+                
+        except Exception as e:
+            logger.error(f"Error resetting election on node {port}: {e}")
+    
+    if not success:
+        # Fallback to direct Redis reset
+        try:
+            import redis
+            r = redis.Redis(host="localhost", port=7000)
+            tally_key = f"{{tally}}.{election_id}"
+            if r.delete(tally_key):
+                print_success(f"Fallback: Cleared Redis tally key directly")
+                success = True
+        except Exception as e:
+            logger.error(f"Fallback reset failed: {e}")
+            print_failure("Failed to reset election data. Results may be inaccurate.")
+    
+    return success
+
 def run_system_test(num_votes=DEFAULT_NUM_VOTES):
     """Run a comprehensive test of the voting system"""
     test_start_time = time.time()
@@ -168,6 +203,17 @@ def run_system_test(num_votes=DEFAULT_NUM_VOTES):
         return False
     
     print_success(f"Found {len(healthy_nodes)} healthy node(s)")
+    
+    # Add clock sync test after finding responsive nodes
+    if healthy_nodes:
+        clock_sync_result = check_clock_sync_status(healthy_nodes)
+        if not clock_sync_result:
+            print_warning("Clock synchronization test did not pass, but continuing with other tests")
+    
+    # NEW: Reset election data before submitting votes
+    reset_success = reset_election(DEFAULT_ELECTION_ID, healthy_nodes)
+    if not reset_success:
+        print_warning("Could not reset election data through API. Results may be inaccurate.")
     
     # Step 2: Submit test votes
     print_step(f"Submitting {num_votes} Test Votes")
