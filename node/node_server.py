@@ -13,8 +13,9 @@ from pydantic import BaseModel, Field, field_validator
 from typing import Dict, List, Optional, Set, Union, Any
 from datetime import datetime
 
-# Import our custom logger
+# Import our custom logger and clock sync
 from logger_config import setup_logger
+from clock_sync import ClockSynchronizer
 
 # Node configuration from environment variables
 NODE_ID = os.environ.get("NODE_ID", "node1")
@@ -72,7 +73,8 @@ class NodeState:
         self.connected_nodes = set()
         self.votes_processed = 0
         self.votes_pending = []
-        self.system_time = time.time()
+        # Use ClockSynchronizer instead of direct system time
+        self.clock_sync = ClockSynchronizer(NODE_ID, self.is_leader)
         self.is_healthy = True
         self.start_time = time.time()
         logger.info(f"Initialized node state: {self.node_id} as {'leader' if self.is_leader else 'follower'}")
@@ -162,7 +164,8 @@ async def health_check():
         "role": "leader" if node_state.is_leader else "follower",
         "connected_nodes": list(node_state.connected_nodes),
         "votes_processed": node_state.votes_processed,
-        "system_time": node_state.system_time,
+        "system_time": node_state.clock_sync.get_adjusted_time(),  # Use adjusted time
+        "clock_sync": node_state.clock_sync.get_sync_stats(),      # Add sync stats
         "uptime": time.time() - node_state.start_time,
         "redis_cluster": cluster_info
     }
@@ -269,9 +272,9 @@ async def validate_vote(vote: Vote) -> Dict[str, Any]:
     if not vote.voter_id or not vote.election_id or not vote.candidate_id:
         return {"valid": False, "reason": "Missing required fields"}
     
-    # Check timestamp is not in the future
-    if vote.timestamp > time.time() + 5:  # 5 seconds tolerance for clock skew
-        return {"valid": False, "reason": "Vote timestamp is in the future"}
+    # Use improved timestamp validation with drift correction
+    if not node_state.clock_sync.validate_timestamp(vote.timestamp):
+        return {"valid": False, "reason": "Vote timestamp is invalid relative to system time"}
     
     # Here you would add more validation like checking voter eligibility,
     # whether the election is active, etc. - this would involve database lookups
@@ -488,6 +491,7 @@ def handle_vote_finalization(message):
     except Exception as e:
         logger.error(f"Error processing vote finalization {vote_id} from {sender}: {e}")
 
+# Update time sync handler to use clock synchronizer
 def handle_time_sync(message):
     """Handle time synchronization messages from the leader"""
     data = message.get("data", {})
@@ -497,8 +501,8 @@ def handle_time_sync(message):
         # Only followers should process time sync
         system_time = data.get("system_time")
         if system_time:
-            # Update local system time
-            node_state.system_time = float(system_time)
+            # Update time using clock synchronizer instead of direct assignment
+            node_state.clock_sync.update_offset(float(system_time))
             logger.debug(f"Synchronized time with leader: {system_time}")
 
 def handle_leader_election(message):
@@ -542,6 +546,7 @@ async def startup_event():
         asyncio.create_task(heartbeat_task())
         asyncio.create_task(check_nodes_task())
         asyncio.create_task(communicator.listen_for_messages())
+        asyncio.create_task(clock_drift_correction_task())  # Add this new task
         logger.info("Started background monitoring tasks")
         
         # If leader, start leader-specific tasks
@@ -654,13 +659,15 @@ async def leader_time_sync_task():
         if node_state.is_leader:
             try:
                 current_time = time.time()
-                # Store global system time - using hash slot aware key
                 r.set("{system}.time", current_time)
-                # Publish time sync message
+                
+                # Include additional timing info for better drift calculation
                 r.publish("time_sync", json.dumps({
                     "sender": NODE_ID,
                     "system_time": current_time,
-                    "timestamp": current_time
+                    "timestamp": current_time,
+                    "sequence": int(time.time()),  # Add sequence for ordering
+                    "precision": "high"            # Indicate high precision time
                 }))
                 
                 consensus_logger.debug(f"Leader broadcast system time: {datetime.fromtimestamp(current_time).isoformat()}")
@@ -669,9 +676,25 @@ async def leader_time_sync_task():
                 consensus_logger.error(f"Error in leader time sync task: {e}", exc_info=True)
                 await asyncio.sleep(5)
         else:
-            # If no longer the leader, exit this task
             consensus_logger.info("Node is no longer the leader, stopping time sync task")
             break
+
+# Add clock drift correction task
+async def clock_drift_correction_task():
+    """Periodically apply clock drift correction for follower nodes"""
+    logger.info("Starting clock drift correction task")
+    
+    while True:
+        try:
+            if not node_state.is_leader:
+                # Apply drift correction if we're a follower
+                node_state.clock_sync.apply_drift_correction()
+            
+            # Run this periodically (less frequently than time sync)
+            await asyncio.sleep(30)
+        except Exception as e:
+            logger.error(f"Error in clock drift correction task: {e}", exc_info=True)
+            await asyncio.sleep(10)
 
 # Start server if running as main
 if __name__ == "__main__":

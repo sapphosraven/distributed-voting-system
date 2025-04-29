@@ -130,6 +130,82 @@ def check_election_results(node_port, election_id):
     except Exception as e:
         return {"success": False, "reason": str(e)}
 
+def check_clock_sync_status(responsive_nodes):
+    """Check if clock synchronization is working properly across nodes"""
+    print_step("Testing Clock Synchronization")
+    
+    try:
+        # Get time from all nodes
+        node_times = []
+        leader_time = None
+        
+        for port in responsive_nodes:
+            try:
+                health_url = f"http://{DEFAULT_HOST}:{port}/health"
+                response = requests.get(health_url, timeout=3)
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    system_time = data.get("system_time")
+                    role = data.get("role")
+                    sync_stats = data.get("clock_sync", {})
+                    
+                    if role == "leader":
+                        leader_time = system_time
+                        logger.info(f"Found leader node at port {port} with time {system_time}")
+                    
+                    node_times.append({
+                        "port": port,
+                        "role": role,
+                        "time": system_time,
+                        "offset": sync_stats.get("current_offset", 0),
+                        "drift_rate": sync_stats.get("drift_rate", 0)
+                    })
+            except Exception as e:
+                logger.error(f"Error checking node at port {port}: {e}")
+        
+        if not node_times:
+            print_failure("No responsive nodes for clock sync test")
+            return False
+        
+        # Calculate time differences
+        max_time_diff = 0
+        time_diff_table = []
+        
+        for node in node_times:
+            if leader_time and node["time"]:
+                diff = abs(node["time"] - leader_time)
+                max_time_diff = max(max_time_diff, diff)
+                
+                status = f"{SUCCESS}SYNCED{RESET}" if diff < 1.0 else f"{FAILURE}DRIFT{RESET}"
+                time_diff_table.append([
+                    node["port"],
+                    node["role"],
+                    f"{node['time']:.3f}",
+                    f"{node['offset']:.6f}",
+                    f"{diff:.6f}",
+                    status
+                ])
+        
+        # Print results
+        print(tabulate.tabulate(
+            time_diff_table,
+            headers=["Port", "Role", "System Time", "Offset", "Diff from Leader", "Status"]
+        ))
+        
+        # Evaluate overall synchronization
+        if max_time_diff < 1.0:
+            print_success(f"Clock synchronization successful (max diff: {max_time_diff:.6f}s)")
+            return True
+        else:
+            print_warning(f"Clock synchronization needs improvement (max diff: {max_time_diff:.6f}s)")
+            return max_time_diff < 5.0  # Consider partially successful if within 5 seconds
+        
+    except Exception as e:
+        print_failure(f"Clock sync test failed: {e}")
+        logger.error(f"Error testing clock synchronization: {e}", exc_info=True)
+        return False
+
 def run_system_test(num_votes=DEFAULT_NUM_VOTES):
     """Run a comprehensive test of the voting system"""
     test_start_time = time.time()
@@ -168,6 +244,12 @@ def run_system_test(num_votes=DEFAULT_NUM_VOTES):
         return False
     
     print_success(f"Found {len(healthy_nodes)} healthy node(s)")
+    
+    # Add clock sync test after finding responsive nodes
+    if healthy_nodes:
+        clock_sync_result = check_clock_sync_status(healthy_nodes)
+        if not clock_sync_result:
+            print_warning("Clock synchronization test did not pass, but continuing with other tests")
     
     # Step 2: Submit test votes
     print_step(f"Submitting {num_votes} Test Votes")
