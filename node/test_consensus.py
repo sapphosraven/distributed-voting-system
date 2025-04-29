@@ -149,47 +149,13 @@ def clear_election_results(node_port, election_id):
             logger.info(f"Successfully cleared results for election {election_id}")
             return True
         else:
-            logger.error(f"Failed to clear election results via HTTP: {response.status_code} - {response.text}")
-            # Fallback to Redis CLI if HTTP fails
-            return clear_tally_directly(election_id)
-    except Exception as e:
-        logger.error(f"Error clearing election results via HTTP: {e}")
-        # Fallback to Redis CLI if HTTP fails
-        return clear_tally_directly(election_id)
-
-def clear_tally_directly(election_id):
-    """Fallback to clearing the tally directly using Redis CLI"""
-    try:
-        import redis
-        r = redis.Redis(host="localhost", port=7000)  # Connect to the first Redis node
-        tally_key = f"{{tally}}.{election_id}"
-        if r.delete(tally_key):
-            logger.info(f"Successfully cleared tally key {tally_key} directly in Redis")
-            return True
-        else:
-            logger.warning(f"Tally key {tally_key} does not exist or could not be cleared")
+            logger.error(f"Failed to clear election results: {response.status_code} - {response.text}")
             return False
     except Exception as e:
-        logger.error(f"Error clearing tally key directly in Redis: {e}")
+        logger.error(f"Error clearing election results: {e}")
         return False
 
-def reset_election(node_port, election_id):
-    """Reset the election by clearing all related data (for testing purposes)"""
-    try:
-        url = f"http://{DEFAULT_HOST}:{node_port}/elections/{election_id}/reset"
-        response = requests.post(url)
-        
-        if response.status_code == 200:
-            logger.info(f"Successfully reset election {election_id}")
-            return True
-        else:
-            logger.error(f"Failed to reset election: {response.status_code} - {response.text}")
-            return False
-    except Exception as e:
-        logger.error(f"Error resetting election: {e}")
-        return False
-
-def run_test(num_votes=DEFAULT_NUM_VOTES, election_id=DEFAULT_ELECTION_ID, reset_results=True):
+def run_test(num_votes=DEFAULT_NUM_VOTES, election_id=DEFAULT_ELECTION_ID, clear_results=True):
     """Run a test of the voting system"""
     logger.info(f"Starting consensus test with {num_votes} votes")
     
@@ -210,12 +176,12 @@ def run_test(num_votes=DEFAULT_NUM_VOTES, election_id=DEFAULT_ELECTION_ID, reset
     
     logger.info(f"Found {len(responsive_nodes)} responsive nodes: {responsive_nodes}")
     
-    # Reset election if requested
-    if reset_results:
-        logger.info(f"Resetting election {election_id}")
+    # Clear previous election results if requested
+    if clear_results:
+        logger.info(f"Clearing previous results for election {election_id}")
         port = random.choice(responsive_nodes)
-        if not reset_election(port, election_id):
-            logger.warning(f"Could not reset election {election_id}. Counts may be inaccurate.")
+        if not clear_election_results(port, election_id):
+            logger.warning(f"Could not clear previous election results. Counts may be inaccurate.")
     
     # Submit votes
     vote_ids = []

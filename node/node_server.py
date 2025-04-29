@@ -272,56 +272,15 @@ async def clear_election_results(election_id: str):
     try:
         # Delete the tally from Redis
         tally_key = f"{{tally}}.{election_id}"
-        if r.delete(tally_key):
-            logger.warning(f"Cleared election results for {election_id} (testing only)")
-            return {"status": "success", "message": f"Results for election {election_id} have been cleared"}
-        else:
-            logger.warning(f"Tally key {tally_key} does not exist or could not be cleared")
-            return {"status": "warning", "message": f"Tally key {tally_key} does not exist or could not be cleared"}
+        r.delete(tally_key)
+        logger.warning(f"Cleared election results for {election_id} (testing only)")
+        
+        return {"status": "success", "message": f"Results for election {election_id} have been cleared"}
     except Exception as e:
         logger.error(f"Error clearing election results for {election_id}: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to clear election results"
-        )
-
-@app.post("/elections/{election_id}/reset")
-async def reset_election(election_id: str):
-    """Reset the election by clearing all related data (for testing purposes)"""
-    try:
-        # First, clear the tally from Redis
-        tally_key = f"{{tally}}.{election_id}"
-        result = r.delete(tally_key)
-        logger.warning(f"Reset election {election_id}: tally key deleted (result: {result})")
-        
-        # Also clear any other keys related to this election for completeness
-        election_pattern = f"{{election}}:{election_id}:*"
-        for key in r.scan_iter(election_pattern):
-            r.delete(key)
-            
-        # Log the reset for debugging
-        logger.warning(f"Election {election_id} has been completely reset (testing only)")
-        
-        # For vote tallies, ensure they are completely reset
-        finalized_votes_to_remove = []
-        for vote_id, vote in consensus.finalized_votes.items():
-            if vote.election_id == election_id:
-                finalized_votes_to_remove.append(vote_id)
-                
-        for vote_id in finalized_votes_to_remove:
-            del consensus.finalized_votes[vote_id]
-            
-        # Also clear voter history for this election
-        for voter_id in list(consensus.voter_history.keys()):
-            if election_id in consensus.voter_history[voter_id]:
-                del consensus.voter_history[voter_id][election_id]
-                
-        return {"status": "success", "message": f"Election {election_id} has been completely reset"}
-    except Exception as e:
-        logger.error(f"Error resetting election {election_id}: {e}", exc_info=True)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to reset election: {str(e)}"
         )
 
 # Vote validation function
