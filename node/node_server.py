@@ -4,24 +4,22 @@ import json
 import uuid
 import uvicorn
 import redis
-import hashlib
-from redis.cluster import RedisCluster, ClusterNode
 import asyncio
-from fastapi import FastAPI, WebSocket, HTTPException, Depends, BackgroundTasks, Request, Response, status
+from fastapi import FastAPI, WebSocket, HTTPException, Depends, BackgroundTasks, Request
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field, field_validator
-from typing import Dict, List, Optional, Set, Union, Any
+from pydantic import BaseModel
+from typing import Dict, List, Optional, Set
 from datetime import datetime
 
-# Import our custom logger and clock sync
+# Import our custom logger
 from logger_config import setup_logger
-from clock_sync import ClockSynchronizer
 
 # Node configuration from environment variables
 NODE_ID = os.environ.get("NODE_ID", "node1")
 NODE_ROLE = os.environ.get("NODE_ROLE", "follower")
-# Redis Cluster configuration
-REDIS_NODES = os.environ.get("REDIS_NODES", "localhost:7000,localhost:7001,localhost:7002")
+REDIS_HOST = os.environ.get("REDIS_HOST", "localhost")
+REDIS_PORT = int(os.environ.get("REDIS_PORT", 6379))
+NODE_COUNT = int(os.environ.get("NODE_COUNT", 3))
 LOG_DIR = os.environ.get("LOG_DIR", "../logs")
 
 # Set up loggers
@@ -42,26 +40,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Redis Cluster client
+# Redis client
 try:
-    # Parse Redis Cluster nodes from environment variable
-    startup_nodes = []
-    for node in REDIS_NODES.split(','):
-        host, port = node.split(':')
-        # Use ClusterNode objects instead of dictionaries
-        startup_nodes.append(ClusterNode(host=host, port=int(port)))
-    
-    # Connect to Redis Cluster
-    r = RedisCluster(startup_nodes=startup_nodes, decode_responses=True)
-    logger.info(f"Connected to Redis Cluster at {REDIS_NODES}")
+    r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, decode_responses=True)
+    logger.info(f"Connected to Redis at {REDIS_HOST}:{REDIS_PORT}")
 except Exception as e:
-    logger.critical(f"Failed to connect to Redis Cluster: {e}", exc_info=True)
+    logger.critical(f"Failed to connect to Redis: {e}", exc_info=True)
     raise
 
 # Import node communicator after Redis setup
 from node_communication import NodeCommunicator
 
-# Initialize communicator with Redis Cluster
+# Initialize communicator
 communicator = NodeCommunicator(r, NODE_ID)
 
 # Node state
@@ -73,45 +63,23 @@ class NodeState:
         self.connected_nodes = set()
         self.votes_processed = 0
         self.votes_pending = []
-        # Use ClockSynchronizer instead of direct system time
-        self.clock_sync = ClockSynchronizer(NODE_ID, self.is_leader)
+        self.system_time = time.time()
         self.is_healthy = True
         self.start_time = time.time()
         logger.info(f"Initialized node state: {self.node_id} as {'leader' if self.is_leader else 'follower'}")
         
 node_state = NodeState()
 
-# Enhanced vote data model with validation
+# Define vote data model
 class Vote(BaseModel):
     voter_id: str
     election_id: str
     candidate_id: str
-    timestamp: float = Field(default_factory=time.time)
-    signature: str = ""
-    
-    @field_validator('voter_id', 'election_id', 'candidate_id')
-    def check_not_empty(cls, v, info):
-        if not v or not v.strip():
-            raise ValueError(f"{info.field_name} cannot be empty")
-        return v
+    timestamp: float
+    signature: str
     
     def __str__(self):
         return f"Vote(voter_id={self.voter_id}, election_id={self.election_id}, candidate_id={self.candidate_id})"
-    
-    def compute_hash(self) -> str:
-        """Compute a hash of the vote data for verification purposes"""
-        content = f"{self.voter_id}:{self.election_id}:{self.candidate_id}:{self.timestamp}"
-        return hashlib.sha256(content.encode()).hexdigest()
-
-# Consensus state tracking
-class ConsensusState:
-    def __init__(self):
-        self.pending_votes: Dict[str, Vote] = {}  # vote_id -> Vote
-        self.vote_approvals: Dict[str, Set[str]] = {}  # vote_id -> {node_ids}
-        self.finalized_votes: Dict[str, Vote] = {}  # vote_id -> Vote
-        self.voter_history: Dict[str, Dict[str, str]] = {}  # voter_id -> {election_id -> vote_id}
-        
-consensus = ConsensusState()
 
 # Middleware for request logging
 @app.middleware("http")
@@ -139,23 +107,17 @@ async def log_requests(request: Request, call_next):
                        exc_info=True, extra={"request_id": request_id})
         raise
 
-# Health check endpoint - Updated to show Redis Cluster status
+# Health check endpoint
 @app.get("/health")
 async def health_check():
     api_logger.debug("Health check requested")
     
-    # Check Redis Cluster connection and status
+    # Check Redis connection
     try:
         redis_alive = r.ping()
-        # Get cluster info for health check
-        cluster_info = {
-            "cluster_size": len(r.cluster_nodes()),
-            "cluster_state": r.cluster_info().get("cluster_state", "unknown")
-        }
     except Exception as e:
-        api_logger.error(f"Redis Cluster health check failed: {e}")
+        api_logger.error(f"Redis health check failed: {e}")
         redis_alive = False
-        cluster_info = {"error": str(e)}
     
     # Prepare response
     health_data = {
@@ -164,10 +126,9 @@ async def health_check():
         "role": "leader" if node_state.is_leader else "follower",
         "connected_nodes": list(node_state.connected_nodes),
         "votes_processed": node_state.votes_processed,
-        "system_time": node_state.clock_sync.get_adjusted_time(),  # Use adjusted time
-        "clock_sync": node_state.clock_sync.get_sync_stats(),      # Add sync stats
+        "system_time": node_state.system_time,
         "uptime": time.time() - node_state.start_time,
-        "redis_cluster": cluster_info
+        "redis_connection": "ok" if redis_alive else "failed"
     }
     
     api_logger.info(f"Health check response: {health_data['status']}")
@@ -176,410 +137,23 @@ async def health_check():
         return health_data, 503  # Service Unavailable
     return health_data
 
-# Vote API endpoints
-@app.post("/votes", status_code=status.HTTP_202_ACCEPTED)
-async def submit_vote(vote: Vote, background_tasks: BackgroundTasks):
-    """Submit a vote for processing"""
-    api_logger.info(f"Received vote from voter {vote.voter_id} for election {vote.election_id}")
-    
-    # Generate a unique ID for this vote
-    vote_id = f"{vote.election_id}:{vote.voter_id}:{uuid.uuid4()}"
-    
-    # Validate the vote (basic checks)
-    validation_result = await validate_vote(vote)
-    if not validation_result["valid"]:
-        api_logger.warning(f"Vote validation failed: {validation_result['reason']}")
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=validation_result["reason"]
-        )
-    
-    # Check for duplicate votes
-    if vote.voter_id in consensus.voter_history and vote.election_id in consensus.voter_history[vote.voter_id]:
-        api_logger.warning(f"Duplicate vote detected from {vote.voter_id} for election {vote.election_id}")
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Voter has already cast a vote in this election"
-        )
-    
-    # Store vote in pending votes
-    consensus.pending_votes[vote_id] = vote
-    
-    # Initialize approvals with this node
-    consensus.vote_approvals[vote_id] = {NODE_ID}
-    
-    # Start consensus process in background
-    background_tasks.add_task(start_consensus_process, vote_id, vote)
-    
-    return {"status": "accepted", "vote_id": vote_id}
-
-@app.get("/votes/{vote_id}")
-async def get_vote_status(vote_id: str):
-    """Get the status of a specific vote"""
-    # Check if vote is finalized
-    if vote_id in consensus.finalized_votes:
-        return {
-            "status": "finalized",
-            "vote": consensus.finalized_votes[vote_id]
-        }
-    
-    # Check if vote is pending
-    if vote_id in consensus.pending_votes:
-        node_count = len(node_state.connected_nodes) + 1  # +1 for this node
-        approval_count = len(consensus.vote_approvals.get(vote_id, set()))
-        
-        return {
-            "status": "pending",
-            "approvals": approval_count,
-            "total_nodes": node_count,
-            "approval_percentage": int(100 * approval_count / max(1, node_count))
-        }
-    
-    # Vote not found
-    raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND,
-        detail="Vote not found"
-    )
-
-@app.get("/elections/{election_id}/results")
-async def get_election_results(election_id: str):
-    """Get the current results for an election"""
-    try:
-        # Fetch tallies from Redis
-        tally_key = f"{{tally}}.{election_id}"
-        results = r.hgetall(tally_key)
-        
-        # Convert results to integers
-        results = {candidate: int(votes) for candidate, votes in results.items()}
-        total_votes = sum(results.values())
-        
-        return {
-            "election_id": election_id,
-            "total_votes": total_votes,
-            "results": results
-        }
-    except Exception as e:
-        logger.error(f"Error fetching election results for {election_id}: {e}", exc_info=True)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to fetch election results"
-        )
-
-# Add endpoint to clear election results (for testing purposes)
-@app.delete("/elections/{election_id}/clear")
-async def clear_election_results(election_id: str):
-    """Clear the results for a specific election (for testing purposes only)"""
-    try:
-        # Delete the tally from Redis
-        tally_key = f"{{tally}}.{election_id}"
-        if r.delete(tally_key):
-            logger.warning(f"Cleared election results for {election_id} (testing only)")
-            return {"status": "success", "message": f"Results for election {election_id} have been cleared"}
-        else:
-            logger.warning(f"Tally key {tally_key} does not exist or could not be cleared")
-            return {"status": "warning", "message": f"Tally key {tally_key} does not exist or could not be cleared"}
-    except Exception as e:
-        logger.error(f"Error clearing election results for {election_id}: {e}", exc_info=True)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to clear election results"
-        )
-
-@app.post("/elections/{election_id}/reset")
-async def reset_election(election_id: str):
-    """Reset the election by clearing all related data (for testing purposes)"""
-    try:
-        # First, clear the tally from Redis
-        tally_key = f"{{tally}}.{election_id}"
-        result = r.delete(tally_key)
-        logger.warning(f"Reset election {election_id}: tally key deleted (result: {result})")
-        
-        # Also clear any other keys related to this election for completeness
-        election_pattern = f"{{election}}:{election_id}:*"
-        for key in r.scan_iter(election_pattern):
-            r.delete(key)
-            
-        # Log the reset for debugging
-        logger.warning(f"Election {election_id} has been completely reset (testing only)")
-        
-        # For vote tallies, ensure they are completely reset
-        finalized_votes_to_remove = []
-        for vote_id, vote in consensus.finalized_votes.items():
-            if vote.election_id == election_id:
-                finalized_votes_to_remove.append(vote_id)
-                
-        for vote_id in finalized_votes_to_remove:
-            del consensus.finalized_votes[vote_id]
-            
-        # Also clear voter history for this election
-        for voter_id in list(consensus.voter_history.keys()):
-            if election_id in consensus.voter_history[voter_id]:
-                del consensus.voter_history[voter_id][election_id]
-                
-        return {"status": "success", "message": f"Election {election_id} has been completely reset"}
-    except Exception as e:
-        logger.error(f"Error resetting election {election_id}: {e}", exc_info=True)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to reset election: {str(e)}"
-        )
-
-# Vote validation function
-async def validate_vote(vote: Vote) -> Dict[str, Any]:
-    """Validate a vote for basic issues"""
-    # Here we'd normally verify the digital signature, but simplified for now
-    
-    # Check for missing fields
-    if not vote.voter_id or not vote.election_id or not vote.candidate_id:
-        return {"valid": False, "reason": "Missing required fields"}
-    
-    # Use improved timestamp validation with drift correction
-    if not node_state.clock_sync.validate_timestamp(vote.timestamp):
-        return {"valid": False, "reason": "Vote timestamp is invalid relative to system time"}
-    
-    # Here you would add more validation like checking voter eligibility,
-    # whether the election is active, etc. - this would involve database lookups
-    
-    return {"valid": True}
-
-# Consensus process
-async def start_consensus_process(vote_id: str, vote: Vote):
-    """Start the consensus process for a vote"""
-    logger.info(f"Starting consensus process for vote {vote_id}")
-    
-    # If we're the leader, broadcast the vote proposal to followers
-    if node_state.is_leader:
-        await broadcast_vote_proposal(vote_id, vote)
-    else:
-        # If we're not the leader, forward the vote to the leader
-        # Find the leader node
-        leader_node = None
-        for node_key in r.scan_iter("{nodes}.*"):
-            node_data = r.hgetall(node_key)
-            if node_data.get("role") == "leader" and node_data.get("status") == "active":
-                leader_node = node_data.get("node_id")
-                break
-        
-        if leader_node:
-            logger.info(f"Forwarding vote {vote_id} to leader node {leader_node}")
-            communicator.send_message("vote_proposal", "vote_forward", {
-                "vote_id": vote_id,
-                "vote": vote.dict()
-            })
-        else:
-            logger.warning("No active leader found for vote forwarding")
-    
-    # Check consensus achievement periodically
-    await check_consensus(vote_id)
-
-async def broadcast_vote_proposal(vote_id: str, vote: Vote):
-    """Broadcast a vote proposal to all nodes for approval"""
-    logger.info(f"Broadcasting vote proposal {vote_id} to all nodes")
-    
-    communicator.send_message("vote_proposal", "vote_propose", {
-        "vote_id": vote_id,
-        "vote": vote.dict()
-    })
-
-async def check_consensus(vote_id: str):
-    """Check if consensus has been achieved for a vote"""
-    # Wait a bit to allow for votes to be received
-    await asyncio.sleep(2)
-    
-    # If vote isn't in pending votes anymore, it's already been finalized or rejected
-    if vote_id not in consensus.pending_votes:
-        logger.debug(f"Vote {vote_id} is no longer pending")
-        return
-    
-    # Get total node count (including this node)
-    node_count = len(node_state.connected_nodes) + 1
-    
-    # Get approval count
-    approvals = consensus.vote_approvals.get(vote_id, set())
-    approval_count = len(approvals)
-    
-    # Check if we've reached a majority
-    if approval_count > node_count / 2:
-        logger.info(f"Consensus achieved for vote {vote_id} with {approval_count}/{node_count} approvals")
-        await finalize_vote(vote_id)
-    else:
-        logger.debug(f"Consensus not yet achieved for vote {vote_id}: {approval_count}/{node_count} approvals")
-        
-        # Retry after a delay if we haven't reached consensus
-        if vote_id in consensus.pending_votes:
-            await asyncio.sleep(3)
-            await check_consensus(vote_id)
-
-# Update vote finalization to include tallying logic
-async def finalize_vote(vote_id: str):
-    """Finalize a vote once consensus is achieved"""
-    if vote_id not in consensus.pending_votes:
-        return
-        
-    vote = consensus.pending_votes[vote_id]
-    
-    # Move vote from pending to finalized
-    consensus.finalized_votes[vote_id] = vote
-    del consensus.pending_votes[vote_id]
-    
-    # Record voter history to prevent duplicate votes
-    if vote.voter_id not in consensus.voter_history:
-        consensus.voter_history[vote.voter_id] = {}
-    consensus.voter_history[vote.voter_id][vote.election_id] = vote_id
-    
-    # Update vote count
-    node_state.votes_processed += 1
-    
-    # Update vote tally in Redis
-    tally_key = f"{{tally}}.{vote.election_id}"
-    r.hincrby(tally_key, vote.candidate_id, 1)
-    logger.info(f"Vote {vote_id} finalized and recorded. Updated tally for candidate {vote.candidate_id} in election {vote.election_id}.")
-    
-    # If we're the leader, broadcast the finalization to all nodes
-    if node_state.is_leader:
-        communicator.send_message("vote_finalization", "vote_finalized", {
-            "vote_id": vote_id,
-            "vote": vote.dict()
-        })
-
-# Enhanced message handlers
+# Message handlers
 def handle_vote_proposal(message):
     """Handle a vote proposal from another node"""
-    data = message.get("data", {})
-    sender = message.get("sender", "unknown")
-    
-    # Extract vote data
-    vote_id = data.get("vote_id")
-    vote_data = data.get("vote")
-    
-    if not vote_id or not vote_data:
-        logger.warning(f"Received invalid vote proposal from {sender}: missing vote_id or vote data")
-        return
-    
-    logger.info(f"Received vote proposal {vote_id} from {sender}")
-    
-    # Convert to Vote object
-    try:
-        vote = Vote(**vote_data)
-        
-        # Add to pending votes if not already there
-        if vote_id not in consensus.pending_votes:
-            consensus.pending_votes[vote_id] = vote
-        
-        # Initialize approvals if needed
-        if vote_id not in consensus.vote_approvals:
-            consensus.vote_approvals[vote_id] = set()
-        
-        # Record our approval
-        consensus.vote_approvals[vote_id].add(NODE_ID)
-        
-        # Record sender's approval
-        consensus.vote_approvals[vote_id].add(sender)
-        
-        # Respond with acknowledgment
-        communicator.send_message("vote_response", "vote_acknowledge", {
-            "vote_id": vote_id,
-            "status": "approved"
-        })
-        
-        # If we're the leader, check for consensus
-        if node_state.is_leader:
-            asyncio.create_task(check_consensus(vote_id))
-            
-    except Exception as e:
-        logger.error(f"Error processing vote proposal {vote_id} from {sender}: {e}", exc_info=True)
+    logger.info(f"Received vote proposal from {message['sender']}")
+    # We'll implement this fully in the consensus protocol phase
 
-def handle_vote_acknowledgment(message):
-    """Handle a vote acknowledgment from another node"""
-    data = message.get("data", {})
-    sender = message.get("sender", "unknown")
-    
-    # Extract vote info
-    vote_id = data.get("vote_id")
-    status = data.get("status")
-    
-    if not vote_id:
-        logger.warning(f"Received invalid vote acknowledgment from {sender}: missing vote_id")
-        return
-    
-    if status == "approved":
-        logger.info(f"Received approval for vote {vote_id} from {sender}")
-        
-        # Record approval
-        if vote_id not in consensus.vote_approvals:
-            consensus.vote_approvals[vote_id] = set()
-        
-        consensus.vote_approvals[vote_id].add(sender)
-        
-        # If we're the leader, check for consensus
-        if node_state.is_leader:
-            asyncio.create_task(check_consensus(vote_id))
-    else:
-        logger.warning(f"Received rejection for vote {vote_id} from {sender}")
-
-def handle_vote_finalization(message):
-    """Handle a vote finalization from the leader"""
-    data = message.get("data", {})
-    sender = message.get("sender", "unknown")
-    
-    # Extract vote info
-    vote_id = data.get("vote_id")
-    vote_data = data.get("vote")
-    
-    if not vote_id or not vote_data:
-        logger.warning(f"Received invalid vote finalization from {sender}: missing vote_id or vote data")
-        return
-    
-    logger.info(f"Received vote finalization for {vote_id} from {sender}")
-    
-    try:
-        vote = Vote(**vote_data)
-        
-        # Record in finalized votes
-        consensus.finalized_votes[vote_id] = vote
-        
-        # Remove from pending if present
-        if vote_id in consensus.pending_votes:
-            del consensus.pending_votes[vote_id]
-        
-        # Record voter history
-        if vote.voter_id not in consensus.voter_history:
-            consensus.voter_history[vote.voter_id] = {}
-            
-        consensus.voter_history[vote.voter_id][vote.election_id] = vote_id
-        
-        # Update vote count
-        node_state.votes_processed += 1
-        
-        logger.info(f"Vote {vote_id} finalized based on leader decision")
-        
-    except Exception as e:
-        logger.error(f"Error processing vote finalization {vote_id} from {sender}: {e}")
-
-# Update time sync handler to use clock synchronizer
 def handle_time_sync(message):
-    """Handle time synchronization messages from the leader"""
-    data = message.get("data", {})
-    sender = message.get("sender", "unknown")
-    
-    if not node_state.is_leader:
-        # Only followers should process time sync
-        system_time = data.get("system_time")
-        if system_time:
-            # Update time using clock synchronizer instead of direct assignment
-            node_state.clock_sync.update_offset(float(system_time))
-            logger.debug(f"Synchronized time with leader: {system_time}")
+    """Handle a time synchronization message"""
+    if not node_state.is_leader:  # Only followers sync time
+        new_time = message["data"]["system_time"]
+        node_state.system_time = new_time
+        logger.debug(f"Synchronized time to {new_time}")
 
 def handle_leader_election(message):
-    """Handle leader election messages"""
-    # This will be implemented more fully in the leader election phase
-    data = message.get("data", {})
-    sender = message.get("sender", "unknown")
-    
-    logger.info(f"Received leader election message from {sender}")
-    # Basic acknowledgment for now
-    if "candidate" in data:
-        logger.info(f"Node {data['candidate']} is proposing itself as leader")
+    """Handle a leader election message"""
+    logger.info(f"Leader election message from {message['sender']}: {message['data']}")
+    # We'll implement this fully in the consensus protocol phase
 
 # Node discovery and registration
 @app.on_event("startup")
@@ -587,8 +161,7 @@ async def startup_event():
     logger.info(f"🚀 Node {NODE_ID} starting up with role: {NODE_ROLE}")
     
     try:
-        # Register in Redis Cluster - using hash slot aware key generation
-        node_key = f"{{nodes}}.{NODE_ID}"  # Using {} to ensure keys with the same prefix are in the same slot
+        # Register in Redis
         node_info = {
             "node_id": NODE_ID,
             "role": NODE_ROLE,
@@ -596,14 +169,12 @@ async def startup_event():
             "status": "active",
             "host": os.environ.get("HOSTNAME", "unknown")
         }
-        r.hset(node_key, mapping=node_info)
-        logger.info(f"Registered node in Redis Cluster: {node_info}")
+        r.hset(f"nodes:{NODE_ID}", mapping=node_info)
+        logger.info(f"Registered node in Redis: {node_info}")
         
         # Initialize communicator
         communicator.initialize()
         communicator.register_handler("vote_proposal", handle_vote_proposal)
-        communicator.register_handler("vote_response", handle_vote_acknowledgment)
-        communicator.register_handler("vote_finalization", handle_vote_finalization)
         communicator.register_handler("time_sync", handle_time_sync)
         communicator.register_handler("leader_election", handle_leader_election)
         
@@ -611,7 +182,6 @@ async def startup_event():
         asyncio.create_task(heartbeat_task())
         asyncio.create_task(check_nodes_task())
         asyncio.create_task(communicator.listen_for_messages())
-        asyncio.create_task(clock_drift_correction_task())  # Add this new task
         logger.info("Started background monitoring tasks")
         
         # If leader, start leader-specific tasks
@@ -628,10 +198,9 @@ async def startup_event():
 async def shutdown_event():
     logger.info(f"Node {NODE_ID} shutting down")
     try:
-        # Notify other nodes about shutdown - using hash slot aware key
-        node_key = f"{{nodes}}.{NODE_ID}"
-        r.hset(node_key, "status", "shutdown")
-        r.expire(node_key, 5)  # Short expiry
+        # Notify other nodes about shutdown
+        r.hset(f"nodes:{NODE_ID}", "status", "shutdown")
+        r.expire(f"nodes:{NODE_ID}", 5)  # Short expiry
         
         # Additional cleanup if needed
         
@@ -646,12 +215,11 @@ async def heartbeat_task():
     
     while True:
         try:
-            # Update heartbeat - using hash slot aware key
+            # Update heartbeat
             current_time = time.time()
-            node_key = f"{{nodes}}.{NODE_ID}"
-            r.hset(node_key, "last_heartbeat", current_time)
-            r.hset(node_key, "status", "active")
-            r.expire(node_key, 10)  # TTL of 10 seconds
+            r.hset(f"nodes:{NODE_ID}", "last_heartbeat", current_time)
+            r.hset(f"nodes:{NODE_ID}", "status", "active")
+            r.expire(f"nodes:{NODE_ID}", 10)  # TTL of 10 seconds
             
             # Reset failure counter after successful heartbeat
             if failures > 0:
@@ -680,11 +248,11 @@ async def check_nodes_task():
             active_nodes = set()
             node_count = 0
             
-            # Scan for all registered nodes - using hash slot aware pattern
-            for key in r.scan_iter("{nodes}.*"):
+            # Scan for all registered nodes
+            for key in r.scan_iter("nodes:*"):
                 node_count += 1
                 node_data = r.hgetall(key)
-                node_id = key.split(".", 1)[1]  # Extract node_id from key format {nodes}.node1
+                node_id = key.split(":", 1)[1]
                 
                 # Skip if it's our own node
                 if node_id == NODE_ID:
@@ -724,15 +292,11 @@ async def leader_time_sync_task():
         if node_state.is_leader:
             try:
                 current_time = time.time()
-                r.set("{system}.time", current_time)
-                
-                # Include additional timing info for better drift calculation
+                r.set("system:time", current_time)
                 r.publish("time_sync", json.dumps({
                     "sender": NODE_ID,
                     "system_time": current_time,
-                    "timestamp": current_time,
-                    "sequence": int(time.time()),  # Add sequence for ordering
-                    "precision": "high"            # Indicate high precision time
+                    "timestamp": current_time
                 }))
                 
                 consensus_logger.debug(f"Leader broadcast system time: {datetime.fromtimestamp(current_time).isoformat()}")
@@ -741,30 +305,11 @@ async def leader_time_sync_task():
                 consensus_logger.error(f"Error in leader time sync task: {e}", exc_info=True)
                 await asyncio.sleep(5)
         else:
+            # If no longer the leader, exit this task
             consensus_logger.info("Node is no longer the leader, stopping time sync task")
             break
-
-# Add clock drift correction task
-async def clock_drift_correction_task():
-    """Periodically apply clock drift correction for follower nodes"""
-    logger.info("Starting clock drift correction task")
-    
-    while True:
-        try:
-            if not node_state.is_leader:
-                # Apply drift correction if we're a follower
-                node_state.clock_sync.apply_drift_correction()
-            
-            # Run this periodically (less frequently than time sync)
-            await asyncio.sleep(30)
-        except Exception as e:
-            logger.error(f"Error in clock drift correction task: {e}", exc_info=True)
-            await asyncio.sleep(10)
 
 # Start server if running as main
 if __name__ == "__main__":
     logger.info(f"Starting node server {NODE_ID} on port 5000")
-    # Note: If running from command line directly with uvicorn, you can use the -d flag 
-    # to run as daemon (background process): uvicorn node_server:app --host 0.0.0.0 --port 5000 -d
-    # But this doesn't apply when running programmatically like below
     uvicorn.run("node_server:app", host="0.0.0.0", port=5000, log_level="info")
