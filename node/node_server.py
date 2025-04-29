@@ -244,85 +244,24 @@ async def get_vote_status(vote_id: str):
 @app.get("/elections/{election_id}/results")
 async def get_election_results(election_id: str):
     """Get the current results for an election"""
-    try:
-        # Fetch tallies from Redis
-        tally_key = f"{{tally}}.{election_id}"
-        results = r.hgetall(tally_key)
-        
-        # Convert results to integers
-        results = {candidate: int(votes) for candidate, votes in results.items()}
-        total_votes = sum(results.values())
-        
-        return {
-            "election_id": election_id,
-            "total_votes": total_votes,
-            "results": results
-        }
-    except Exception as e:
-        logger.error(f"Error fetching election results for {election_id}: {e}", exc_info=True)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to fetch election results"
-        )
-
-# Add endpoint to clear election results (for testing purposes)
-@app.delete("/elections/{election_id}/clear")
-async def clear_election_results(election_id: str):
-    """Clear the results for a specific election (for testing purposes only)"""
-    try:
-        # Delete the tally from Redis
-        tally_key = f"{{tally}}.{election_id}"
-        if r.delete(tally_key):
-            logger.warning(f"Cleared election results for {election_id} (testing only)")
-            return {"status": "success", "message": f"Results for election {election_id} have been cleared"}
-        else:
-            logger.warning(f"Tally key {tally_key} does not exist or could not be cleared")
-            return {"status": "warning", "message": f"Tally key {tally_key} does not exist or could not be cleared"}
-    except Exception as e:
-        logger.error(f"Error clearing election results for {election_id}: {e}", exc_info=True)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to clear election results"
-        )
-
-@app.post("/elections/{election_id}/reset")
-async def reset_election(election_id: str):
-    """Reset the election by clearing all related data (for testing purposes)"""
-    try:
-        # First, clear the tally from Redis
-        tally_key = f"{{tally}}.{election_id}"
-        result = r.delete(tally_key)
-        logger.warning(f"Reset election {election_id}: tally key deleted (result: {result})")
-        
-        # Also clear any other keys related to this election for completeness
-        election_pattern = f"{{election}}:{election_id}:*"
-        for key in r.scan_iter(election_pattern):
-            r.delete(key)
-            
-        # Log the reset for debugging
-        logger.warning(f"Election {election_id} has been completely reset (testing only)")
-        
-        # For vote tallies, ensure they are completely reset
-        finalized_votes_to_remove = []
-        for vote_id, vote in consensus.finalized_votes.items():
-            if vote.election_id == election_id:
-                finalized_votes_to_remove.append(vote_id)
-                
-        for vote_id in finalized_votes_to_remove:
-            del consensus.finalized_votes[vote_id]
-            
-        # Also clear voter history for this election
-        for voter_id in list(consensus.voter_history.keys()):
-            if election_id in consensus.voter_history[voter_id]:
-                del consensus.voter_history[voter_id][election_id]
-                
-        return {"status": "success", "message": f"Election {election_id} has been completely reset"}
-    except Exception as e:
-        logger.error(f"Error resetting election {election_id}: {e}", exc_info=True)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to reset election: {str(e)}"
-        )
+    # Filter finalized votes for this election
+    election_votes = [vote for vote in consensus.finalized_votes.values() 
+                      if vote.election_id == election_id]
+    
+    if not election_votes:
+        return {"election_id": election_id, "total_votes": 0, "results": {}}
+    
+    # Count votes per candidate
+    results = {}
+    for vote in election_votes:
+        candidate_id = vote.candidate_id
+        results[candidate_id] = results.get(candidate_id, 0) + 1
+    
+    return {
+        "election_id": election_id,
+        "total_votes": len(election_votes),
+        "results": results
+    }
 
 # Vote validation function
 async def validate_vote(vote: Vote) -> Dict[str, Any]:
@@ -410,7 +349,6 @@ async def check_consensus(vote_id: str):
             await asyncio.sleep(3)
             await check_consensus(vote_id)
 
-# Update vote finalization to include tallying logic
 async def finalize_vote(vote_id: str):
     """Finalize a vote once consensus is achieved"""
     if vote_id not in consensus.pending_votes:
@@ -430,10 +368,7 @@ async def finalize_vote(vote_id: str):
     # Update vote count
     node_state.votes_processed += 1
     
-    # Update vote tally in Redis
-    tally_key = f"{{tally}}.{vote.election_id}"
-    r.hincrby(tally_key, vote.candidate_id, 1)
-    logger.info(f"Vote {vote_id} finalized and recorded. Updated tally for candidate {vote.candidate_id} in election {vote.election_id}.")
+    logger.info(f"Vote {vote_id} finalized and recorded")
     
     # If we're the leader, broadcast the finalization to all nodes
     if node_state.is_leader:
