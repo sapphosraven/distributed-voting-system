@@ -130,6 +130,25 @@ def check_election_results(node_port, election_id):
     except Exception as e:
         return {"success": False, "reason": str(e)}
 
+def reset_election(election_id, responsive_nodes):
+    """Reset election data by clearing tally via API on one node."""
+    print_step(f"Resetting election data for {election_id}")
+    
+    for port in responsive_nodes:
+        try:
+            url = f"http://{DEFAULT_HOST}:{port}/elections/{election_id}/reset"
+            resp = requests.post(url, timeout=3)
+            if resp.status_code == 200:
+                print_success(f"Reset election on node {port}")
+                return True
+            else:
+                print_warning(f"Reset failed on node {port}: {resp.status_code}")
+        except Exception as e:
+            logger.error(f"Error calling reset on node {port}: {e}")
+    
+    print_failure("Election reset failed on all nodes")
+    return False
+
 def run_system_test(num_votes=DEFAULT_NUM_VOTES):
     """Run a comprehensive test of the voting system"""
     test_start_time = time.time()
@@ -168,6 +187,9 @@ def run_system_test(num_votes=DEFAULT_NUM_VOTES):
         return False
     
     print_success(f"Found {len(healthy_nodes)} healthy node(s)")
+    
+    # Reset election before submitting votes
+    reset_election(DEFAULT_ELECTION_ID, healthy_nodes)
     
     # Step 2: Submit test votes
     print_step(f"Submitting {num_votes} Test Votes")

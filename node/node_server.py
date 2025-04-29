@@ -309,6 +309,39 @@ async def leader_time_sync_task():
             consensus_logger.info("Node is no longer the leader, stopping time sync task")
             break
 
+@app.post("/elections/{election_id}/reset")
+async def reset_election(election_id: str):
+    """Reset the election by clearing tally in Redis and local consensus state."""
+    try:
+        # Cluster key uses hash tag {tally} to ensure single slot
+        tally_key = f"{{tally}}.{election_id}"
+        deleted = r.delete(tally_key)
+        logger.warning(f"Deleted tally key {tally_key} (result: {deleted})")
+        
+        # Clear in‑memory consensus state for this election
+        consensus.finalized_votes = {
+            vid: v for vid, v in consensus.finalized_votes.items()
+            if v.election_id != election_id
+        }
+        for hist in consensus.voter_history.values():
+            hist.pop(election_id, None)
+        consensus.pending_votes = {
+            vid: v for vid, v in consensus.pending_votes.items()
+            if v.election_id != election_id
+        }
+        consensus.vote_approvals = {
+            vid: appr for vid, appr in consensus.vote_approvals.items()
+            if not vid.startswith(f"{election_id}:")
+        }
+        
+        return {"status": "success", "deleted": bool(deleted)}
+    except Exception as e:
+        logger.error(f"Error resetting election {election_id}: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to reset election"
+        )
+
 # Start server if running as main
 if __name__ == "__main__":
     logger.info(f"Starting node server {NODE_ID} on port 5000")
