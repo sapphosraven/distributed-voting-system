@@ -265,6 +265,24 @@ async def get_election_results(election_id: str):
             detail="Failed to fetch election results"
         )
 
+# Add endpoint to clear election results (for testing purposes)
+@app.delete("/elections/{election_id}/clear")
+async def clear_election_results(election_id: str):
+    """Clear the results for a specific election (for testing purposes only)"""
+    try:
+        # Delete the tally from Redis
+        tally_key = f"{{tally}}.{election_id}"
+        r.delete(tally_key)
+        logger.warning(f"Cleared election results for {election_id} (testing only)")
+        
+        return {"status": "success", "message": f"Results for election {election_id} have been cleared"}
+    except Exception as e:
+        logger.error(f"Error clearing election results for {election_id}: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to clear election results"
+        )
+
 # Vote validation function
 async def validate_vote(vote: Vote) -> Dict[str, Any]:
     """Validate a vote for basic issues"""

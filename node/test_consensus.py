@@ -82,7 +82,80 @@ def check_election_results(node_port, election_id):
         logger.error(f"Error checking election results: {e}")
         return None
 
-def run_test(num_votes=DEFAULT_NUM_VOTES, election_id=DEFAULT_ELECTION_ID):
+def wait_for_finalization(vote_ids, responsive_nodes, retries=5, delay=5):
+    """Wait for all votes to be finalized"""
+    logger.info("Waiting for all votes to be finalized...")
+    finalized_votes = set()
+    
+    for attempt in range(retries):
+        for vote_id in vote_ids:
+            if vote_id in finalized_votes:
+                continue
+            
+            port = random.choice(responsive_nodes)
+            status = check_vote_status(port, vote_id)
+            
+            if status and status.get("status") == "finalized":
+                finalized_votes.add(vote_id)
+        
+        if len(finalized_votes) == len(vote_ids):
+            logger.info("All votes have been finalized.")
+            return True
+        
+        logger.info(f"Finalization progress: {len(finalized_votes)}/{len(vote_ids)} votes finalized. Retrying in {delay}s...")
+        time.sleep(delay)
+    
+    logger.warning(f"Finalization incomplete after {retries} retries: {len(finalized_votes)}/{len(vote_ids)} votes finalized.")
+    return False
+
+def verify_tally(vote_data, election_id, responsive_nodes):
+    """Verify that the election results match the submitted votes"""
+    logger.info("Verifying vote tally...")
+    port = random.choice(responsive_nodes)
+    results = check_election_results(port, election_id)
+    
+    if not results:
+        logger.error("Failed to fetch election results for verification.")
+        return False
+    
+    # Count submitted votes per candidate
+    submitted_tally = {}
+    for vote_id, candidate_id in vote_data.items():
+        submitted_tally[candidate_id] = submitted_tally.get(candidate_id, 0) + 1
+    
+    # Compare with results
+    total_expected = sum(submitted_tally.values())
+    total_actual = results.get("total_votes", 0)
+    
+    if total_expected != total_actual:
+        logger.error(f"Vote count mismatch: expected {total_expected}, got {total_actual}")
+        return False
+    
+    for candidate, count in submitted_tally.items():
+        if results["results"].get(candidate, 0) != count:
+            logger.error(f"Tally mismatch for {candidate}: expected {count}, got {results['results'].get(candidate, 0)}")
+            return False
+    
+    logger.info("Vote tally verification successful.")
+    return True
+
+def clear_election_results(node_port, election_id):
+    """Clear the results for a specific election (for testing purposes)"""
+    try:
+        url = f"http://{DEFAULT_HOST}:{node_port}/elections/{election_id}/clear"
+        response = requests.delete(url)
+        
+        if response.status_code == 200:
+            logger.info(f"Successfully cleared results for election {election_id}")
+            return True
+        else:
+            logger.error(f"Failed to clear election results: {response.status_code} - {response.text}")
+            return False
+    except Exception as e:
+        logger.error(f"Error clearing election results: {e}")
+        return False
+
+def run_test(num_votes=DEFAULT_NUM_VOTES, election_id=DEFAULT_ELECTION_ID, clear_results=True):
     """Run a test of the voting system"""
     logger.info(f"Starting consensus test with {num_votes} votes")
     
@@ -103,8 +176,17 @@ def run_test(num_votes=DEFAULT_NUM_VOTES, election_id=DEFAULT_ELECTION_ID):
     
     logger.info(f"Found {len(responsive_nodes)} responsive nodes: {responsive_nodes}")
     
+    # Clear previous election results if requested
+    if clear_results:
+        logger.info(f"Clearing previous results for election {election_id}")
+        port = random.choice(responsive_nodes)
+        if not clear_election_results(port, election_id):
+            logger.warning(f"Could not clear previous election results. Counts may be inaccurate.")
+    
     # Submit votes
     vote_ids = []
+    vote_data = {}  # Store the vote data for verification
+    
     for i in range(num_votes):
         voter_id = f"voter-{uuid.uuid4()}"
         candidate_id = random.choice(DEFAULT_CANDIDATES)
@@ -113,44 +195,37 @@ def run_test(num_votes=DEFAULT_NUM_VOTES, election_id=DEFAULT_ELECTION_ID):
         vote_id = submit_vote(port, voter_id, election_id, candidate_id)
         if vote_id:
             vote_ids.append(vote_id)
+            vote_data[vote_id] = candidate_id  # Store the candidate for this vote
     
     logger.info(f"Submitted {len(vote_ids)} votes successfully")
     
     # Wait for consensus to be reached
-    logger.info("Waiting for consensus to be reached...")
-    time.sleep(5)
-    
-    # Check status of all votes
-    finalized_votes = 0
-    for vote_id in vote_ids:
-        port = random.choice(responsive_nodes)
-        status = check_vote_status(port, vote_id)
-        
-        if status and status.get("status") == "finalized":
-            finalized_votes += 1
-    
-    logger.info(f"{finalized_votes} out of {len(vote_ids)} votes have been finalized")
-    
-    # Check election results
-    port = random.choice(responsive_nodes)
-    results = check_election_results(port, election_id)
-    
-    if results:
-        logger.info(f"Test completed. Total votes counted: {results.get('total_votes', 0)}")
-        return True
-    else:
-        logger.error("Failed to retrieve election results")
+    if not wait_for_finalization(vote_ids, responsive_nodes):
+        logger.error("Not all votes were finalized. Test failed.")
         return False
+    
+    # Verify election results - update to use stored vote data
+    if not verify_tally(vote_data, election_id, responsive_nodes):
+        logger.error("Vote tally verification failed. Test failed.")
+        return False
+    
+    logger.info("Test completed successfully. All votes finalized and tally verified.")
+    return True
 
 if __name__ == "__main__":
     # Parse arguments
     num_votes = DEFAULT_NUM_VOTES
+    clear_results = True
+    
     if len(sys.argv) > 1:
         try:
             num_votes = int(sys.argv[1])
         except:
             pass
     
+    if len(sys.argv) > 2 and sys.argv[2].lower() == "false":
+        clear_results = False
+    
     # Run the test
-    success = run_test(num_votes)
+    success = run_test(num_votes, DEFAULT_ELECTION_ID, clear_results)
     sys.exit(0 if success else 1)
