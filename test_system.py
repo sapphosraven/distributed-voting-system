@@ -130,6 +130,219 @@ def check_election_results(node_port, election_id):
     except Exception as e:
         return {"success": False, "reason": str(e)}
 
+def check_clock_sync_status(responsive_nodes):
+    """Check if clock synchronization is working properly across nodes"""
+    print_step("Testing Clock Synchronization")
+    
+    try:
+        # Get time from all nodes
+        node_times = []
+        leader_time = None
+        
+        for port in responsive_nodes:
+            try:
+                health_url = f"http://{DEFAULT_HOST}:{port}/health"
+                response = requests.get(health_url, timeout=3)
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    system_time = data.get("system_time")
+                    role = data.get("role")
+                    sync_stats = data.get("clock_sync", {})
+                    
+                    if role == "leader":
+                        leader_time = system_time
+                        logger.info(f"Found leader node at port {port} with time {system_time}")
+                    
+                    node_times.append({
+                        "port": port,
+                        "role": role,
+                        "time": system_time,
+                        "offset": sync_stats.get("current_offset", 0),
+                        "drift_rate": sync_stats.get("drift_rate", 0)
+                    })
+            except Exception as e:
+                logger.error(f"Error checking node at port {port}: {e}")
+        
+        if not node_times:
+            print_failure("No responsive nodes for clock sync test")
+            return False
+        
+        # Calculate time differences
+        max_time_diff = 0
+        time_diff_table = []
+        
+        for node in node_times:
+            if leader_time and node["time"]:
+                diff = abs(node["time"] - leader_time)
+                max_time_diff = max(max_time_diff, diff)
+                
+                status = f"{SUCCESS}SYNCED{RESET}" if diff < 1.0 else f"{FAILURE}DRIFT{RESET}"
+                time_diff_table.append([
+                    node["port"],
+                    node["role"],
+                    f"{node['time']:.3f}",
+                    f"{node['offset']:.6f}",
+                    f"{diff:.6f}",
+                    status
+                ])
+        
+        # Print results
+        print(tabulate.tabulate(
+            time_diff_table,
+            headers=["Port", "Role", "System Time", "Offset", "Diff from Leader", "Status"]
+        ))
+        
+        # Evaluate overall synchronization
+        if max_time_diff < 1.0:
+            print_success(f"Clock synchronization successful (max diff: {max_time_diff:.6f}s)")
+            return True
+        else:
+            print_warning(f"Clock synchronization needs improvement (max diff: {max_time_diff:.6f}s)")
+            return max_time_diff < 5.0  # Consider partially successful if within 5 seconds
+        
+    except Exception as e:
+        print_failure(f"Clock sync test failed: {e}")
+        logger.error(f"Error testing clock synchronization: {e}", exc_info=True)
+        return False
+
+# Add utility function to reset election (clear Redis tallies) before testing
+def reset_election(election_id, responsive_nodes):
+    """Reset election data by clearing tallies in Redis"""
+    print_step(f"Resetting election data for {election_id}")
+    
+    for port in responsive_nodes:
+        try:
+            url = f"http://localhost:{port}/elections/{election_id}/reset"
+            response = requests.post(url, timeout=3)
+            
+            if response.status_code == 200:
+                print_success(f"Successfully reset election data on node {port}")
+                return True
+                
+        except Exception as e:
+            logger.error(f"Error resetting election on node {port}: {e}")
+    
+    # If we reached here, we couldn't reset on any node
+    print_failure("Failed to reset election data. Results may be inaccurate.")
+    return False
+
+# Update vote submission and verification function
+def submit_test_votes(num_votes, responsive_nodes):
+    """Submit test votes to the system and verify they are processed"""
+    print_step(f"Submitting {num_votes} Test Votes")
+    
+    # Reset election before submitting votes
+    reset_election("election-2025", responsive_nodes)
+    
+    # Create a table for displaying vote submissions
+    vote_table = []
+    vote_ids = []
+    vote_data = {}  # Store vote data for verification
+    
+    # Submit the votes
+    for i in range(1, num_votes + 1):
+        node_port = random.choice(responsive_nodes)
+        voter_id = uuid.uuid4().hex[:8]
+        candidate_id = f"candidate-{random.randint(1, 3)}"
+        
+        try:
+            url = f"http://localhost:{node_port}/votes"
+            data = {
+                "voter_id": voter_id,
+                "election_id": "election-2025",
+                "candidate_id": candidate_id,
+                "timestamp": time.time(),
+                "signature": "test-signature"
+            }
+            
+            response = requests.post(url, json=data)
+            
+            if response.status_code == 202:  # Accepted
+                result = response.json()
+                vote_id = result.get("vote_id")
+                vote_ids.append(vote_id)
+                vote_data[vote_id] = candidate_id  # Store candidate for this vote
+                status = f"{SUCCESS}ACCEPTED{RESET}"
+            else:
+                vote_id = "Error"
+                status = f"{FAILURE}FAILED{RESET}"
+                
+            vote_table.append([i, node_port, voter_id[:8], candidate_id, status, vote_id[:8] if vote_id != "Error" else "Error"])
+            
+        except Exception as e:
+            logger.error(f"Error submitting vote: {e}")
+            vote_table.append([i, node_port, voter_id[:8], candidate_id, f"{FAILURE}ERROR{RESET}", str(e)[:20]])
+    
+    # Print the vote submission table
+    print(tabulate.tabulate(
+        vote_table,
+        headers=["#", "Node Port", "Voter ID", "Candidate", "Status", "Vote ID/Error"],
+        tablefmt="simple"
+    ))
+    
+    return vote_ids, vote_data
+
+# Update verify election results to correctly compare with submitted votes
+def verify_election_results(vote_data, responsive_nodes):
+    """Verify that the election results match the expected votes"""
+    print_step("Verifying Election Results")
+    
+    if not vote_data:
+        print_warning("No vote data available to verify results against.")
+        return False
+    
+    # Get election results from a random node
+    node_port = random.choice(responsive_nodes)
+    url = f"http://localhost:{node_port}/elections/election-2025/results"
+    
+    try:
+        response = requests.get(url)
+        if response.status_code != 200:
+            print_failure(f"Failed to get election results: {response.status_code} - {response.text}")
+            return False
+        
+        results = response.json()
+        
+        # Compute expected results from vote_data
+        expected_results = {}
+        for vote_id, candidate_id in vote_data.items():
+            if candidate_id not in expected_results:
+                expected_results[candidate_id] = 0
+            expected_results[candidate_id] += 1
+        
+        # Create a table for showing the results
+        results_table = []
+        for candidate, votes in results["results"].items():
+            percentage = votes / results["total_votes"] * 100 if results["total_votes"] > 0 else 0
+            results_table.append([candidate, votes, f"{percentage:.1f}%"])
+        
+        print(tabulate.tabulate(results_table, headers=["Candidate", "Votes", "Percentage"], tablefmt="simple"))
+        
+        # Verify that the totals match
+        expected_total = sum(expected_results.values())
+        actual_total = results["total_votes"]
+        
+        if expected_total != actual_total:
+            print_warning(f"Vote count mismatch: {actual_total} in results vs {expected_total} submitted")
+            return False
+        
+        # Verify each candidate's votes
+        for candidate, expected_count in expected_results.items():
+            actual_count = results["results"].get(candidate, 0)
+            if actual_count != expected_count:
+                print_warning(f"Tally mismatch for {candidate}: expected {expected_count}, got {actual_count}")
+                return False
+        
+        print_success("Election results verified successfully!")
+        return True
+        
+    except Exception as e:
+        print_failure(f"Error verifying election results: {e}")
+        logger.error(f"Error verifying election results: {e}", exc_info=True)
+        return False
+
+# Update run_system_test to use the new functions
 def run_system_test(num_votes=DEFAULT_NUM_VOTES):
     """Run a comprehensive test of the voting system"""
     test_start_time = time.time()
@@ -168,6 +381,12 @@ def run_system_test(num_votes=DEFAULT_NUM_VOTES):
         return False
     
     print_success(f"Found {len(healthy_nodes)} healthy node(s)")
+    
+    # Add clock sync test after finding responsive nodes
+    if healthy_nodes:
+        clock_sync_result = check_clock_sync_status(healthy_nodes)
+        if not clock_sync_result:
+            print_warning("Clock synchronization test did not pass, but continuing with other tests")
     
     # Step 2: Submit test votes
     print_step(f"Submitting {num_votes} Test Votes")
