@@ -18,6 +18,7 @@ class ClockSynchronizer:
         self.sync_history = []  # Keep track of recent sync events for drift detection
         self.max_history_size = 10
         self.drift_threshold = 0.5  # Seconds
+        self.dynamic_threshold_enabled = True  # Enable dynamic adjustment of drift threshold
         logger.info(f"Clock synchronizer initialized for node {node_id} as {'leader' if is_leader else 'follower'}")
     
     def get_adjusted_time(self) -> float:
@@ -62,6 +63,10 @@ class ClockSynchronizer:
         if abs(drift) > self.drift_threshold:
             logger.warning(f"Significant clock drift detected: {drift:.6f} seconds")
         
+        # Dynamically adjust drift threshold if enabled
+        if self.dynamic_threshold_enabled:
+            self.adjust_drift_threshold()
+        
         logger.info(f"Updated time offset to {self.offset:.6f} seconds")
         return self.offset
     
@@ -105,6 +110,21 @@ class ClockSynchronizer:
                 self.offset += correction
                 logger.info(f"Applied drift correction of {correction:.6f} seconds. New offset: {self.offset:.6f}")
     
+    def adjust_drift_threshold(self) -> None:
+        """Dynamically adjust the drift threshold based on historical drift rates"""
+        if len(self.sync_history) < 2:
+            return
+        
+        # Calculate the standard deviation of offsets
+        offsets = [entry["offset"] for entry in self.sync_history]
+        std_dev = statistics.stdev(offsets) if len(offsets) > 1 else 0
+        
+        # Adjust the threshold to be slightly above the standard deviation
+        new_threshold = max(0.5, std_dev * 2)
+        if new_threshold != self.drift_threshold:
+            logger.info(f"Adjusted drift threshold from {self.drift_threshold:.6f} to {new_threshold:.6f}")
+            self.drift_threshold = new_threshold
+    
     def get_sync_stats(self) -> Dict[str, Any]:
         """Get synchronization statistics for diagnostics"""
         if not self.sync_history:
@@ -120,7 +140,8 @@ class ClockSynchronizer:
             "max_offset": max(offsets),
             "avg_offset": statistics.mean(offsets) if offsets else 0,
             "last_sync": self.last_sync_time,
-            "sync_count": len(self.sync_history)
+            "sync_count": len(self.sync_history),
+            "drift_threshold": self.drift_threshold
         }
     
     def validate_timestamp(self, timestamp: float, tolerance: float = 5.0) -> bool:
