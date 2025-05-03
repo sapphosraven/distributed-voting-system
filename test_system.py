@@ -212,9 +212,28 @@ def check_clock_synchronization(healthy_nodes):
     else:
         print_failure("Not enough responsive nodes to check clock synchronization")
         return False
+    
+# Add this function to reset election data
+def reset_election_data(election_id="election-2025"):
+    """Reset all data for the given election"""
+    print(f"Resetting data for election: {election_id}")
+    try:
+        # Just need to hit one node, as they all share state through consensus
+        url = f"http://{DEFAULT_HOST}:{DEFAULT_PORTS[0]}/admin/elections/{election_id}"
+        response = requests.delete(url, timeout=5)
+        if response.status_code == 200:
+            result = response.json()
+            print(f"Reset {result['votes_removed']} votes from previous runs")
+            return True
+    except Exception as e:
+        print(f"Error resetting election data: {e}")
+    return False
 
 def run_system_test(num_votes=DEFAULT_NUM_VOTES):
     """Run a comprehensive test of the voting system"""
+    # Reset election data before starting test
+    reset_election_data(DEFAULT_ELECTION_ID)
+    
     test_start_time = time.time()
     healthy_nodes = []
     vote_records = []

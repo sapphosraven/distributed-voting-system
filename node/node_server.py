@@ -410,6 +410,49 @@ async def get_election_results(election_id: str):
         "results": results
     }
 
+@app.delete("/admin/elections/{election_id}")
+async def reset_election_data(election_id: str):
+    """Reset/clear all votes for a specific election (admin endpoint)"""
+    
+    api_logger.warning(f"Resetting all vote data for election {election_id}")
+    
+    # Count votes to be removed
+    removed_votes = 0
+    
+    # Remove votes from finalized_votes
+    to_remove = []
+    for vote_id, vote in consensus.finalized_votes.items():
+        if vote.election_id == election_id:
+            to_remove.append(vote_id)
+            removed_votes += 1
+    
+    # Actually remove the votes
+    for vote_id in to_remove:
+        del consensus.finalized_votes[vote_id]
+    
+    # Clean voter history for this election
+    for voter_id, elections in consensus.voter_history.items():
+        if election_id in elections:
+            del elections[election_id]
+            
+    # Also check pending votes
+    to_remove = []
+    for vote_id, vote in consensus.pending_votes.items():
+        if vote.election_id == election_id:
+            to_remove.append(vote_id)
+            removed_votes += 1
+    
+    for vote_id in to_remove:
+        del consensus.pending_votes[vote_id]
+        if vote_id in consensus.vote_approvals:
+            del consensus.vote_approvals[vote_id]
+    
+    return {
+        "election_id": election_id,
+        "votes_removed": removed_votes,
+        "status": "election data reset"
+    }
+
 # Vote validation function
 async def validate_vote(vote: Vote) -> Dict[str, Any]:
     """Validate a vote for basic issues"""
