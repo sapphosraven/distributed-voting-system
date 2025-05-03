@@ -16,3 +16,11 @@ logs/node1/node_api.log
 logs/node1/node.log
 *.log
 *.log
+logs/node1/node.log
+logs/node1/node_heartbeat.log
+logs/node1/node_heartbeat_json.log
+logs/node1/node_json.log
+logs/node2/node.log
+logs/node2/node_json.log
+logs/node3/node.log
+logs/node3/node_json.log
