@@ -14,3 +14,5 @@ logs/node1/node_heartbeat.log
 logs/node1/node_api_json.log
 logs/node1/node_api.log
 logs/node1/node.log
+*.log
+*.log
