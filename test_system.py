@@ -130,6 +130,152 @@ def check_election_results(node_port, election_id):
     except Exception as e:
         return {"success": False, "reason": str(e)}
 
+def check_clock_sync_status(healthy_nodes):
+    """Check if clock synchronization is working properly across nodes"""
+    print_step("Testing Clock Synchronization")
+    
+    try:
+        # Get time from all nodes
+        node_times = []
+        leader_time = None
+        leader_node = None
+        
+        for port in healthy_nodes:
+            try:
+                health_url = f"http://{DEFAULT_HOST}:{port}/health"
+                response = requests.get(health_url, timeout=3)
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    system_time = data.get("system_time")
+                    role = data.get("role")
+                    sync_stats = data.get("clock_sync", {})
+                    
+                    if role == "leader":
+                        leader_time = system_time
+                        leader_node = port
+                        logger.info(f"Found leader node at port {port} with time {system_time}")
+                    
+                    node_times.append({
+                        "port": port,
+                        "role": role,
+                        "time": system_time,
+                        "offset": sync_stats.get("current_offset", 0),
+                        "drift_rate": sync_stats.get("drift_rate", 0),
+                        "sync_count": sync_stats.get("sync_count", 0),
+                        "last_sync": sync_stats.get("last_sync", 0),
+                        "status": sync_stats.get("status", "unknown")
+                    })
+            except Exception as e:
+                logger.error(f"Error checking node at port {port}: {e}")
+        
+        if not node_times:
+            print_failure("No responsive nodes for clock sync test")
+            return False
+        
+        # Calculate time differences
+        max_time_diff = 0
+        time_diff_table = []
+        
+        for node in node_times:
+            port = node["port"]
+            role = node["role"]
+            sync_status = node.get("status", "")
+            sync_count = node.get("sync_count", 0)
+            
+            # Handle "no_sync_data" status
+            if sync_status == "no_sync_data":
+                if role == "leader":
+                    status_display = f"{INFO}LEADER (no sync needed){RESET}"
+                else:
+                    status_display = f"{WARNING}NO SYNC DATA{RESET}"
+                    print_warning(f"Follower node at port {port} has no synchronization data!")
+                    print_warning("Clock synchronization may not be functioning correctly between nodes.")
+                
+                time_diff_table.append([
+                    port,
+                    role,
+                    f"N/A",
+                    f"N/A",
+                    sync_count,
+                    status_display
+                ])
+                continue
+            
+            node_time = node["time"]
+            offset = node["offset"]
+            
+            # Compare with leader time
+            if leader_time is not None and node_time is not None:
+                diff = abs(node_time - leader_time)
+                max_time_diff = max(max_time_diff, diff)
+                
+                if diff < 1.0:
+                    status = f"{SUCCESS}SYNCED{RESET}"
+                elif diff < 3.0:
+                    status = f"{WARNING}MINOR DRIFT{RESET}"
+                else:
+                    status = f"{FAILURE}MAJOR DRIFT{RESET}"
+                
+                time_diff_table.append([
+                    port,
+                    role,
+                    f"{node_time:.3f}",
+                    f"{offset:.6f}",
+                    sync_count,
+                    status
+                ])
+            else:
+                time_diff_table.append([
+                    port,
+                    role,
+                    f"{node_time:.3f}" if node_time is not None else "N/A",
+                    f"{offset:.6f}",
+                    sync_count,
+                    f"{WARNING}NO COMPARISON{RESET}"
+                ])
+        
+        # Print results
+        print(tabulate.tabulate(
+            time_diff_table,
+            headers=["Port", "Role", "System Time", "Offset", "Sync Count", "Status"]
+        ))
+        
+        # Analysis and recommendations
+        if any(node.get("status") == "no_sync_data" for node in node_times if node["role"] != "leader"):
+            print_warning("Some follower nodes have no synchronization data!")
+            print_warning("Verify that time synchronization tasks are running and check node logs for errors.")
+            return False
+            
+        # Check if the leader was found
+        if leader_node is None:
+            print_warning("No leader node found! Clock synchronization requires a leader node.")
+            return False
+        
+        # Evaluate overall synchronization
+        if max_time_diff == 0:
+            # We couldn't compare any times
+            if any(node.get("sync_count", 0) > 0 for node in node_times):
+                print_warning("Clock synchronization appears to be partially working")
+                return True
+            else:
+                print_failure("Clock synchronization doesn't appear to be working")
+                return False
+        elif max_time_diff < 1.0:
+            print_success(f"Clock synchronization successful (max diff: {max_time_diff:.6f}s)")
+            return True
+        elif max_time_diff < 3.0:
+            print_warning(f"Clock synchronization has minor drift (max diff: {max_time_diff:.6f}s)")
+            return True
+        else:
+            print_failure(f"Clock synchronization has major drift (max diff: {max_time_diff:.6f}s)")
+            return False
+        
+    except Exception as e:
+        print_failure(f"Clock sync test failed: {e}")
+        logger.error(f"Error testing clock synchronization: {e}", exc_info=True)
+        return False
+
 def run_system_test(num_votes=DEFAULT_NUM_VOTES):
     """Run a comprehensive test of the voting system"""
     test_start_time = time.time()
@@ -168,6 +314,13 @@ def run_system_test(num_votes=DEFAULT_NUM_VOTES):
         return False
     
     print_success(f"Found {len(healthy_nodes)} healthy node(s)")
+    
+    # Step 1.5: Add clock sync test after finding healthy nodes
+    if healthy_nodes:
+        clock_sync_result = check_clock_sync_status(healthy_nodes)
+        if not clock_sync_result:
+            print_warning("Clock synchronization test failed, but continuing with other tests")
+            test_success = False
     
     # Step 2: Submit test votes
     print_step(f"Submitting {num_votes} Test Votes")
