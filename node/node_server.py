@@ -13,6 +13,8 @@ from contextlib import asynccontextmanager
 from pydantic import BaseModel, Field, field_validator
 from typing import Dict, List, Optional, Set, Union, Any
 from datetime import datetime
+import random
+import leader_election
 
 # Import our custom logger
 from logger_config import setup_logger
@@ -98,6 +100,7 @@ communicator = None
 node_state = None
 consensus = None
 
+
 # Define startup and shutdown handlers using the new lifespan API
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -137,24 +140,30 @@ async def lifespan(app: FastAPI):
         communicator.register_handler("time_sync", handle_time_sync)
         communicator.register_handler("leader_election", handle_leader_election)
         
-        # Initialize clock sync AFTER communicator is ready
+        # Initialize clock sync
         logger.info("Initializing clock synchronization")
         clock_sync.init_clock_sync(communicator, node_state)
-    
+        
+        # Initialize leader election (MODIFIED LINE)
+        logger.info("Initializing leader election mechanism") 
+        leader_election.init_leader_election(communicator, node_state)
         
         # Start background tasks
         asyncio.create_task(heartbeat_task())
         asyncio.create_task(check_nodes_task())
         asyncio.create_task(communicator.listen_for_messages())
-        logger.info("Started background monitoring tasks")
         
-        # Start clock sync tasks with proper logging
+        # Start clock sync tasks
         if node_state.is_leader:
-            logger.info(f"Starting leader clock sync broadcast task")
             asyncio.create_task(clock_sync.leader_time_sync_loop())
         else:
-            logger.info(f"Starting follower drift detection task") 
             asyncio.create_task(clock_sync.drift_detection_loop())
+        
+        # Start leader election tasks
+        asyncio.create_task(leader_election.election_timeout_task())
+        asyncio.create_task(leader_election.leader_heartbeat_task())
+        
+        logger.info("All background tasks started")
         
         yield
         
@@ -205,9 +214,17 @@ class NodeState:
         self.votes_pending = []
         self.system_time = time.time()
         self.is_healthy = True
-        self.start_time = time.time()
-        logger.info(f"Initialized node state: {self.node_id} as {'leader' if self.is_leader else 'follower'}")
+        self.start_time = time.time()# Leader election fields
         
+        self.current_term = 0
+        self.voted_for = None
+        self.election_state = "follower"
+        self.last_leader_heartbeat = time.time()
+        self.election_timeout = random.uniform(5.0, 10.0)
+        self.votes_received = set()
+        self.current_leader = None  # Add this line to track the current leader
+        
+        logger.info(f"Initialized node state: {self.node_id} as {'leader' if self.is_leader else 'follower'}")
 # Initialize node state
 node_state = NodeState()
 
@@ -304,17 +321,21 @@ async def health_check():
     # Get clock sync information
     clock_info = clock_sync.get_drift_info()
     
+    # Get election info
+    election_info = leader_election.get_election_info()
+    
     # Prepare response
     health_data = {
-        "status": "healthy" if node_state.is_healthy and redis_alive else "unhealthy",
+        "status": "healthy" if node_state.is_healthy else "unhealthy",
         "node_id": NODE_ID,
         "role": "leader" if node_state.is_leader else "follower",
+        "uptime": round(time.time() - node_state.start_time, 2),
         "connected_nodes": list(node_state.connected_nodes),
         "votes_processed": node_state.votes_processed,
         "system_time": node_state.system_time,
-        "uptime": time.time() - node_state.start_time,
-        "redis_cluster": cluster_info,
-        "clock_sync": clock_info
+        "clock_sync": clock_info,
+        "election": election_info,
+        "redis_cluster": cluster_info
     }
     
     api_logger.info(f"Health check response: {health_data['status']}")
@@ -453,6 +474,11 @@ async def reset_election_data(election_id: str):
         "status": "election data reset"
     }
 
+@app.get("/election/status")
+async def get_election_status():
+    """Get the current election status of this node"""
+    return leader_election.get_election_info()
+
 # Vote validation function
 async def validate_vote(vote: Vote) -> Dict[str, Any]:
     """Validate a vote for basic issues"""
@@ -470,6 +496,7 @@ async def validate_vote(vote: Vote) -> Dict[str, Any]:
     # whether the election is active, etc. - this would involve database lookups
     
     return {"valid": True}
+
 
 # Consensus process
 async def start_consensus_process(vote_id: str, vote: Vote):
@@ -691,14 +718,8 @@ def handle_time_sync(message):
 
 def handle_leader_election(message):
     """Handle leader election messages"""
-    # This will be implemented more fully in the leader election phase
-    data = message.get("data", {})
-    sender = message.get("sender", "unknown")
-    
-    logger.info(f"Received leader election message from {sender}")
-    # Basic acknowledgment for now
-    if "candidate" in data:
-        logger.info(f"Node {data['candidate']} is proposing itself as leader")
+    # Forward to leader_election module for processing
+    leader_election.handle_leader_election_message(message)
 
 async def heartbeat_task():
     """Send periodic heartbeats to Redis to indicate node is alive"""
