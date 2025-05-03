@@ -23,6 +23,10 @@ initial_sync_done = False
 sync_request_count = 0
 FORCE_SYNC_THRESHOLD = 10.0  # Force immediate sync if drift exceeds this value
 
+last_correction_time = 0
+clock_rate_adjustment = 1.0  # Start with no adjustment
+
+
 def init_clock_sync(comm, state):
     """Initialize clock sync with communicator and node state references"""
     global communicator, node_state, initial_sync_done
@@ -83,23 +87,23 @@ async def leader_time_sync_loop():
     # Send an initial broadcast immediately 
     await send_time_sync(True)
     
-    # First minute: sync more frequently to establish baseline
-    for _ in range(12):  # 12 * 5s = 60s (1 minute)
+    # First 30 seconds: sync very frequently to establish accurate baseline
+    for _ in range(15):  # 15 * 2s = 30s 
         if node_state and node_state.is_leader:
             try:
                 await send_time_sync()
             except Exception as e:
                 logger.error(f"Error in leader time sync: {e}")
-        await asyncio.sleep(5)
+        await asyncio.sleep(2)  # Sync every 2 seconds initially
     
-    # Then continue with normal interval
+    # Then continue with more normal interval, still more frequent than before
     while True:
         if node_state and node_state.is_leader:
             try:
                 await send_time_sync()
             except Exception as e:
                 logger.error(f"Error in leader time sync: {e}")
-        await asyncio.sleep(10)  # Normal interval
+        await asyncio.sleep(5)  # Normal interval - more frequent than before (was 10s)
 
 async def send_time_sync(is_initial=False):
     """Send time sync message to all followers"""
@@ -126,11 +130,11 @@ async def send_time_sync(is_initial=False):
     # Broadcast to all followers
     communicator.send_message("time_sync", "broadcast", message["data"])
     logger.debug(f"Leader broadcast {sync_type} sync: time={current_time:.6f}")
-
+    
 async def drift_detection_loop():
     """Detect and correct clock drift on follower nodes"""
     logger.info("Starting clock drift detection loop")
-    global sync_history, current_offset
+    global sync_history, current_offset, clock_rate_adjustment, last_correction_time
     
     while True:
         if node_state and not node_state.is_leader:
@@ -140,6 +144,7 @@ async def drift_detection_loop():
                     local_time = time.time()
                     master_time = node_state.system_time
                     time_since_sync = local_time - last_sync_time
+                    time_since_correction = local_time - last_correction_time if last_correction_time > 0 else 0
                     
                     # Calculate current drift 
                     expected_master_time = master_time + time_since_sync
@@ -154,45 +159,54 @@ async def drift_detection_loop():
                     median_drift = median(sync_history) if sync_history else drift
                     current_offset = median_drift
                     
+                    # Calculate drift rate - how much drift accumulated since last correction
+                    if last_correction_time > 0 and time_since_correction > 0:
+                        drift_rate = median_drift / time_since_correction
+                        # Adjust clock rate (bounded to prevent extreme values)
+                        if abs(drift_rate) < 0.2:  # Prevent extreme adjustments
+                            # Gradually adjust the clock rate
+                            clock_rate_adjustment = 1.0 + (drift_rate * 0.8)
+                            logger.debug(f"Clock rate adjustment: {clock_rate_adjustment:.6f} (drift rate: {drift_rate:.6f}/s)")
+                    
                     # Apply correction based on drift magnitude
-                    if abs(median_drift) > 5.0:  # Severe drift
-                        correction = median_drift * 0.8  # 80% correction
-                        logger.warning(f"Severe clock drift: {median_drift:.4f}s")
+                    if abs(median_drift) > 5.0:  # Severe drift - over 5 seconds
+                        correction = median_drift * 0.95  # Stronger 95% correction
                         node_state.system_time = local_time + correction
-                        logger.info(f"Applied strong correction: {correction:.4f}s")
+                        logger.warning(f"Severe clock drift: {median_drift:.4f}s, applied strong correction")
+                        last_correction_time = local_time
                         
                         # Request immediate sync for severe drift
                         asyncio.create_task(request_immediate_sync())
                         
-                    elif abs(median_drift) > 1.0:  # Moderate drift
-                        correction = median_drift * 0.6  # 60% correction
-                        logger.warning(f"Moderate clock drift: {median_drift:.4f}s")
+                    elif abs(median_drift) > 1.0:  # Moderate drift - over 1 second
+                        correction = median_drift * 0.8  # Stronger 80% correction (was 60%)
                         node_state.system_time = local_time + correction
-                        logger.info(f"Applied correction: {correction:.4f}s")
+                        logger.warning(f"Moderate clock drift: {median_drift:.4f}s, applied correction")
+                        last_correction_time = local_time
                         
-                    elif abs(median_drift) > 0.1:  # Minor drift
-                        correction = median_drift * 0.3  # 30% correction
-                        logger.debug(f"Minor clock drift: {median_drift:.4f}s")
+                    elif abs(median_drift) > 0.1:  # Minor drift - over 100ms
+                        correction = median_drift * 0.5  # 50% correction (was 30%)
                         node_state.system_time = local_time + correction
+                        logger.debug(f"Minor clock drift: {median_drift:.4f}s, applied small correction")
+                        last_correction_time = local_time
                     
-                    # Log sync status periodically
-                    if time.time() % 30 < 1:  # Approximately once every 30 seconds
-                        logger.info(f"Sync status: initial_sync={initial_sync_done}, drift={median_drift:.4f}s, time_since_sync={time_since_sync:.2f}s")
+                    # Periodic sync status logging
+                    if int(local_time) % 15 == 0:  # Log every ~15 seconds
+                        logger.info(f"Sync status: drift={median_drift:.4f}s, rate_adj={clock_rate_adjustment:.6f}")
                         
                 else:
-                    # If we've never synchronized, request it
+                    # Request sync if we haven't synchronized yet
                     if not initial_sync_done:
-                        # Avoid logging too frequently
-                        if time.time() % 15 < 0.1:  # Log approximately every 15 seconds
-                            logger.warning("Node has not received initial time sync yet")
+                        if time.time() % 5 < 0.1:  # Request every ~5 seconds
+                            logger.warning("Not yet synchronized with leader")
                             asyncio.create_task(request_immediate_sync())
                 
             except Exception as e:
                 logger.error(f"Error in drift detection: {e}")
                 
-        # Check drift every second
-        await asyncio.sleep(1)
-
+        # Check drift more frequently for better corrections
+        await asyncio.sleep(0.5)  # Check twice per second
+        
 def get_corrected_time():
     """Get the current time, adjusted for any drift correction"""
     if not node_state:
@@ -202,15 +216,18 @@ def get_corrected_time():
         # Leader always uses system time as reference
         return time.time()
     else:
-        # Followers apply correction if synced
+        # Followers apply both offset and rate correction
         local_time = time.time()
         
         # If we haven't synced yet, use local time
         if not initial_sync_done:
             return local_time
         
-        # Apply the current offset
-        return local_time + current_offset
+        # Apply both the offset correction and rate adjustment
+        time_since_correction = local_time - last_correction_time if last_correction_time > 0 else 0
+        dynamic_offset = current_offset + (time_since_correction * (clock_rate_adjustment - 1.0))
+        
+        return local_time + dynamic_offset
 
 def handle_time_sync_message(message):
     """Process an incoming time sync message"""
