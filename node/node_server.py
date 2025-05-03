@@ -137,17 +137,23 @@ async def lifespan(app: FastAPI):
         communicator.register_handler("time_sync", handle_time_sync)
         communicator.register_handler("leader_election", handle_leader_election)
         
+        # Initialize clock sync AFTER communicator is ready
+        logger.info("Initializing clock synchronization")
+        clock_sync.init_clock_sync(communicator, node_state)
+    
+        
         # Start background tasks
         asyncio.create_task(heartbeat_task())
         asyncio.create_task(check_nodes_task())
         asyncio.create_task(communicator.listen_for_messages())
         logger.info("Started background monitoring tasks")
         
-        # If leader, start leader-specific tasks
+        # Start clock sync tasks with proper logging
         if node_state.is_leader:
-            logger.info(f"Node {NODE_ID} is the leader, starting leader-specific tasks")
+            logger.info(f"Starting leader clock sync broadcast task")
             asyncio.create_task(clock_sync.leader_time_sync_loop())
         else:
+            logger.info(f"Starting follower drift detection task") 
             asyncio.create_task(clock_sync.drift_detection_loop())
         
         yield
@@ -633,17 +639,12 @@ def handle_vote_finalization(message):
         logger.error(f"Error processing vote finalization {vote_id} from {sender}: {e}")
 
 def handle_time_sync(message):
-    """Handle time synchronization messages from the leader"""
-    data = message.get("data", {})
-    sender = message.get("sender", "unknown")
+    """Handle time synchronization messages from the leader or followers"""
+    # Add debug logging
+    logger.debug(f"Received time_sync message: {message}")
     
-    if not node_state.is_leader:
-        # Only followers should process time sync
-        system_time = data.get("system_time")
-        if system_time:
-            # Update local system time
-            node_state.system_time = float(system_time)
-            logger.debug(f"Synchronized time with leader: {system_time}")
+    # Pass the complete message to the clock sync module
+    clock_sync.handle_time_sync_message(message)
 
 def handle_leader_election(message):
     """Handle leader election messages"""
@@ -733,8 +734,9 @@ async def check_nodes_task():
             logger.error(f"Error in check_nodes task: {e}", exc_info=True)
             await asyncio.sleep(5)
             
+"""            
 async def leader_time_sync_task():
-    """If this is the leader node, periodically broadcast the system time"""
+    If this is the leader node, periodically broadcast the system time
     consensus_logger.info("Starting leader time synchronization task")
     
     while True:
@@ -759,6 +761,8 @@ async def leader_time_sync_task():
             # If no longer the leader, exit this task
             consensus_logger.info("Node is no longer the leader, stopping time sync task")
             break
+"""
+
 
 # Start server if running as main
 if __name__ == "__main__":
