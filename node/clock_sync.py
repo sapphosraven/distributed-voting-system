@@ -13,11 +13,17 @@ node_state = None
 SYNC_HISTORY_SIZE = 5
 sync_history = []
 
+# Track last sync time and current offset
+last_sync_time = 0
+current_offset = 0
+initial_sync_done = False
+
 def init_clock_sync(comm, state):
     """Initialize clock sync with communicator and node state references"""
-    global communicator, node_state
+    global communicator, node_state, initial_sync_done
     communicator = comm
     node_state = state
+    initial_sync_done = False
     logger.info("Clock synchronization module initialized")
 
 async def leader_time_sync_loop():
@@ -95,14 +101,42 @@ def get_corrected_time():
 
 def handle_time_sync_message(data):
     """Process an incoming time sync message"""
+    global last_sync_time, initial_sync_done, current_offset
+    
     if node_state and not node_state.is_leader:
         try:
             system_time = float(data.get('system_time', 0))
             if system_time > 0:
                 # Store the leader's time
                 node_state.system_time = system_time
+                
+                # Update last sync time and set initial sync flag
+                last_sync_time = time.time()
+                initial_sync_done = True
+                
                 # Calculate and log the drift
                 drift = system_time - time.time()
+                current_offset = drift
                 logger.debug(f"Time sync received: drift={drift:.4f}s")
         except Exception as e:
             logger.error(f"Error processing time sync: {e}")
+
+def get_drift_info():
+    """Get information about the current clock drift"""
+    if not node_state:
+        return {"synced": False, "offset": 0, "last_sync": 0}
+        
+    if node_state.is_leader:
+        return {
+            "is_leader": True,
+            "offset": 0,  # Leader is the time source, so no offset
+            "last_sync": time.time(),
+            "synced": True
+        }
+    else:
+        return {
+            "is_leader": False,
+            "offset": current_offset,
+            "last_sync": last_sync_time,
+            "synced": initial_sync_done
+        }

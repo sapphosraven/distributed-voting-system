@@ -295,6 +295,9 @@ async def health_check():
         redis_alive = False
         cluster_info = {"error": str(e)}
     
+    # Get clock sync information
+    clock_info = clock_sync.get_drift_info()
+    
     # Prepare response
     health_data = {
         "status": "healthy" if node_state.is_healthy and redis_alive else "unhealthy",
@@ -304,7 +307,8 @@ async def health_check():
         "votes_processed": node_state.votes_processed,
         "system_time": node_state.system_time,
         "uptime": time.time() - node_state.start_time,
-        "redis_cluster": cluster_info
+        "redis_cluster": cluster_info,
+        "clock_sync": clock_info
     }
     
     api_logger.info(f"Health check response: {health_data['status']}")

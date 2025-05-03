@@ -12,6 +12,7 @@ from colorama import Fore, Style
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor
 from tabulate import tabulate
+import statistics  # Add this import at the top if not already present
 
 # Initialize colorama
 colorama.init()
@@ -130,6 +131,88 @@ def check_election_results(node_port, election_id):
     except Exception as e:
         return {"success": False, "reason": str(e)}
 
+def check_clock_synchronization(healthy_nodes):
+    """Check clock synchronization across healthy nodes"""
+    print_step("Checking Clock Synchronization")
+    
+    # Collect system times from all healthy nodes
+    node_times = {}
+    time_collection_start = time.time()
+    
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        # Define the function to get time from a node
+        def get_node_time(port):
+            try:
+                url = f"http://{DEFAULT_HOST}:{port}/health"
+                response = requests.get(url, timeout=3)
+                if response.status_code == 200:
+                    data = response.json()
+                    return {
+                        "port": port, 
+                        "success": True, 
+                        "system_time": data.get("system_time", 0),
+                        "role": data.get("role", "unknown"),
+                        "offset": data.get("clock_sync", {}).get("offset", 0),
+                        "synced": data.get("clock_sync", {}).get("synced", False)
+                    }
+                else:
+                    return {"port": port, "success": False, "error": f"Status: {response.status_code}"}
+            except Exception as e:
+                return {"port": port, "success": False, "error": str(e)}
+        
+        # Get times from all nodes in parallel
+        time_results = list(executor.map(get_node_time, healthy_nodes))
+    
+    time_collection_end = time.time()
+    collection_duration = time_collection_end - time_collection_start
+    
+    # Process the results
+    valid_times = []
+    sync_table = []
+    
+    for result in time_results:
+        if result["success"]:
+            port = result["port"]
+            system_time = result["system_time"]
+            role = result["role"]
+            offset = result.get("offset", "N/A")
+            synced = "Yes" if result.get("synced", False) else "No"
+            
+            valid_times.append(system_time)
+            node_times[port] = system_time
+            sync_table.append([port, f"{system_time:.6f}", role, f"{offset:.6f}" if isinstance(offset, (int, float)) else offset, synced])
+        else:
+            port = result["port"]
+            error = result.get("error", "Unknown error")
+            sync_table.append([port, f"{FAILURE}ERROR{RESET}", "N/A", "N/A", "No"])
+    
+    # Calculate statistics
+    if len(valid_times) >= 2:
+        max_drift = max(valid_times) - min(valid_times)
+        avg_time = sum(valid_times) / len(valid_times)
+        std_dev = statistics.stdev(valid_times)
+        
+        # Print the table of node times
+        print(tabulate.tabulate(sync_table, headers=["Node Port", "System Time", "Role", "Offset", "Synced"]))
+        
+        # Print the drift statistics
+        print(f"\nClock Synchronization Statistics:")
+        print(f"  Time samples collected in: {collection_duration:.3f} seconds")
+        print(f"  Average system time: {avg_time:.6f}")
+        print(f"  Maximum drift between nodes: {max_drift:.6f} seconds")
+        print(f"  Standard deviation: {std_dev:.6f} seconds")
+        
+        # Determine if synchronization is acceptable (less than 1 second drift)
+        if max_drift < 1.0:
+            print_success("Clock synchronization is within acceptable limits (<1s drift)")
+            return True
+        else:
+            print_warning(f"Clock drift exceeds acceptable threshold: {max_drift:.6f}s")
+            return False
+    else:
+        print_failure("Not enough responsive nodes to check clock synchronization")
+        return False
+
 def run_system_test(num_votes=DEFAULT_NUM_VOTES):
     """Run a comprehensive test of the voting system"""
     test_start_time = time.time()
@@ -168,6 +251,11 @@ def run_system_test(num_votes=DEFAULT_NUM_VOTES):
         return False
     
     print_success(f"Found {len(healthy_nodes)} healthy node(s)")
+    
+    # Add step to check clock synchronization
+    clock_sync_ok = check_clock_synchronization(healthy_nodes)
+    if not clock_sync_ok:
+        print_warning("Continuing despite clock synchronization issues...")
     
     # Step 2: Submit test votes
     print_step(f"Submitting {num_votes} Test Votes")
