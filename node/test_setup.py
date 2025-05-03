@@ -4,7 +4,6 @@ import redis
 import json
 import os
 from logger_config import setup_logger
-from clock_sync import MAX_DRIFT
 
 # Setup logger
 logger = setup_logger("test_setup", log_dir="../logs")

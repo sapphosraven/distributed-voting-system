@@ -169,31 +169,6 @@ def run_system_test(num_votes=DEFAULT_NUM_VOTES):
     
     print_success(f"Found {len(healthy_nodes)} healthy node(s)")
     
-    # Step X: Test clock synchronization across nodes
-    print_step("Testing Clock Synchronization")
-    times = {}
-    for port in healthy_nodes:
-        try:
-            resp = requests.get(f"http://{DEFAULT_HOST}:{port}/time", timeout=3)
-            times[port] = resp.json().get("time", None)
-        except:
-            times[port] = None
-    # Display raw times
-    for p, t in times.items():
-        if t is not None:
-            print(f" Node {p} time: {t:.3f}")
-        else:
-            print(f" Node {p} time: {FAILURE}UNREACHABLE{RESET}")
-    valid_times = [t for t in times.values() if t is not None]
-    if len(valid_times) >= 2:
-        drift = max(valid_times) - min(valid_times)
-        if drift <= MAX_DRIFT:
-            print_success(f"Clock sync OK (max drift {drift:.3f}s)")
-        else:
-            print_warning(f"Clock drift too high: {drift:.3f}s")
-    else:
-        print_warning("Unable to verify clock sync on ≥2 nodes")
-    
     # Step 2: Submit test votes
     print_step(f"Submitting {num_votes} Test Votes")
     

@@ -12,8 +12,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, field_validator
 from typing import Dict, List, Optional, Set, Union, Any
 from datetime import datetime
-import time
-from clock_sync import leader_time_sync_loop, drift_detection_loop
 
 # Import our custom logger
 from logger_config import setup_logger
@@ -81,9 +79,6 @@ class NodeState:
         
 node_state = NodeState()
 
-node_state.system_time = None
-node_state.time_offset = 0.0
-
 # Enhanced vote data model with validation
 class Vote(BaseModel):
     voter_id: str
@@ -141,11 +136,6 @@ async def log_requests(request: Request, call_next):
         api_logger.error(f"Request failed: {request.method} {request.url.path}", 
                        exc_info=True, extra={"request_id": request_id})
         raise
-
-@app.get("/time")
-async def get_time():
-    """Return the node's adjusted system time."""
-    return {"time": time.time() + node_state.time_offset}
 
 # Health check endpoint - Updated to show Redis Cluster status
 @app.get("/health")
@@ -280,9 +270,9 @@ async def validate_vote(vote: Vote) -> Dict[str, Any]:
         return {"valid": False, "reason": "Missing required fields"}
     
     # Check timestamp is not in the future
-    local_time = time.time() + node_state.time_offset
-    if vote.timestamp > local_time + MAX_DRIFT:
-        return {"valid": False, "reason": "Vote timestamp out of sync"}
+    if vote.timestamp > time.time() + 5:  # 5 seconds tolerance for clock skew
+        return {"valid": False, "reason": "Vote timestamp is in the future"}
+    
     # Here you would add more validation like checking voter eligibility,
     # whether the election is active, etc. - this would involve database lookups
     
@@ -499,14 +489,18 @@ def handle_vote_finalization(message):
         logger.error(f"Error processing vote finalization {vote_id} from {sender}: {e}")
 
 def handle_time_sync(message):
-    """Handle a clock_sync message from leader."""
+    """Handle time synchronization messages from the leader"""
     data = message.get("data", {})
+    sender = message.get("sender", "unknown")
+    
     if not node_state.is_leader:
+        # Only followers should process time sync
         system_time = data.get("system_time")
         if system_time:
+            # Update local system time
             node_state.system_time = float(system_time)
             logger.debug(f"Synchronized time with leader: {system_time}")
-            
+
 def handle_leader_election(message):
     """Handle leader election messages"""
     # This will be implemented more fully in the leader election phase
@@ -543,8 +537,6 @@ async def startup_event():
         communicator.register_handler("vote_finalization", handle_vote_finalization)
         communicator.register_handler("time_sync", handle_time_sync)
         communicator.register_handler("leader_election", handle_leader_election)
-        communicator.register_handler("clock_sync", handle_time_sync)
-
         
         # Start background tasks
         asyncio.create_task(heartbeat_task())
@@ -554,9 +546,8 @@ async def startup_event():
         
         # If leader, start leader-specific tasks
         if node_state.is_leader:
-            asyncio.create_task(leader_time_sync_loop())
-        else:
-            asyncio.create_task(drift_detection_loop())
+            logger.info(f"Node {NODE_ID} is the leader, starting leader-specific tasks")
+            asyncio.create_task(leader_time_sync_task())
             
     except Exception as e:
         logger.critical(f"Startup failed: {e}", exc_info=True)
