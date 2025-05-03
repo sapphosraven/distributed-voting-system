@@ -295,9 +295,6 @@ async def health_check():
         redis_alive = False
         cluster_info = {"error": str(e)}
     
-    # Get clock sync information
-    clock_info = clock_sync.get_drift_info()
-    
     # Prepare response
     health_data = {
         "status": "healthy" if node_state.is_healthy and redis_alive else "unhealthy",
@@ -307,12 +304,7 @@ async def health_check():
         "votes_processed": node_state.votes_processed,
         "system_time": node_state.system_time,
         "uptime": time.time() - node_state.start_time,
-        "redis_cluster": cluster_info,
-        "clock_sync": {
-            "offset": clock_info["offset"],
-            "last_sync": clock_info["last_sync"],
-            "synced": clock_info["synced"]
-        }
+        "redis_cluster": cluster_info
     }
     
     api_logger.info(f"Health check response: {health_data['status']}")
@@ -638,8 +630,16 @@ def handle_vote_finalization(message):
 
 def handle_time_sync(message):
     """Handle time synchronization messages from the leader"""
-    # Forward message to clock_sync module for processing
-    clock_sync.handle_time_sync_message(message)
+    data = message.get("data", {})
+    sender = message.get("sender", "unknown")
+    
+    if not node_state.is_leader:
+        # Only followers should process time sync
+        system_time = data.get("system_time")
+        if system_time:
+            # Update local system time
+            node_state.system_time = float(system_time)
+            logger.debug(f"Synchronized time with leader: {system_time}")
 
 def handle_leader_election(message):
     """Handle leader election messages"""
