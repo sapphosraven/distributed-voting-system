@@ -9,6 +9,7 @@ from redis.cluster import RedisCluster, ClusterNode
 import asyncio
 from fastapi import FastAPI, WebSocket, HTTPException, Depends, BackgroundTasks, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 from pydantic import BaseModel, Field, field_validator
 from typing import Dict, List, Optional, Set, Union, Any
 from datetime import datetime
@@ -29,8 +30,154 @@ api_logger = setup_logger("node.api", log_dir=LOG_DIR, node_id=NODE_ID)
 heartbeat_logger = setup_logger("node.heartbeat", log_dir=LOG_DIR, node_id=NODE_ID)
 consensus_logger = setup_logger("node.consensus", log_dir=LOG_DIR, node_id=NODE_ID)
 
-# Create FastAPI app
-app = FastAPI(title=f"Voting System Node - {NODE_ID}")
+# Redis Cluster client with retry mechanism
+def connect_to_redis_cluster(max_retries=10, initial_backoff=1):
+    """Connect to Redis Cluster with retry logic and exponential backoff"""
+    # Parse Redis Cluster nodes from environment variable
+    startup_nodes = []
+    for node in REDIS_NODES.split(','):
+        host, port = node.split(':')
+        # Use ClusterNode objects instead of dictionaries
+        startup_nodes.append(ClusterNode(host=host, port=int(port)))
+    
+    retry_count = 0
+    last_error = None
+    backoff = initial_backoff
+    
+    while retry_count < max_retries:
+        try:
+            logger.info(f"Connecting to Redis Cluster at {REDIS_NODES} (attempt {retry_count + 1}/{max_retries})")
+            
+            # Connect to Redis Cluster with longer timeouts for startup
+            redis_cluster = RedisCluster(
+                startup_nodes=startup_nodes, 
+                decode_responses=True,
+                socket_timeout=30.0,
+                socket_connect_timeout=30.0,
+                retry_on_timeout=True
+            )
+            
+            # Test that the cluster is ready by checking its state and slot coverage
+            cluster_info = redis_cluster.cluster_info()
+            cluster_state = cluster_info.get('cluster_state', 'unknown')
+            
+            if cluster_state != 'ok':
+                raise redis.exceptions.RedisClusterException(
+                    f"Cluster not ready: state is '{cluster_state}'"
+                )
+                
+            # Check slot coverage by querying CLUSTER SLOTS
+            slots = redis_cluster.cluster_slots()
+            if not slots:
+                raise redis.exceptions.RedisClusterException("No slots configured in cluster")
+                
+            logger.info(f"Successfully connected to Redis Cluster - cluster state: {cluster_state}")
+            return redis_cluster
+            
+        except Exception as e:
+            last_error = e
+            retry_count += 1
+            
+            if retry_count >= max_retries:
+                logger.error(f"Failed to connect after {max_retries} attempts")
+                break
+                
+            logger.warning(f"Connection attempt {retry_count} failed: {e}")
+            logger.info(f"Waiting {backoff} seconds before next attempt...")
+            
+            # Sleep with exponential backoff
+            time.sleep(backoff)
+            backoff = min(backoff * 2, 30)  # Cap at 30 seconds
+    
+    # If we get here, all retries failed
+    raise last_error or redis.exceptions.RedisError("Failed to connect to Redis Cluster")
+
+# Global variables to store Redis connection and node state
+r = None
+communicator = None
+node_state = None
+consensus = None
+
+# Define startup and shutdown handlers using the new lifespan API
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Initialize services on startup
+    global r, communicator, node_state, consensus
+    
+    logger.info(f"🚀 Node {NODE_ID} starting up with role: {NODE_ROLE}")
+    
+    try:
+        # Connect with retry logic
+        r = connect_to_redis_cluster()
+        logger.info(f"Connected to Redis Cluster at {REDIS_NODES}")
+        
+        # Import node communicator after Redis setup
+        from node_communication import NodeCommunicator
+
+        # Initialize communicator with Redis Cluster
+        communicator = NodeCommunicator(r, NODE_ID)
+        
+        # Register in Redis Cluster - using hash slot aware key generation
+        node_key = f"{{nodes}}.{NODE_ID}"  # Using {} to ensure keys with the same prefix are in the same slot
+        node_info = {
+            "node_id": NODE_ID,
+            "role": NODE_ROLE,
+            "start_time": time.time(),
+            "status": "active",
+            "host": os.environ.get("HOSTNAME", "unknown")
+        }
+        r.hset(node_key, mapping=node_info)
+        logger.info(f"Registered node in Redis Cluster: {node_info}")
+        
+        # Initialize communicator
+        communicator.initialize()
+        communicator.register_handler("vote_proposal", handle_vote_proposal)
+        communicator.register_handler("vote_response", handle_vote_acknowledgment)
+        communicator.register_handler("vote_finalization", handle_vote_finalization)
+        communicator.register_handler("time_sync", handle_time_sync)
+        communicator.register_handler("leader_election", handle_leader_election)
+        
+        # Start background tasks
+        asyncio.create_task(heartbeat_task())
+        asyncio.create_task(check_nodes_task())
+        asyncio.create_task(communicator.listen_for_messages())
+        logger.info("Started background monitoring tasks")
+        
+        # If leader, start leader-specific tasks
+        if node_state.is_leader:
+            logger.info(f"Node {NODE_ID} is the leader, starting leader-specific tasks")
+            asyncio.create_task(clock_sync.leader_time_sync_loop())
+        else:
+            asyncio.create_task(clock_sync.drift_detection_loop())
+        
+        yield
+        
+        # Cleanup on shutdown
+        logger.info(f"Node {NODE_ID} shutting down")
+        try:
+            # Notify other nodes about shutdown - using hash slot aware key
+            node_key = f"{{nodes}}.{NODE_ID}"
+            r.hset(node_key, "status", "shutdown")
+            r.expire(node_key, 5)  # Short expiry
+            
+            # Additional cleanup if needed
+            
+            logger.info("Graceful shutdown completed")
+        except Exception as e:
+            logger.error(f"Error during shutdown: {e}", exc_info=True)
+        
+    except Exception as e:
+        logger.critical(f"Startup failed: {e}", exc_info=True)
+        if node_state:
+            node_state.is_healthy = False
+        yield
+        # Continue with shutdown even if startup failed
+
+# Create FastAPI app with the lifespan handler
+app = FastAPI(
+    title=f"Voting System Node - {NODE_ID}",
+    lifespan=lifespan
+)
 
 # Enable CORS
 app.add_middleware(
@@ -40,28 +187,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Redis Cluster client
-try:
-    # Parse Redis Cluster nodes from environment variable
-    startup_nodes = []
-    for node in REDIS_NODES.split(','):
-        host, port = node.split(':')
-        # Use ClusterNode objects instead of dictionaries
-        startup_nodes.append(ClusterNode(host=host, port=int(port)))
-    
-    # Connect to Redis Cluster
-    r = RedisCluster(startup_nodes=startup_nodes, decode_responses=True)
-    logger.info(f"Connected to Redis Cluster at {REDIS_NODES}")
-except Exception as e:
-    logger.critical(f"Failed to connect to Redis Cluster: {e}", exc_info=True)
-    raise
-
-# Import node communicator after Redis setup
-from node_communication import NodeCommunicator
-
-# Initialize communicator with Redis Cluster
-communicator = NodeCommunicator(r, NODE_ID)
 
 # Node state
 class NodeState:
@@ -77,7 +202,22 @@ class NodeState:
         self.start_time = time.time()
         logger.info(f"Initialized node state: {self.node_id} as {'leader' if self.is_leader else 'follower'}")
         
+# Initialize node state
 node_state = NodeState()
+
+# Initialize consensus tracking
+class ConsensusState:
+    def __init__(self):
+        self.pending_votes: Dict[str, Vote] = {}  # vote_id -> Vote
+        self.vote_approvals: Dict[str, Set[str]] = {}  # vote_id -> {node_ids}
+        self.finalized_votes: Dict[str, Vote] = {}  # vote_id -> Vote
+        self.voter_history: Dict[str, Dict[str, str]] = {}  # voter_id -> {election_id -> vote_id}
+        
+consensus = ConsensusState()
+
+# Initialize clock sync module after node_state is created
+import clock_sync
+clock_sync.init_clock_sync(communicator, node_state)
 
 # Enhanced vote data model with validation
 class Vote(BaseModel):
@@ -170,7 +310,7 @@ async def health_check():
     api_logger.info(f"Health check response: {health_data['status']}")
     
     if not health_data["status"] == "healthy":
-        return health_data, 503  # Service Unavailable
+        return Response(content=json.dumps(health_data), status_code=503, media_type="application/json")
     return health_data
 
 # Vote API endpoints
@@ -511,63 +651,6 @@ def handle_leader_election(message):
     # Basic acknowledgment for now
     if "candidate" in data:
         logger.info(f"Node {data['candidate']} is proposing itself as leader")
-
-# Node discovery and registration
-@app.on_event("startup")
-async def startup_event():
-    logger.info(f"🚀 Node {NODE_ID} starting up with role: {NODE_ROLE}")
-    
-    try:
-        # Register in Redis Cluster - using hash slot aware key generation
-        node_key = f"{{nodes}}.{NODE_ID}"  # Using {} to ensure keys with the same prefix are in the same slot
-        node_info = {
-            "node_id": NODE_ID,
-            "role": NODE_ROLE,
-            "start_time": time.time(),
-            "status": "active",
-            "host": os.environ.get("HOSTNAME", "unknown")
-        }
-        r.hset(node_key, mapping=node_info)
-        logger.info(f"Registered node in Redis Cluster: {node_info}")
-        
-        # Initialize communicator
-        communicator.initialize()
-        communicator.register_handler("vote_proposal", handle_vote_proposal)
-        communicator.register_handler("vote_response", handle_vote_acknowledgment)
-        communicator.register_handler("vote_finalization", handle_vote_finalization)
-        communicator.register_handler("time_sync", handle_time_sync)
-        communicator.register_handler("leader_election", handle_leader_election)
-        
-        # Start background tasks
-        asyncio.create_task(heartbeat_task())
-        asyncio.create_task(check_nodes_task())
-        asyncio.create_task(communicator.listen_for_messages())
-        logger.info("Started background monitoring tasks")
-        
-        # If leader, start leader-specific tasks
-        if node_state.is_leader:
-            logger.info(f"Node {NODE_ID} is the leader, starting leader-specific tasks")
-            asyncio.create_task(leader_time_sync_task())
-            
-    except Exception as e:
-        logger.critical(f"Startup failed: {e}", exc_info=True)
-        node_state.is_healthy = False
-        raise
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    logger.info(f"Node {NODE_ID} shutting down")
-    try:
-        # Notify other nodes about shutdown - using hash slot aware key
-        node_key = f"{{nodes}}.{NODE_ID}"
-        r.hset(node_key, "status", "shutdown")
-        r.expire(node_key, 5)  # Short expiry
-        
-        # Additional cleanup if needed
-        
-        logger.info("Graceful shutdown completed")
-    except Exception as e:
-        logger.error(f"Error during shutdown: {e}", exc_info=True)
 
 async def heartbeat_task():
     """Send periodic heartbeats to Redis to indicate node is alive"""
