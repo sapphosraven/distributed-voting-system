@@ -95,28 +95,15 @@ services:
     command: >
       bash -c "
         set -e;
-        echo 'Waiting for Redis nodes to be ready...'
-        sleep 15;
-        # Flush existing data on each node
-        for hostport in redis-node-1:7000 redis-node-2:7001 redis-node-3:7002 redis-node-4:7003 redis-node-5:7004 redis-node-6:7005; do
-          echo \"Flushing $$hostport\"
-          redis-cli -h $${hostport%:*} -p $${hostport#*:} FLUSHALL
-        done;
-        
-        echo 'Waiting before creating cluster...'
+        echo 'Waiting briefly for Redis nodes...';
         sleep 5;
-        
-        # Create cluster - using proper argument format
-        echo \"Creating cluster\"
-        redis-cli --cluster create redis-node-1:7000 redis-node-2:7001 redis-node-3:7002 redis-node-4:7003 redis-node-5:7004 redis-node-6:7005 --cluster-replicas 1 --cluster-yes
-        
-        echo 'Cluster initialization complete!'
-        # Wait to ensure all nodes are fully synchronized
-        echo 'Waiting for cluster to stabilize...'
-        sleep 15
-        
-        # Verify cluster state
-        redis-cli -c -h redis-node-1 -p 7000 cluster info | grep cluster_state
+        echo 'Flushing all data...';
+        for h in redis-node-1:7000 redis-node-2:7001 redis-node-3:7002 redis-node-4:7003 redis-node-5:7004 redis-node-6:7005; do
+          redis-cli -h $${h%:*} -p $${h#*:} FLUSHALL
+        done;
+        echo 'Creating cluster';
+        redis-cli --cluster create redis-node-1:7000 redis-node-2:7001 redis-node-3:7002 redis-node-4:7003 redis-node-5:7004 redis-node-6:7005 --cluster-replicas 1 --cluster-yes;
+        echo 'Cluster init done';
         exit 0
       "
     healthcheck:
@@ -124,7 +111,7 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
-      start_period: 30s
+      start_period: 10s
   
   # Voting system nodes
   voting-node-1:
