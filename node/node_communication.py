@@ -22,10 +22,10 @@ class NodeCommunicator:
         """Initialize the pub/sub connection"""
         try:
             self.pubsub = self.redis.pubsub()
-            # Subscribe to all channels for now
-            self.pubsub.psubscribe("*")
+            # Subscribe to specific channels instead of everything
+            self.pubsub.subscribe("vote_proposal", "vote_response", "vote_finalization", "time_sync", "leader_election")
             self.running = True
-            logger.info(f"Node {self.node_id} subscribed to all channels")
+            logger.info(f"Node {self.node_id} subscribed to communication channels")
         except RedisError as e:
             logger.error(f"Failed to initialize pub/sub: {e}")
             raise
@@ -53,6 +53,13 @@ class NodeCommunicator:
                     channel = message.get('channel', '')
                     data = message.get('data', '')
                     
+                    # Convert bytes to string if needed
+                    if isinstance(channel, bytes):
+                        channel = channel.decode('utf-8')
+                    
+                    # Debug log to trace message flow
+                    logger.debug(f"Received message on channel: {channel}")
+                    
                     if isinstance(data, str):
                         try:
                             data_dict = json.loads(data)
@@ -61,15 +68,12 @@ class NodeCommunicator:
                             if data_dict.get('sender') == self.node_id:
                                 continue
                                 
-                            # Determine message type based on channel
-                            message_type = channel.decode('utf-8') if isinstance(channel, bytes) else channel
-                            
                             # Handle message if we have a registered handler
-                            if message_type in self.handlers:
-                                logger.debug(f"Processing {message_type} message from {data_dict.get('sender', 'unknown')}")
-                                self.handlers[message_type](data_dict)
+                            if channel in self.handlers:
+                                logger.debug(f"Processing {channel} message from {data_dict.get('sender', 'unknown')}")
+                                self.handlers[channel](data_dict)
                             else:
-                                logger.debug(f"No handler for message type {message_type}")
+                                logger.debug(f"No handler for message type {channel}")
                                 
                         except json.JSONDecodeError:
                             logger.warning(f"Received invalid JSON data on channel {channel}")

@@ -502,8 +502,13 @@ def handle_time_sync(message):
         system_time = data.get("system_time")
         if system_time:
             # Update time using clock synchronizer instead of direct assignment
-            node_state.clock_sync.update_offset(float(system_time))
-            logger.debug(f"Synchronized time with leader: {system_time}")
+            old_offset = node_state.clock_sync.offset
+            new_offset = node_state.clock_sync.update_offset(float(system_time))
+            logger.info(f"Synchronized time with leader: {system_time}, offset changed from {old_offset:.6f} to {new_offset:.6f}")
+        else:
+            logger.warning(f"Received time_sync message without system_time field from {sender}")
+    else:
+        logger.debug(f"Ignoring time sync from {sender} as we are the leader")
 
 def handle_leader_election(message):
     """Handle leader election messages"""
@@ -536,23 +541,30 @@ async def startup_event():
         
         # Initialize communicator
         communicator.initialize()
+        logger.info("Node communicator initialized")
+        
+        # Register handlers
         communicator.register_handler("vote_proposal", handle_vote_proposal)
         communicator.register_handler("vote_response", handle_vote_acknowledgment)
         communicator.register_handler("vote_finalization", handle_vote_finalization)
         communicator.register_handler("time_sync", handle_time_sync)
         communicator.register_handler("leader_election", handle_leader_election)
+        logger.info("Message handlers registered")
         
         # Start background tasks
         asyncio.create_task(heartbeat_task())
         asyncio.create_task(check_nodes_task())
         asyncio.create_task(communicator.listen_for_messages())
-        asyncio.create_task(clock_drift_correction_task())  # Add this new task
+        asyncio.create_task(clock_drift_correction_task())
         logger.info("Started background monitoring tasks")
         
-        # If leader, start leader-specific tasks
+        # Always start the leader time sync task regardless of current role
+        # This allows the task to start sending messages if this node becomes leader later
+        asyncio.create_task(leader_time_sync_task())
+        logger.info("Started leader time sync task")
+        
         if node_state.is_leader:
-            logger.info(f"Node {NODE_ID} is the leader, starting leader-specific tasks")
-            asyncio.create_task(leader_time_sync_task())
+            logger.info(f"Node {NODE_ID} is the leader")
             
     except Exception as e:
         logger.critical(f"Startup failed: {e}", exc_info=True)
@@ -656,28 +668,32 @@ async def leader_time_sync_task():
     consensus_logger.info("Starting leader time synchronization task")
     
     while True:
-        if node_state.is_leader:
-            try:
+        try:
+            if node_state.is_leader:
                 current_time = time.time()
                 r.set("{system}.time", current_time)
                 
                 # Include additional timing info for better drift calculation
-                r.publish("time_sync", json.dumps({
+                message = {
                     "sender": NODE_ID,
                     "system_time": current_time,
                     "timestamp": current_time,
-                    "sequence": int(time.time()),  # Add sequence for ordering
+                    "sequence": int(current_time),  # Add sequence for ordering
                     "precision": "high"            # Indicate high precision time
-                }))
+                }
+                
+                # Publish time sync message
+                r.publish("time_sync", json.dumps(message))
                 
                 consensus_logger.debug(f"Leader broadcast system time: {datetime.fromtimestamp(current_time).isoformat()}")
-                await asyncio.sleep(10)
-            except Exception as e:
-                consensus_logger.error(f"Error in leader time sync task: {e}", exc_info=True)
-                await asyncio.sleep(5)
-        else:
-            consensus_logger.info("Node is no longer the leader, stopping time sync task")
-            break
+            else:
+                consensus_logger.debug("Not leader, skipping time sync broadcast")
+                
+            # Sleep regardless of leader status - don't exit the loop
+            await asyncio.sleep(5 if node_state.is_leader else 10)
+        except Exception as e:
+            consensus_logger.error(f"Error in leader time sync task: {e}", exc_info=True)
+            await asyncio.sleep(5)
 
 # Add clock drift correction task
 async def clock_drift_correction_task():
@@ -689,9 +705,18 @@ async def clock_drift_correction_task():
             if not node_state.is_leader:
                 # Apply drift correction if we're a follower
                 node_state.clock_sync.apply_drift_correction()
+                
+                # Log detailed sync status
+                sync_stats = node_state.clock_sync.get_sync_stats()
+                if sync_stats.get("status") == "no_sync_data":
+                    logger.warning("No sync data available for clock synchronization")
+                else:
+                    logger.info(f"Clock sync stats: offset={sync_stats.get('current_offset', 0):.6f}, " +
+                                f"sync_count={sync_stats.get('sync_count', 0)}, " +
+                                f"drift_rate={sync_stats.get('drift_rate', 0):.9f}")
             
             # Run this periodically (less frequently than time sync)
-            await asyncio.sleep(30)
+            await asyncio.sleep(15)
         except Exception as e:
             logger.error(f"Error in clock drift correction task: {e}", exc_info=True)
             await asyncio.sleep(10)

@@ -128,8 +128,11 @@ class ClockSynchronizer:
     def get_sync_stats(self) -> Dict[str, Any]:
         """Get synchronization statistics for diagnostics"""
         if not self.sync_history:
-            return {"status": "no_sync_data"}
+            # Add more detailed status when no sync data
+            logger.warning("No synchronization history available")
+            return {"status": "no_sync_data", "is_leader": self.is_leader}
         
+        # Rest of the function unchanged
         offsets = [entry["offset"] for entry in self.sync_history]
         drift_rate = self.detect_drift()
         
