@@ -135,6 +135,18 @@ def check_clock_sync_status(healthy_nodes):
     print_step("Testing Clock Synchronization")
     
     try:
+        # Try to get more detailed debug info first
+        debug_info = {}
+        for port in healthy_nodes:
+            try:
+                debug_url = f"http://{DEFAULT_HOST}:{port}/debug/clock-sync"
+                response = requests.get(debug_url, timeout=3)
+                if response.status_code == 200:
+                    debug_info[port] = response.json()
+                    logger.info(f"Got debug info from port {port}: {debug_info[port]}")
+            except Exception as e:
+                logger.warning(f"Could not get debug info from port {port}: {e}")
+        
         # Get time from all nodes
         node_times = []
         leader_time = None
@@ -240,6 +252,20 @@ def check_clock_sync_status(healthy_nodes):
             time_diff_table,
             headers=["Port", "Role", "System Time", "Offset", "Sync Count", "Status"]
         ))
+        
+        # Print additional debug info if available
+        if debug_info:
+            print("\n--- Clock Sync Debug Information ---")
+            for port, info in debug_info.items():
+                handlers = info.get("registered_handlers", [])
+                history = info.get("recent_sync_history", [])
+                print(f"\nNode {port} ({info.get('role', 'unknown')})")
+                print(f"  Registered handlers: {', '.join(handlers)}")
+                print(f"  Time diff: {info.get('time_diff', 'N/A'):.6f} seconds")
+                print(f"  Sync history entries: {len(history)}")
+                if "time_sync" not in handlers:
+                    print_warning(f"  Node {port} is missing time_sync handler!")
+            print("-----------------------------------\n")
         
         # Analysis and recommendations
         if any(node.get("status") == "no_sync_data" for node in node_times if node["role"] != "leader"):
