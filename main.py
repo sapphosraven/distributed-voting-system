@@ -18,8 +18,14 @@ logging.basicConfig(
 
 app = FastAPI(title="Distributed Voting System")
 
-from node.node_server import node_app
-app.mount("/node", node_app)
+try:
+    from node.node_server import node_app
+    app.mount("/node", node_app)
+    print("Successfully mounted node_app")
+except Exception as e:
+    import logging
+    logging.error(f"Failed to import and mount node_app: {e}")
+    print(f"Error mounting node_app: {e}")
 
 # Include authentication routes
 app.include_router(auth_router, prefix="/auth")
