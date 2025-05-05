@@ -195,6 +195,9 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+# Add after this line:
+# Export the app instance for mounting in other applications
+node_app = app
 # Enable CORS
 app.add_middleware(
     CORSMiddleware,

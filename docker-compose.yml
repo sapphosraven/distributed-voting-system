@@ -168,6 +168,25 @@ services:
       redis-cluster-init:
         condition: service_completed_successfully
 
+  # Main API Gateway (will be used after merge)
+  api-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile.gateway
+    container_name: api-gateway
+    networks:
+      - voting-network
+    ports:
+      - "8000:8000"
+    environment:
+      - SECRET_KEY=your_secret_key_here
+      - ALGORITHM=HS256
+      - VOTING_NODES=http://voting-node-1:5000,http://voting-node-2:5000,http://voting-node-3:5000
+    depends_on:
+      - voting-node-1
+      - voting-node-2
+      - voting-node-3
+
 networks:
   voting-network:
     driver: bridge
