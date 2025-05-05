@@ -1,40 +1,65 @@
 from fastapi import FastAPI, Depends, HTTPException
-from models import LoginRequest, VoteRequest, TokenResponse
-from users import fake_users_db
-from auth import create_access_token, get_current_user
+from auth.models import VoteRequest
+from auth import get_current_user
 import logging
 import os
-import json
+from auth.router import auth_router
 
-app = FastAPI()
-
-VALID_CANDIDATES = {"Candidate_A", "Candidate_B", "Candidate_C"}
-
-# Create log directory and logger
+# Create log directory
 if not os.path.exists("logs"):
     os.makedirs("logs")
 
+# Configure logging
 logging.basicConfig(
     filename="logs/vote_audit.log",
     level=logging.INFO,
     format="%(asctime)s - %(message)s"
 )
 
-@app.post("/login", response_model=TokenResponse)
-def login(data: LoginRequest):
-    user = fake_users_db.get(data.username)
-    if not user or not user["password"] == data.password:
-        raise HTTPException(status_code=400, detail="Invalid credentials")
+app = FastAPI(title="Distributed Voting System")
 
-    token = create_access_token(data={"sub": data.username})
-    return {"access_token": token, "token_type": "bearer"}
+# Include authentication routes
+app.include_router(auth_router, prefix="/auth")
+
+import httpx
 
 @app.post("/vote")
-def cast_vote(vote: VoteRequest, username: str = Depends(get_current_user)):
+async def cast_vote(vote: VoteRequest, username: str = Depends(get_current_user)):
+    """Cast a vote through the distributed system"""
     logging.info(f"ENTERING cast_vote: User='{username}', Vote='{vote.candidate_id}'")
-    print(f"User '{username}' voted for '{vote.candidate_id}'")
-    return {"message": f"Vote for {vote.candidate_id} received from {username}"}
-
+    
+    # Forward to a distributed node
+    try:
+        # Default to first node - this would be more sophisticated in production
+        node_url = "http://localhost:5001/votes"
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                node_url,
+                json={
+                    "voter_id": username,
+                    "candidate_id": vote.candidate_id,
+                    "election_id": "election-2025"  # Default election ID
+                },
+                timeout=5.0
+            )
+        
+        if response.status_code == 200:
+            result = response.json()
+            return {
+                "message": f"Vote for {vote.candidate_id} received",
+                "vote_id": result.get("vote_id", "unknown"),
+                "status": result.get("status", "processed")
+            }
+        else:
+            logging.error(f"Error from node: {response.text}")
+            return {"message": f"Vote processing error: {response.status_code}"}
+            
+    except Exception as e:
+        logging.error(f"Error forwarding vote: {e}")
+        return {"message": f"Error: {str(e)}"}
+    
+# Root endpoint
 @app.get("/")
 def root():
-    return {"message": "Distributed Voting Backend is running!"}
+    return {"message": "Distributed Voting System is running!"}

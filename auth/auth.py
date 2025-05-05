@@ -26,7 +26,7 @@ fake_users_db = {
     }
 }
 
-from utils import verify_password
+from .utils import verify_password
 
 def authenticate_user(username: str, password: str):
     user = fake_users_db.get(username)

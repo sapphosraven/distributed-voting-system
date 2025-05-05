@@ -6,7 +6,8 @@ $loginBody = @{
     "password" = "alicepass"
 } | ConvertTo-Json
 
-$loginResponse = Invoke-RestMethod -Method POST -Uri http://127.0.0.1:8000/login -Body $loginBody -ContentType "application/json"
+# Line 8: Change login URL from http://127.0.0.1:8000/login to:
+$loginResponse = Invoke-RestMethod -Method POST -Uri http://127.0.0.1:8000/auth/login -Body $loginBody -ContentType "application/json"
 
 # Step 2: Extract token
 $accessToken = $loginResponse.access_token
