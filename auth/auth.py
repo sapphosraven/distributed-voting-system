@@ -4,6 +4,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from dotenv import load_dotenv
 import os
+from .users import fake_users_db
 
 # Load environment variables
 load_dotenv()
@@ -14,17 +15,6 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
-# Dummy users database
-fake_users_db = {
-    "alice": {
-        "username": "alice",
-        "password": "alicepass"  
-    },
-    "bob": {
-        "username": "bob",
-        "password": "bobpass"  
-    }
-}
 
 from .utils import verify_password
 
@@ -32,7 +22,7 @@ def authenticate_user(username: str, password: str):
     user = fake_users_db.get(username)
     if not user:
         return False
-    if not verify_password(password, user["password"]):
+    if password != user["password"]:  # Direct comparison for plaintext passwords
         return False
     return True
 

@@ -31,7 +31,7 @@ async def cast_vote(vote: VoteRequest, username: str = Depends(get_current_user)
     # Forward to a distributed node
     try:
         # Default to first node - this would be more sophisticated in production
-        node_url = "http://localhost:5001/votes"
+        node_url = os.getenv("VOTING_NODE_URL", "http://localhost:5001/votes")
         
         async with httpx.AsyncClient() as client:
             response = await client.post(
