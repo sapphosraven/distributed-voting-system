@@ -1,3 +1,4 @@
+import logging
 import os
 import time
 import json
@@ -344,6 +345,26 @@ async def health_check():
         return Response(content=json.dumps(health_data), status_code=503, media_type="application/json")
     return health_data
 
+@app.post("/debug/enable_mutex_logging")
+async def enable_mutex_logging():
+    """Enable detailed mutex logging for testing"""
+    logger = logging.getLogger("node.mutex")
+    logger.setLevel(logging.DEBUG)
+    
+    # Also set handlers to DEBUG
+    for handler in logger.handlers:
+        handler.setLevel(logging.DEBUG)
+    
+    if not logger.handlers:
+        # Add a handler if none exists
+        handler = logging.StreamHandler()
+        handler.setLevel(logging.DEBUG)
+        formatter = logging.Formatter('%(asctime)s - MUTEX - %(levelname)s - %(message)s')
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
+    
+    return {"status": "Mutex logging enabled at DEBUG level"}
+
 # Vote API endpoints
 @app.post("/votes", status_code=status.HTTP_202_ACCEPTED)
 async def submit_vote(vote: Vote, background_tasks: BackgroundTasks):
@@ -498,36 +519,49 @@ async def validate_vote(vote: Vote) -> Dict[str, Any]:
     return {"valid": True}
 
 
-# Consensus process
+# Add import at the top with other imports
+from mutex import DistributedMutex
+
+# Then modify the start_consensus_process function (around line 520)
 async def start_consensus_process(vote_id: str, vote: Vote):
     """Start the consensus process for a vote"""
     logger.info(f"Starting consensus process for vote {vote_id}")
     
-    # If we're the leader, broadcast the vote proposal to followers
-    if node_state.is_leader:
-        await broadcast_vote_proposal(vote_id, vote)
-    else:
-        # If we're not the leader, forward the vote to the leader
-        # Find the leader node
-        leader_node = None
-        for node_key in r.scan_iter("{nodes}.*"):
-            node_data = r.hgetall(node_key)
-            if node_data.get("role") == "leader" and node_data.get("status") == "active":
-                leader_node = node_data.get("node_id")
-                break
-        
-        if leader_node:
-            logger.info(f"Forwarding vote {vote_id} to leader node {leader_node}")
-            communicator.send_message("vote_proposal", "vote_forward", {
-                "vote_id": vote_id,
-                "vote": vote.dict()
-            })
-        else:
-            logger.warning("No active leader found for vote forwarding")
+    # Create mutex for this specific vote to prevent concurrent processing
+    mutex = DistributedMutex(r, f"vote:{vote_id}", NODE_ID)
     
-    # Check consensus achievement periodically
-    await check_consensus(vote_id)
-
+    # Try to acquire the mutex
+    if await mutex.acquire(wait_timeout=5.0):
+        try:
+            # If we're the leader, broadcast the vote proposal to followers
+            if node_state.is_leader:
+                await broadcast_vote_proposal(vote_id, vote)
+            else:
+                # If we're not the leader, forward the vote to the leader
+                # Find the leader node
+                leader_node = None
+                for node_key in r.scan_iter("{nodes}.*"):
+                    node_data = r.hgetall(node_key)
+                    if node_data.get("role") == "leader" and node_data.get("status") == "active":
+                        leader_node = node_data.get("node_id")
+                        break
+                
+                if leader_node:
+                    logger.info(f"Forwarding vote {vote_id} to leader node {leader_node}")
+                    communicator.send_message("vote_proposal", "vote_forward", {
+                        "vote_id": vote_id,
+                        "vote": vote.dict()
+                    })
+                else:
+                    logger.warning("No active leader found for vote forwarding")
+            
+            # Check consensus achievement periodically
+            await check_consensus(vote_id)
+        finally:
+            # Always release the mutex when done
+            await mutex.release()
+    else:
+        logger.warning(f"Could not acquire mutex for vote {vote_id}, another node may be processing it")
 async def broadcast_vote_proposal(vote_id: str, vote: Vote):
     """Broadcast a vote proposal to all nodes for approval"""
     logger.info(f"Broadcasting vote proposal {vote_id} to all nodes")
@@ -566,33 +600,44 @@ async def check_consensus(vote_id: str):
             await asyncio.sleep(3)
             await check_consensus(vote_id)
 
+# Around line 585-587
 async def finalize_vote(vote_id: str):
     """Finalize a vote once consensus is achieved"""
     if vote_id not in consensus.pending_votes:
         return
         
-    vote = consensus.pending_votes[vote_id]
-    
-    # Move vote from pending to finalized
-    consensus.finalized_votes[vote_id] = vote
-    del consensus.pending_votes[vote_id]
-    
-    # Record voter history to prevent duplicate votes
-    if vote.voter_id not in consensus.voter_history:
-        consensus.voter_history[vote.voter_id] = {}
-    consensus.voter_history[vote.voter_id][vote.election_id] = vote_id
-    
-    # Update vote count
-    node_state.votes_processed += 1
-    
-    logger.info(f"Vote {vote_id} finalized and recorded")
-    
-    # If we're the leader, broadcast the finalization to all nodes
-    if node_state.is_leader:
-        communicator.send_message("vote_finalization", "vote_finalized", {
-            "vote_id": vote_id,
-            "vote": vote.dict()
-        })
+    # Acquire mutex for safe vote finalization
+    mutex = DistributedMutex(r, f"finalize:{vote_id}", NODE_ID)
+    if await mutex.acquire(wait_timeout=5.0):
+        try:
+            vote = consensus.pending_votes[vote_id]
+            
+            # Move vote from pending to finalized
+            consensus.finalized_votes[vote_id] = vote
+            if vote_id in consensus.pending_votes:
+                del consensus.pending_votes[vote_id]
+            
+            # Record voter history to prevent duplicate votes
+            if vote.voter_id not in consensus.voter_history:
+                consensus.voter_history[vote.voter_id] = {}
+            consensus.voter_history[vote.voter_id][vote.election_id] = vote_id
+            
+            # Update vote count
+            node_state.votes_processed += 1
+            
+            logger.info(f"Vote {vote_id} finalized and recorded")
+            
+            # If we're the leader, broadcast the finalization to all nodes
+            if node_state.is_leader:
+                communicator.send_message("vote_finalization", "vote_finalized", {
+                    "vote_id": vote_id,
+                    "vote": vote.dict()
+                })
+        finally:
+            # Always release the mutex
+            await mutex.release()
+    else:
+        logger.warning(f"Could not acquire mutex for finalizing vote {vote_id}")
 
 # Enhanced message handlers
 def handle_vote_proposal(message):

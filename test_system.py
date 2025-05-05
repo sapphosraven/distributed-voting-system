@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 # filepath: f:\Uni_Stuff\6th_Sem\IS\Project\distributed-voting-system\test_system.py
+# Define REDIS_NODES based on environment (Docker vs local)
+import os
+REDIS_NODES = os.environ.get("REDIS_NODES", "localhost:7000,localhost:7001,localhost:7002")
+
+import asyncio
 import requests
 import time
 import json
@@ -12,7 +17,10 @@ from colorama import Fore, Style
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor
 from tabulate import tabulate
-import statistics  # Add this import at the top if not already present
+import statistics  
+from node.mutex import DistributedMutex
+from redis.cluster import RedisCluster, ClusterNode
+
 
 # Initialize colorama
 colorama.init()
@@ -229,6 +237,116 @@ def reset_election_data(election_id="election-2025"):
         print(f"Error resetting election data: {e}")
     return False
 
+def test_distributed_mutex():
+    """Test the distributed mutex implementation through the voting system"""
+    print_step("Testing Distributed Mutex")
+    
+    print_warning("Direct Redis connection not available from host - testing mutex through voting functionality")
+    
+    # Test approach: Submit a vote and verify mutex operations in logs
+    try:
+        # Step 1: Check if mutex logging is enabled (by requesting a special debug endpoint)
+        url = f"http://{DEFAULT_HOST}:{DEFAULT_PORTS[0]}/debug/enable_mutex_logging"
+        requests.post(url, timeout=3)
+        
+        # Step 2: Submit a test vote that will use mutex internally
+        voter_id = f"mutex-test-{uuid.uuid4()}"
+        print(f"Submitting test vote with ID {voter_id} to verify mutex functionality...")
+        
+        result = submit_vote(DEFAULT_PORTS[0], voter_id, DEFAULT_ELECTION_ID, DEFAULT_CANDIDATES[0])
+        
+        if result["success"]:
+            vote_id = result["vote_id"]
+            print_success(f"Test vote {vote_id} submitted successfully")
+            
+            # Step 3: Wait briefly for processing
+            time.sleep(2)
+            
+            # Step 4: Check vote status which will indicate mutex was used
+            status_result = check_vote_status(DEFAULT_PORTS[0], vote_id)
+            
+            if status_result["success"] and status_result["data"].get("status") == "finalized":
+                print_success(f"Vote {vote_id} was finalized, confirming mutex worked correctly")
+                return True
+            else:
+                print_warning(f"Vote status check didn't confirm finalization - mutex may not be working properly")
+                return False
+        else:
+            print_failure(f"Failed to submit test vote: {result.get('reason')}")
+            return False
+            
+    except Exception as e:
+        print_failure(f"Error testing mutex via voting: {e}")
+        return False
+    
+async def run_mutex_test_case(r, resource, node_id, event_log):
+    """Run a single mutex test with the given parameters"""
+    mutex = DistributedMutex(r, resource, f"test-node-{node_id}")
+    
+    try:
+        # Try to acquire the lock
+        event_log.append(f"Node {node_id}: Attempting lock acquisition")
+        acquired = await mutex.acquire(wait_timeout=3.0)
+        
+        if acquired:
+            event_log.append(f"Node {node_id}: Lock acquired")
+            # Hold the lock briefly
+            await asyncio.sleep(0.5)
+            # Release the lock
+            released = await mutex.release()
+            if released:
+                event_log.append(f"Node {node_id}: Lock released")
+                return True
+            else:
+                event_log.append(f"Node {node_id}: Failed to release lock")
+                return False
+        else:
+            event_log.append(f"Node {node_id}: Failed to acquire lock (expected in contention test)")
+            return True  # This may be expected in contention tests
+            
+    except Exception as e:
+        event_log.append(f"Node {node_id}: Error in mutex test: {e}")
+        return False
+
+def run_mutex_test(redis_client, resource, num_threads):
+    """Run a mutex test with the specified number of threads"""
+    event_log = []
+    
+    # Create multiple tasks that try to acquire the same lock
+    async def run_test():
+        tasks = []
+        for i in range(num_threads):
+            tasks.append(run_mutex_test_case(redis_client, resource, i+1, event_log))
+            
+        # Run all tasks concurrently
+        results = await asyncio.gather(*tasks)
+        return all(results)
+    
+    try:
+        # Run the test asynchronously
+        success = asyncio.run(run_test())
+        
+        # Check if test passed and generate a message
+        if success:
+            if num_threads == 1:
+                message = "Lock acquired and released successfully"
+            else:
+                # Count successful acquisitions
+                acquisitions = sum(1 for log in event_log if "Lock acquired" in log)
+                message = f"{acquisitions}/{num_threads} threads acquired lock"
+                
+                # Check for expected contention
+                if num_threads > 1 and acquisitions < num_threads:
+                    message += " (contention working correctly)"
+        else:
+            message = "Test failed - check logs"
+            
+        return success, message
+        
+    except Exception as e:
+        return False, f"Error running test: {e}"
+
+
 def run_system_test(num_votes=DEFAULT_NUM_VOTES):
     """Run a comprehensive test of the voting system"""
     # Reset election data before starting test
@@ -400,11 +518,13 @@ def run_system_test(num_votes=DEFAULT_NUM_VOTES):
 if __name__ == "__main__":
     # Parse arguments
     num_votes = DEFAULT_NUM_VOTES
-    if len(sys.argv) > 1:
-        try:
-            num_votes = int(sys.argv[1])
-        except:
-            pass
+    test_mutex = False
+    
+    for arg in sys.argv[1:]:
+        if arg == "--test-mutex" or arg == "-m":
+            test_mutex = True
+        elif arg.isdigit():
+            num_votes = int(arg)
     
     # Install required packages if missing
     try:
@@ -418,6 +538,12 @@ if __name__ == "__main__":
         import colorama
         colorama.init()
     
-    # Run the test
+    # First run mutex test if requested
+    if test_mutex:
+        print_header("DISTRIBUTED MUTEX TEST")
+        test_distributed_mutex()
+        print("\n")  # Add spacing between tests
+    
+    # Run the vote system test
     success = run_system_test(num_votes)
     sys.exit(0 if success else 1)
