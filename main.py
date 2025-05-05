@@ -18,6 +18,9 @@ logging.basicConfig(
 
 app = FastAPI(title="Distributed Voting System")
 
+from node.node_server import node_app
+app.mount("/node", node_app)
+
 # Include authentication routes
 app.include_router(auth_router, prefix="/auth")
 

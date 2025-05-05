@@ -124,6 +124,10 @@ services:
     volumes:
       - ./logs:/app/logs
     environment:
+      - SECRET_KEY=${SECRET_KEY}
+      - ACCESS_TOKEN_EXPIRE_MINUTES=30
+      - ALGORITHM=HS256
+      - VOTING_NODE_URL=http://voting-node-1:5000/votes
       - NODE_ID=node1
       - NODE_ROLE=leader
       - REDIS_NODES=redis-node-1:7000,redis-node-2:7001,redis-node-3:7002
@@ -179,7 +183,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - SECRET_KEY=your_secret_key_here
+      - SECRET_KEY=${SECRET_KEY}
       - ALGORITHM=HS256
       - VOTING_NODES=http://voting-node-1:5000,http://voting-node-2:5000,http://voting-node-3:5000
     depends_on:

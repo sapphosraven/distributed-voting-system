@@ -16,6 +16,7 @@ from typing import Dict, List, Optional, Set, Union, Any
 from datetime import datetime
 import random
 import leader_election
+from .mutex import DistributedMutex 
 
 # Import our custom logger
 from logger_config import setup_logger
@@ -520,10 +521,6 @@ async def validate_vote(vote: Vote) -> Dict[str, Any]:
     # whether the election is active, etc. - this would involve database lookups
     
     return {"valid": True}
-
-
-# Add import at the top with other imports
-from mutex import DistributedMutex
 
 # Then modify the start_consensus_process function (around line 520)
 async def start_consensus_process(vote_id: str, vote: Vote):
