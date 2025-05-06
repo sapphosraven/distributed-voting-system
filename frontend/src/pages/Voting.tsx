@@ -5,6 +5,9 @@ import { fetchCandidates, submitVote, Candidate } from "../services/vote";
 import { useWebSocket } from "../context/WebSocketContext";
 import Modal from "../components/common/Modal";
 
+import { useParams } from 'react-router-dom';
+
+
 interface Candidate {
   id: number;
   name: string;

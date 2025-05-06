@@ -177,6 +177,91 @@ async def get_candidates():
         logging.error(f"Error fetching candidates: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to fetch candidates")
 
+@app.get("/elections")
+async def list_elections(username: str = Depends(get_current_user)):
+    """Get all elections the user can participate in"""
+    try:
+        # For now return mock data - will be replaced with real data
+        return [
+            {
+                "id": "election-2025",
+                "title": "Presidential Election 2025",
+                "description": "Vote for the next president",
+                "start_date": "2025-05-01T00:00:00Z",
+                "end_date": "2025-05-08T00:00:00Z",
+                "eligible_domains": ["example.com"],
+                "has_voted": False
+            },
+            {
+                "id": "local-election-2025",
+                "title": "Local Council Election",
+                "description": "Vote for your local council representative",
+                "start_date": "2025-05-03T00:00:00Z",
+                "end_date": "2025-05-10T00:00:00Z",
+                "eligible_domains": ["example.com"],
+                "has_voted": True
+            }
+        ]
+    except Exception as e:
+        logging.error(f"Error fetching elections: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch elections")
+
+from pydantic import BaseModel, EmailStr
+from typing import List, Optional
+
+class CreateElectionRequest(BaseModel):
+    title: str
+    description: str
+    start_date: str
+    end_date: str
+    eligible_emails: Optional[List[EmailStr]] = None
+    eligible_domains: Optional[List[str]] = None
+    candidates: List[dict]
+
+@app.post("/elections/{election_id}/vote")
+async def cast_election_vote(
+    election_id: str,
+    vote: VoteRequest,
+    username: str = Depends(get_current_user)
+):
+    """Cast a vote for a specific election"""
+    # Modify the existing vote forwarding logic to include the election ID
+    vote_data = {
+        "candidate_id": vote.candidate_id,
+        "voter_id": username,
+        "election_id": election_id,
+        "timestamp": time.time()
+    }
+    # Rest of implementation similar to existing /vote endpoint
+    
+@app.get("/elections/{election_id}/results")
+async def get_election_results(election_id: str, username: str = Depends(get_current_user)):
+    """Get results for a specific election"""
+    try:
+        # Query nodes for this specific election's results
+        for node_url in voting_nodes:
+            try:
+                results_url = f"{node_url}/elections/{election_id}/results"
+                logging.info(f"Fetching results for election {election_id} from {results_url}")
+                
+                async with httpx.AsyncClient() as client:
+                    response = await client.get(results_url, timeout=5.0)
+                    if response.status_code == 200:
+                        return response.json()
+            except Exception as e:
+                logging.error(f"Failed to fetch results from {node_url}: {str(e)}")
+                continue
+                
+        # If we couldn't get results from any node, return empty results
+        return {
+            "election_id": election_id,
+            "candidates": {},
+            "total_votes": 0
+        }
+    except Exception as e:
+        logging.error(f"Error fetching results: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch election results")
+    
 # Results endpoint
 @app.get("/results")
 async def get_results():

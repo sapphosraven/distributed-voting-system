@@ -8,7 +8,7 @@ export interface ElectionResults {
   total_votes: number;
 }
 
-export const getResults = async (): Promise<ElectionResults> => {
+export const getResults = async (electionId?: string): Promise<ElectionResults> => {
   const token = getToken();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -18,7 +18,12 @@ export const getResults = async (): Promise<ElectionResults> => {
     headers['Authorization'] = `Bearer ${token}`;
   }
   
-  const response = await fetch(API_ENDPOINTS.results, {
+  // Use the election ID if provided
+  const url = electionId 
+    ? `${API_ENDPOINTS.baseUrl}/elections/${electionId}/results`
+    : API_ENDPOINTS.results;
+  
+  const response = await fetch(url, {
     method: 'GET',
     headers
   });

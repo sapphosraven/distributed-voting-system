@@ -7,6 +7,7 @@ export const API_ENDPOINTS = {
   vote: `${API_URL}/vote`,
   candidates: `${API_URL}/candidates`,
   results: `${API_URL}/results`,
+  elections: `${API_URL}/elections`,
   systemStatus: `${API_URL}/system/status`,
   websocket: WS_BASE_URL
 };
