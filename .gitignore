@@ -13,6 +13,7 @@ lerna-debug.log*
 __pycache__/
 *.py[cod]
 *.pyc
+/frontend/node_modules
 
 # Node logs
 .node_repl_history
