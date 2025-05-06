@@ -256,9 +256,10 @@ class Vote(BaseModel):
     signature: str = ""
     
     @validator('voter_id', 'election_id', 'candidate_id')
-    def check_not_empty(cls, v, info):
+    def check_not_empty(cls, v, values=None, config=None, field=None):
         if not v or not v.strip():
-            raise ValueError(f"{info.field_name} cannot be empty")
+            field_name = field.name if field else "Field"
+            raise ValueError(f"{field_name} cannot be empty")
         return v
     
     def __str__(self):

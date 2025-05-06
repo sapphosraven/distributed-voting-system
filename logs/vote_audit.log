@@ -1,3 +1,10 @@
 2025-04-27 16:58:04,801 - ENTERING cast_vote: User='alice', Vote='Candidate_A'
 2025-04-27 17:02:56,486 - ENTERING cast_vote: User='alice', Vote='Candidate_A'
 2025-04-27 18:36:09,381 - ENTERING cast_vote: User='alice', Vote='Candidate_A'
+2025-05-06 04:19:07,243 - Initialized node state: node1 as follower
+2025-05-06 04:19:07,280 - Follower node initialized, awaiting time synchronization
+2025-05-06 04:19:07,282 - Failed to import and mount node_app: Invalid signature for validator <function Vote.check_not_empty at 0x7f1b1f71b2e0>: (cls, v, info), should be: (cls, value, values, config, field), "values", "config" and "field" are all optional.
+2025-05-06 04:28:02,633 - Initialized node state: node1 as follower
+2025-05-06 04:28:02,662 - Follower node initialized, awaiting time synchronization
+2025-05-06 04:28:10,928 - ENTERING cast_vote: User='alice', Vote='Candidate_A'
+2025-05-06 04:28:11,008 - Error forwarding vote: All connection attempts failed
