@@ -45,6 +45,23 @@ class ConnectionManager:
             return True
         return False
     
+    async def send_heartbeat(self):
+        """Send heartbeat to all connected clients"""
+        while True:
+            await asyncio.sleep(30)  # Send heartbeat every 30 seconds
+            dead_connections = []
+            
+            for connection in self.active_connections:
+                try:
+                    await connection["websocket"].send_json({"type": "heartbeat"})
+                except Exception as e:
+                    # Mark connection for removal
+                    dead_connections.append(connection)
+                    
+            # Remove dead connections
+            for connection in dead_connections:
+                self.active_connections.remove(connection)
+                
     async def broadcast(self, message: Dict[str, Any], topic: str = "vote_updates"):
         """Broadcast a message to all clients subscribed to the topic"""
         disconnected_websockets = []
@@ -56,24 +73,7 @@ class ConnectionManager:
                 except Exception as e:
                     logger.error(f"Error sending message: {e}")
                     disconnected_websockets.append(websocket)
-        
-        async def send_heartbeat(self):
-            """Send heartbeat to all connected clients"""
-            while True:
-                await asyncio.sleep(30)  # Send heartbeat every 30 seconds
-                dead_connections = []
                 
-                for connection in self.active_connections:
-                    try:
-                        await connection["websocket"].send_json({"type": "heartbeat"})
-                    except Exception as e:
-                        # Mark connection for removal
-                        dead_connections.append(connection)
-                        
-                # Remove dead connections
-                for connection in dead_connections:
-                    self.active_connections.remove(connection)
-                    
         # Clean up disconnected clients
         for websocket in disconnected_websockets:
             self.disconnect(websocket)
