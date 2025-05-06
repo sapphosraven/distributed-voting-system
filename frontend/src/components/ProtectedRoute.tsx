@@ -1,5 +1,5 @@
 import React from 'react';
-import { Navigate } from 'react-router';
+import { Navigate } from 'react-router-dom';
 import { getToken } from '../services/login';
 
 interface ProtectedRouteProps {

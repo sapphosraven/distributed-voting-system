@@ -1,7 +1,8 @@
 import { LogOut } from "lucide-react";
 import { useState } from "react";
 import Modal from "../common/Modal";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import React from "react";
 
 const Header = () => {
   const navigate = useNavigate();
@@ -23,28 +24,28 @@ const Header = () => {
       )}
       <nav className="rounded-full w-{1000px} max-w-full px-2 py-1 bg-[rgb(175,170,188)]">
         <div className="flex justify-between items-center">
-          <a
+          <Link
             className="flex items-center justify-center hover:!text-[rgb(175,170,188)] text-2xl font-semibold !text-[#400057] hover:bg-gradient-to-r from-[#28003e] to-[#400057]
  h-12 px-6 rounded-full transition-color duration-300 cursor-pointer"
-            href="/login"
+            to="/login"
           >
             Distributed Voting System
-          </a>
+          </Link>
           <div className="flex items-center gap-2 text-lg">
             {/* <h1 className='text-xl'>Contents</h1> */}
             <div className="flex items-center gap-2">
-              <a
-                href="/voting"
+              <Link
+                to="/voting"
                 className="flex items-center justify-center !text-[rgb(109,32,97)] hover:bg-gradient-to-r from-[rgb(66,25,84)] to-[rgb(109,32,97)] h-12 px-9 rounded-full hover:!text-[rgb(175,170,188)] transition-color duration-300"
               >
                 Voting
-              </a>
-              <a
-                href="/result"
+              </Link>
+              <Link
+                to="/result"
                 className="flex items-center justify-center !text-[rgb(109,32,97)] hover:bg-gradient-to-r from-[rgb(66,25,84)] to-[rgb(109,32,97)] h-12 px-9 rounded-full hover:!text-[rgb(175,170,188)] transition-color duration-300"
               >
                 Result
-              </a>
+              </Link>
             </div>
             <div
               className="flex items-center justify-center gap-1 text-[rgb(109,32,97)] hover:bg-gradient-to-r from-[rgb(84,25,83)] to-[rgb(109,32,97)] rounded-full h-12 w-12 hover:text-[rgb(175,170,188)] font-semibold cursor-pointer"

@@ -1,6 +1,6 @@
 # Dummy in-memory user database (you can replace with DB later)
 fake_users_db = {
-    "alice": {"username": "alice", "password": "alicepass"},
-    "bob": {"username": "bob", "password": "bobpass"}
+    "alice@example.com": {"username": "alice", "password": "alicepass"},
+    "bob@example.com": {"username": "bob", "password": "bobpass"}
     
 }

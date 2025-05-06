@@ -1,10 +1,10 @@
 import { useState } from "react";
 import Layout from "../components/Layout";
 import { useNavigate } from 'react-router-dom';
-import { singin } from "../services/login";
+import { signin } from "../services/login";
 import Modal from "../components/common/Modal";
 interface Credentials {
-  username: string;
+  email: string;
   password: string;
 }
 
@@ -14,7 +14,7 @@ export const Login = () => {
   const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [creds, setCreds] = useState<Credentials>({
-    username: "",
+    email: "",
     password: "",
   });
 
@@ -23,7 +23,7 @@ export const Login = () => {
     // alert('Creds are: ' + JSON.stringify(creds));
     setLoading(true);
     try {
-      const res = await singin(creds);
+      const res = await signin(creds);
       // console.log(res);
       localStorage.setItem("token", JSON.stringify(res));
       navigate("/voting");
@@ -78,26 +78,26 @@ export const Login = () => {
           >
             LOGIN
           </h1>
-          <div className="flex flex-col gap-2 w-full">
+            <div className="flex flex-col gap-2 w-full">
             <label
-              htmlFor="username"
+              htmlFor="email"
               className="text-[#28003e]"
               style={{ fontFamily: "Montserrat, sans-serif" }}
             >
-              Username
+              Email
             </label>
             <input
-              id="username"
-              name="username"
-              value={creds.username}
+              id="email"
+              name="email"
+              value={creds.email}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                setCreds({ ...creds, username: e.target.value });
+              setCreds({ ...creds, email: e.target.value });
               }}
               type="email"
               className="w-full h-10 bg-[rgb(167,157,176)] hover:bg-[rgb(155,145,163)] p-2 rounded focus:outline-none text-[rgb(109,32,97)]"
               style={{ caretColor: "rgb(21,21,21)" }}
             />
-          </div>
+            </div>
           <div className="flex flex-col gap-2 w-full">
             <label
               htmlFor="password"

@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { AlignJustify, LogOut, Settings } from 'lucide-react';
+import React from 'react';
+import { Link } from 'react-router-dom';
 
 const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -26,12 +28,12 @@ const Sidebar = () => {
           {isOpen && (
             <div className='flex flex-col gap-2 text-xl pt-4 '>
               {/* <h1 className='text-xl'>Contents</h1> */}
-              <a href='/voting' className='!text-black'>
+              <Link to='/voting' className='!text-black'>
                 Voting
-              </a>
-              <a href='/result' className='!text-black'>
+              </Link>
+              <Link to='/result' className='!text-black'>
                 Result
-              </a>
+              </Link>
             </div>
           )}
         </div>
