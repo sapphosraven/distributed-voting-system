@@ -10,8 +10,11 @@ import websocket_manager
 import redis_subscriber
 from websocket_manager import connection_manager
 from redis_subscriber import vote_subscriber
+from fastapi.middleware.cors import CORSMiddleware
 import json
 import asyncio
+import socket
+import subprocess
 
 # Create log directory
 if not os.path.exists("logs"):
@@ -27,14 +30,30 @@ logging.basicConfig(
     ]
 )
 
+voting_nodes = os.getenv("VOTING_NODES", "http://voting-node-1:5000,http://voting-node-2:5000,http://voting-node-3:5000").split(",")
+logging.info(f"Initialized with voting nodes: {voting_nodes}")
+
+def standard_error_response(status_code: int, message: str, error_type: str = "general_error"):
+    """Create a standardized error response"""
+    return {
+        "error": {
+            "type": error_type,
+            "message": message,
+            "status_code": status_code
+        },
+        "timestamp": time.time()
+    }
 
 app = FastAPI(title="Distributed Voting System")
 
 
-# Add after imports:
-
-import socket
-import subprocess
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # During development; restrict this in production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/debug/network")
 def debug_network():
@@ -43,7 +62,6 @@ def debug_network():
     
     # Test DNS resolution
     try:
-        voting_nodes = os.getenv("VOTING_NODES", "http://voting-node-1:5000").split(",")
         results["environment"] = {"VOTING_NODES": voting_nodes}
         
         for node_url in voting_nodes:
@@ -87,7 +105,6 @@ async def cast_vote(vote: VoteRequest, username: str = Depends(get_current_user)
     """Forward vote to a voting node"""
     try:
         # Get list of voting nodes from environment
-        voting_nodes = os.getenv("VOTING_NODES", "http://voting-node-1:5000").split(",")
         logging.info(f"Attempting to forward vote to nodes: {voting_nodes}")
         
         # Try each node until successful
@@ -144,6 +161,76 @@ async def cast_vote(vote: VoteRequest, username: str = Depends(get_current_user)
         logging.error(f"Vote processing error: {str(e)}")
         return {"message": f"Vote processing error: {str(e)}"}
     
+# Candidates endpoint
+@app.get("/candidates")
+async def get_candidates():
+    """Get list of available candidates"""
+    try:
+        # For MVP, we'll return a static list
+        # In a full implementation, this would come from a database
+        return [
+            {"id": "Candidate_A", "name": "Candidate A", "party": "Party A", "photo": "candidate_a.jpg"},
+            {"id": "Candidate_B", "name": "Candidate B", "party": "Party B", "photo": "candidate_b.jpg"},
+            {"id": "Candidate_C", "name": "Candidate C", "party": "Party C", "photo": "candidate_c.jpg"}
+        ]
+    except Exception as e:
+        logging.error(f"Error fetching candidates: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch candidates")
+
+# Results endpoint
+@app.get("/results")
+async def get_results():
+    """Get current election results"""
+    try:
+        # In MVP, we'll query one node for results
+        # In full implementation, we'd aggregate from all nodes
+        for node_url in voting_nodes:
+            try:
+                results_url = f"{node_url}/results"
+                logging.info(f"Fetching results from {results_url}")
+                
+                async with httpx.AsyncClient() as client:
+                    response = await client.get(results_url, timeout=5.0)
+                    if response.status_code == 200:
+                        return response.json()
+            except Exception as e:
+                logging.error(f"Failed to fetch results from {node_url}: {str(e)}")
+                continue
+                
+        # If we couldn't get results from any node, return empty results
+        return {"candidates": {
+                "Candidate_A": 0,
+                "Candidate_B": 0, 
+                "Candidate_C": 0
+            }, 
+            "total_votes": 0
+        }
+    except Exception as e:
+        logging.error(f"Error fetching results: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch election results")
+
+# System status endpoint
+@app.get("/system/status")
+async def system_status():
+    """Get system health status"""
+    status = {
+        "api_gateway": "healthy",
+        "voting_nodes": {},
+        "websocket_connections": len(connection_manager.active_connections),
+        "timestamp": time.time()
+    }
+    
+    # Check voting nodes
+    for node_url in voting_nodes:
+        try:
+            health_url = f"{node_url}/health"
+            async with httpx.AsyncClient() as client:
+                response = await client.get(health_url, timeout=2.0)
+                status["voting_nodes"][node_url] = "healthy" if response.status_code == 200 else "unhealthy"
+        except:
+            status["voting_nodes"][node_url] = "unreachable"
+    
+    return status
 
 # Add this after the /vote endpoint (around line 35)
 @app.websocket("/ws")

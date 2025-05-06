@@ -2,8 +2,8 @@
 
 # Step 1: Login
 $loginBody = @{
-    "username" = "alice"
-    "password" = "alicepass"
+    "username" = "bob"
+    "password" = "bobpass"
 } | ConvertTo-Json
 
 # Line 8: Change login URL from http://127.0.0.1:8000/login to:

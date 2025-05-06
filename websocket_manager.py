@@ -1,3 +1,4 @@
+import uuid
 from fastapi import WebSocket
 from typing import List, Dict, Any, Set
 import logging
@@ -11,15 +12,17 @@ class ConnectionManager:
         # active_connections: WebSocket -> Set[str] (subscribed topics)
         self.active_connections: Dict[WebSocket, Set[str]] = {}
         
-    async def connect(self, websocket: WebSocket, topics: List[str] = None):
-        """Connect a WebSocket client and optionally subscribe to topics"""
+    # Add user_id parameter to connect method (find the current connect method)
+    async def connect(self, websocket: WebSocket, client_id: str = None, user_id: str = None):
         await websocket.accept()
-        if topics is None:
-            topics = ["vote_updates"]  # Default topic
-        
-        self.active_connections[websocket] = set(topics)
-        logger.info(f"Client connected - Subscribed to: {topics}")
-        
+        self.active_connections.append({
+            "websocket": websocket,
+            "client_id": client_id or str(uuid.uuid4()),
+            "user_id": user_id,
+            "subscribed_topics": []
+        })
+        return self.active_connections[-1]["client_id"]
+
     def disconnect(self, websocket: WebSocket):
         """Disconnect a WebSocket client"""
         if websocket in self.active_connections:
@@ -54,6 +57,23 @@ class ConnectionManager:
                     logger.error(f"Error sending message: {e}")
                     disconnected_websockets.append(websocket)
         
+        async def send_heartbeat(self):
+            """Send heartbeat to all connected clients"""
+            while True:
+                await asyncio.sleep(30)  # Send heartbeat every 30 seconds
+                dead_connections = []
+                
+                for connection in self.active_connections:
+                    try:
+                        await connection["websocket"].send_json({"type": "heartbeat"})
+                    except Exception as e:
+                        # Mark connection for removal
+                        dead_connections.append(connection)
+                        
+                # Remove dead connections
+                for connection in dead_connections:
+                    self.active_connections.remove(connection)
+                    
         # Clean up disconnected clients
         for websocket in disconnected_websockets:
             self.disconnect(websocket)
