@@ -3,23 +3,22 @@ import { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
 import { getResults, ElectionResults } from '../services/results';
 import { useWebSocket } from '../context/WebSocketContext';
-import { useParams, useNavigate } from 'react-router-dom';
 
-// Update the component function
+// Delete the import from constants:
+// import { candidates } from '../constants/voting';
+
+// Update the component function:
 export const Result = () => {
-  const { id: electionId } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const [results, setResults] = useState<ElectionResults | null>(null);
   const [loading, setLoading] = useState(true);
   const { lastMessage } = useWebSocket();
   
-  // Update the fetchResults function to use the election ID
+  // Fetch initial results
   useEffect(() => {
     const fetchResults = async () => {
       setLoading(true);
       try {
-        // Update to pass the election ID
-        const data = await getResults(electionId);
+        const data = await getResults();
         setResults(data);
       } catch (error) {
         console.error("Failed to fetch results:", error);
@@ -29,7 +28,8 @@ export const Result = () => {
     };
     
     fetchResults();
-  }, [electionId]);
+  }, []);
+  
   // Update results when new votes come in
   useEffect(() => {
     if (lastMessage && (lastMessage.event === 'vote_submitted' || lastMessage.event === 'vote_finalized')) {
