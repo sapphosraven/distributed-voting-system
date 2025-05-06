@@ -15,11 +15,11 @@ from pydantic import BaseModel, Field, validator
 from typing import Dict, List, Optional, Set, Union, Any
 from datetime import datetime
 import random
-from . import leader_election
-from .mutex import DistributedMutex 
+import leader_election
+from mutex import DistributedMutex 
 
 # Import our custom logger
-from .logger_config import setup_logger
+from logger_config import setup_logger
 
 # Node configuration from environment variables
 NODE_ID = os.environ.get("NODE_ID", "node1")
@@ -117,7 +117,7 @@ async def lifespan(app: FastAPI):
         logger.info(f"Connected to Redis Cluster at {REDIS_NODES}")
         
         # Import node communicator after Redis setup
-        from .node_communication import NodeCommunicator
+        from node_communication import NodeCommunicator
 
         # Initialize communicator with Redis Cluster
         communicator = NodeCommunicator(r, NODE_ID)
@@ -244,7 +244,7 @@ class ConsensusState:
 consensus = ConsensusState()
 
 # Initialize clock sync module after node_state is created
-from . import clock_sync
+import clock_sync
 clock_sync.init_clock_sync(communicator, node_state)
 
 # Enhanced vote data model with validation

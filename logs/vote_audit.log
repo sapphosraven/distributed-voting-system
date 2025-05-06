@@ -8,3 +8,58 @@
 2025-05-06 04:28:02,662 - Follower node initialized, awaiting time synchronization
 2025-05-06 04:28:10,928 - ENTERING cast_vote: User='alice', Vote='Candidate_A'
 2025-05-06 04:28:11,008 - Error forwarding vote: All connection attempts failed
+2025-05-06 04:35:00,381 - Initialized node state: node1 as follower
+2025-05-06 04:35:00,402 - Follower node initialized, awaiting time synchronization
+2025-05-06 04:35:13,633 - ENTERING cast_vote: User='alice', Vote='Candidate_A'
+2025-05-06 04:35:13,709 - Error forwarding vote: All connection attempts failed
+2025-05-06 04:37:21,851 - Initialized node state: node1 as follower
+2025-05-06 04:37:21,872 - Follower node initialized, awaiting time synchronization
+2025-05-06 04:37:23,075 - ENTERING cast_vote: User='alice', Vote='Candidate_A'
+2025-05-06 04:37:23,146 - Error forwarding vote: All connection attempts failed
+2025-05-06 04:39:58,390 - Failed to import and mount node_app: No module named 'leader_election'
+2025-05-06 04:40:21,305 - ENTERING cast_vote: User='alice', Vote='Candidate_A'
+2025-05-06 04:40:21,360 - Error forwarding vote: All connection attempts failed
+2025-05-06 04:43:38,491 - Attempting to forward vote to nodes: ['http://voting-node-1:5000', 'http://voting-node-2:5000', 'http://voting-node-3:5000']
+2025-05-06 04:43:38,492 - Trying to connect to http://voting-node-1:5000/votes
+2025-05-06 04:43:38,553 - Failed to connect to http://voting-node-1:5000/votes: All connection attempts failed
+2025-05-06 04:43:38,554 - Trying to connect to http://voting-node-2:5000/votes
+2025-05-06 04:43:38,584 - Failed to connect to http://voting-node-2:5000/votes: All connection attempts failed
+2025-05-06 04:43:38,585 - Trying to connect to http://voting-node-3:5000/votes
+2025-05-06 04:43:38,616 - Failed to connect to http://voting-node-3:5000/votes: All connection attempts failed
+2025-05-06 04:43:38,617 - All voting nodes unreachable
+2025-05-06 04:52:09,387 - INFO - Attempting to forward vote to nodes: ['http://voting-node-1:5000', 'http://voting-node-2:5000', 'http://voting-node-3:5000']
+2025-05-06 04:52:09,388 - INFO - Trying to connect to http://voting-node-1:5000/votes
+2025-05-06 04:52:09,440 - DEBUG - connect_tcp.started host='voting-node-1' port=5000 local_address=None timeout=5.0 socket_options=None
+2025-05-06 04:52:09,447 - DEBUG - connect_tcp.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x7f3848d52510>
+2025-05-06 04:52:09,448 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2025-05-06 04:52:09,449 - DEBUG - send_request_headers.complete
+2025-05-06 04:52:09,450 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2025-05-06 04:52:09,451 - DEBUG - send_request_body.complete
+2025-05-06 04:52:09,452 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2025-05-06 04:52:10,178 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'date', b'Tue, 06 May 2025 04:52:03 GMT'), (b'server', b'uvicorn'), (b'content-length', b'90'), (b'content-type', b'application/json')])
+2025-05-06 04:52:10,180 - INFO - HTTP Request: POST http://voting-node-1:5000/votes "HTTP/1.1 202 Accepted"
+2025-05-06 04:52:10,180 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2025-05-06 04:52:10,181 - DEBUG - receive_response_body.complete
+2025-05-06 04:52:10,182 - DEBUG - response_closed.started
+2025-05-06 04:52:10,183 - DEBUG - response_closed.complete
+2025-05-06 04:52:10,183 - DEBUG - close.started
+2025-05-06 04:52:10,184 - DEBUG - close.complete
+2025-05-06 04:52:10,184 - INFO - Vote successfully forwarded to http://voting-node-1:5000/votes
+2025-05-06 04:56:19,142 - INFO - Attempting to forward vote to nodes: ['http://voting-node-1:5000', 'http://voting-node-2:5000', 'http://voting-node-3:5000']
+2025-05-06 04:56:19,143 - INFO - Trying to connect to http://voting-node-1:5000/votes
+2025-05-06 04:56:19,210 - DEBUG - connect_tcp.started host='voting-node-1' port=5000 local_address=None timeout=5.0 socket_options=None
+2025-05-06 04:56:19,218 - DEBUG - connect_tcp.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x7fcad4d85c10>
+2025-05-06 04:56:19,219 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2025-05-06 04:56:19,221 - DEBUG - send_request_headers.complete
+2025-05-06 04:56:19,221 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2025-05-06 04:56:19,222 - DEBUG - send_request_body.complete
+2025-05-06 04:56:19,222 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2025-05-06 04:56:19,360 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'date', b'Tue, 06 May 2025 04:56:14 GMT'), (b'server', b'uvicorn'), (b'content-length', b'90'), (b'content-type', b'application/json')])
+2025-05-06 04:56:19,361 - INFO - HTTP Request: POST http://voting-node-1:5000/votes "HTTP/1.1 202 Accepted"
+2025-05-06 04:56:19,362 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2025-05-06 04:56:19,363 - DEBUG - receive_response_body.complete
+2025-05-06 04:56:19,364 - DEBUG - response_closed.started
+2025-05-06 04:56:19,364 - DEBUG - response_closed.complete
+2025-05-06 04:56:19,365 - DEBUG - close.started
+2025-05-06 04:56:19,366 - DEBUG - close.complete
+2025-05-06 04:56:19,366 - INFO - Vote successfully forwarded to http://voting-node-1:5000/votes
