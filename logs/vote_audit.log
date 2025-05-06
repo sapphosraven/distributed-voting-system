@@ -63,3 +63,96 @@
 2025-05-06 04:56:19,365 - DEBUG - close.started
 2025-05-06 04:56:19,366 - DEBUG - close.complete
 2025-05-06 04:56:19,366 - INFO - Vote successfully forwarded to http://voting-node-1:5000/votes
+2025-05-06 07:16:47,943 - ERROR - Failed to connect to Redis: 'dict' object has no attribute 'host'
+2025-05-06 07:16:47,944 - ERROR - Failed to start Redis subscriber: 'dict' object has no attribute 'host'
+2025-05-06 07:17:05,669 - INFO - Client connected - Subscribed to: ['vote_updates']
+2025-05-06 07:17:16,465 - INFO - Client subscribed to: vote_updates
+2025-05-06 07:17:25,594 - INFO - Attempting to forward vote to nodes: ['http://voting-node-1:5000', 'http://voting-node-2:5000', 'http://voting-node-3:5000']
+2025-05-06 07:17:25,595 - INFO - Trying to connect to http://voting-node-1:5000/votes
+2025-05-06 07:17:25,643 - DEBUG - connect_tcp.started host='voting-node-1' port=5000 local_address=None timeout=5.0 socket_options=None
+2025-05-06 07:17:25,652 - DEBUG - connect_tcp.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x7f4bec9d9d00>
+2025-05-06 07:17:25,653 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2025-05-06 07:17:25,654 - DEBUG - send_request_headers.complete
+2025-05-06 07:17:25,655 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2025-05-06 07:17:25,655 - DEBUG - send_request_body.complete
+2025-05-06 07:17:25,656 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2025-05-06 07:17:25,998 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'date', b'Tue, 06 May 2025 07:17:21 GMT'), (b'server', b'uvicorn'), (b'content-length', b'90'), (b'content-type', b'application/json')])
+2025-05-06 07:17:25,999 - INFO - HTTP Request: POST http://voting-node-1:5000/votes "HTTP/1.1 202 Accepted"
+2025-05-06 07:17:26,000 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2025-05-06 07:17:26,001 - DEBUG - receive_response_body.complete
+2025-05-06 07:17:26,001 - DEBUG - response_closed.started
+2025-05-06 07:17:26,002 - DEBUG - response_closed.complete
+2025-05-06 07:17:26,003 - DEBUG - close.started
+2025-05-06 07:17:26,003 - DEBUG - close.complete
+2025-05-06 07:17:26,004 - INFO - Vote successfully forwarded to http://voting-node-1:5000/votes
+2025-05-06 07:21:55,632 - INFO - Client disconnected
+2025-05-06 07:21:55,733 - INFO - Stopped Redis subscriber
+2025-05-06 07:21:55,734 - INFO - Stopped Redis subscriber
+2025-05-06 07:22:42,747 - INFO - Connecting to Redis nodes: ['redis-node-1:7000', 'redis-node-2:7001', 'redis-node-3:7002']
+2025-05-06 07:22:42,748 - ERROR - Failed to connect to Redis: 'dict' object has no attribute 'host'
+2025-05-06 07:22:42,749 - ERROR - Failed to start Redis subscriber: 'dict' object has no attribute 'host'
+2025-05-06 07:22:56,220 - INFO - Client connected - Subscribed to: ['vote_updates']
+2025-05-06 07:22:58,452 - INFO - Client subscribed to: vote_updates
+2025-05-06 07:23:03,001 - INFO - Attempting to forward vote to nodes: ['http://voting-node-1:5000', 'http://voting-node-2:5000', 'http://voting-node-3:5000']
+2025-05-06 07:23:03,001 - INFO - Trying to connect to http://voting-node-1:5000/votes
+2025-05-06 07:23:03,073 - DEBUG - connect_tcp.started host='voting-node-1' port=5000 local_address=None timeout=5.0 socket_options=None
+2025-05-06 07:23:03,082 - DEBUG - connect_tcp.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x7fabb90e8b90>
+2025-05-06 07:23:03,083 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2025-05-06 07:23:03,084 - DEBUG - send_request_headers.complete
+2025-05-06 07:23:03,084 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2025-05-06 07:23:03,085 - DEBUG - send_request_body.complete
+2025-05-06 07:23:03,085 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2025-05-06 07:23:03,421 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'date', b'Tue, 06 May 2025 07:23:02 GMT'), (b'server', b'uvicorn'), (b'content-length', b'90'), (b'content-type', b'application/json')])
+2025-05-06 07:23:03,423 - INFO - HTTP Request: POST http://voting-node-1:5000/votes "HTTP/1.1 202 Accepted"
+2025-05-06 07:23:03,423 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2025-05-06 07:23:03,424 - DEBUG - receive_response_body.complete
+2025-05-06 07:23:03,425 - DEBUG - response_closed.started
+2025-05-06 07:23:03,426 - DEBUG - response_closed.complete
+2025-05-06 07:23:03,426 - DEBUG - close.started
+2025-05-06 07:23:03,427 - DEBUG - close.complete
+2025-05-06 07:23:03,428 - INFO - Vote successfully forwarded to http://voting-node-1:5000/votes
+2025-05-06 07:29:00,198 - INFO - Client disconnected
+2025-05-06 07:29:00,299 - INFO - Stopped Redis subscriber
+2025-05-06 07:29:00,300 - INFO - Stopped Redis subscriber
+2025-05-06 07:29:33,669 - ERROR - Failed to start Redis subscriber: 'VoteEventSubscriber' object has no attribute 'connect'
+2025-05-06 07:29:40,743 - INFO - Client connected - Subscribed to: ['vote_updates']
+2025-05-06 07:29:42,413 - INFO - Client subscribed to: vote_updates
+2025-05-06 07:29:46,404 - INFO - Attempting to forward vote to nodes: ['http://voting-node-1:5000', 'http://voting-node-2:5000', 'http://voting-node-3:5000']
+2025-05-06 07:29:46,405 - INFO - Trying to connect to http://voting-node-1:5000/votes
+2025-05-06 07:29:46,451 - DEBUG - connect_tcp.started host='voting-node-1' port=5000 local_address=None timeout=5.0 socket_options=None
+2025-05-06 07:29:46,464 - DEBUG - connect_tcp.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x7f85c2071d00>
+2025-05-06 07:29:46,465 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2025-05-06 07:29:46,466 - DEBUG - send_request_headers.complete
+2025-05-06 07:29:46,467 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2025-05-06 07:29:46,468 - DEBUG - send_request_body.complete
+2025-05-06 07:29:46,468 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2025-05-06 07:29:47,486 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'date', b'Tue, 06 May 2025 07:29:46 GMT'), (b'server', b'uvicorn'), (b'content-length', b'90'), (b'content-type', b'application/json')])
+2025-05-06 07:29:47,487 - INFO - HTTP Request: POST http://voting-node-1:5000/votes "HTTP/1.1 202 Accepted"
+2025-05-06 07:29:47,488 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2025-05-06 07:29:47,489 - DEBUG - receive_response_body.complete
+2025-05-06 07:29:47,489 - DEBUG - response_closed.started
+2025-05-06 07:29:47,490 - DEBUG - response_closed.complete
+2025-05-06 07:29:47,491 - DEBUG - close.started
+2025-05-06 07:29:47,491 - DEBUG - close.complete
+2025-05-06 07:29:47,492 - INFO - Vote successfully forwarded to http://voting-node-1:5000/votes
+2025-05-06 07:29:47,492 - INFO - Broadcasting vote event to 1 clients
+2025-05-06 07:38:50,041 - INFO - Attempting to forward vote to nodes: ['http://voting-node-1:5000', 'http://voting-node-2:5000', 'http://voting-node-3:5000']
+2025-05-06 07:38:50,042 - INFO - Trying to connect to http://voting-node-1:5000/votes
+2025-05-06 07:38:50,083 - DEBUG - connect_tcp.started host='voting-node-1' port=5000 local_address=None timeout=5.0 socket_options=None
+2025-05-06 07:38:50,086 - DEBUG - connect_tcp.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x7f85c20c7230>
+2025-05-06 07:38:50,087 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2025-05-06 07:38:50,088 - DEBUG - send_request_headers.complete
+2025-05-06 07:38:50,088 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2025-05-06 07:38:50,089 - DEBUG - send_request_body.complete
+2025-05-06 07:38:50,089 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2025-05-06 07:38:50,891 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'date', b'Tue, 06 May 2025 07:38:49 GMT'), (b'server', b'uvicorn'), (b'content-length', b'90'), (b'content-type', b'application/json')])
+2025-05-06 07:38:50,892 - INFO - HTTP Request: POST http://voting-node-1:5000/votes "HTTP/1.1 202 Accepted"
+2025-05-06 07:38:50,893 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2025-05-06 07:38:50,894 - DEBUG - receive_response_body.complete
+2025-05-06 07:38:50,894 - DEBUG - response_closed.started
+2025-05-06 07:38:50,895 - DEBUG - response_closed.complete
+2025-05-06 07:38:50,896 - DEBUG - close.started
+2025-05-06 07:38:50,897 - DEBUG - close.complete
+2025-05-06 07:38:50,897 - INFO - Vote successfully forwarded to http://voting-node-1:5000/votes
+2025-05-06 07:38:50,898 - INFO - Broadcasting vote event to 1 clients
+2025-05-06 07:39:31,122 - INFO - Client disconnected

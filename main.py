@@ -1,9 +1,17 @@
+import time
 from fastapi import FastAPI, Depends, HTTPException
 from auth.models import VoteRequest
 from auth import get_current_user
 import logging
 import os
 from auth.router import auth_router
+from fastapi import WebSocket, WebSocketDisconnect
+import websocket_manager
+import redis_subscriber
+from websocket_manager import connection_manager
+from redis_subscriber import vote_subscriber
+import json
+import asyncio
 
 # Create log directory
 if not os.path.exists("logs"):
@@ -103,6 +111,22 @@ async def cast_vote(vote: VoteRequest, username: str = Depends(get_current_user)
                 if response.status_code in (200, 202):  # Accept either OK or Accepted
                     result = response.json()
                     logging.info(f"Vote successfully forwarded to {vote_url}")
+                    
+                    # Broadcast vote event directly to WebSocket clients
+                    try:
+                        vote_event = {
+                            "event": "vote_submitted",
+                            "vote_id": result.get("vote_id", "unknown"),
+                            "candidate_id": vote.candidate_id,
+                            "voter_id": username,
+                            "timestamp": time.time()
+                        }
+                        # No await here if we're not in an async function
+                        asyncio.create_task(connection_manager.broadcast(vote_event))
+                        logging.info(f"Broadcasting vote event to {len(connection_manager.active_connections)} clients")
+                    except Exception as e:
+                        logging.error(f"Failed to broadcast vote event: {e}")
+                        
                     return {
                         "message": f"Vote for {vote.candidate_id} received",
                         "vote_id": result.get("vote_id", "unknown"),
@@ -119,6 +143,52 @@ async def cast_vote(vote: VoteRequest, username: str = Depends(get_current_user)
     except Exception as e:
         logging.error(f"Vote processing error: {str(e)}")
         return {"message": f"Vote processing error: {str(e)}"}
+    
+
+# Add this after the /vote endpoint (around line 35)
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    """WebSocket endpoint for real-time vote updates"""
+    await connection_manager.connect(websocket)
+    try:
+        while True:
+            # Receive and process messages from the client
+            data = await websocket.receive_text()
+            try:
+                message = json.loads(data)
+                action = message.get("action")
+                
+                if action == "subscribe" and "topic" in message:
+                    await connection_manager.subscribe(websocket, message["topic"])
+                elif action == "unsubscribe" and "topic" in message:
+                    await connection_manager.unsubscribe(websocket, message["topic"])
+            except json.JSONDecodeError:
+                # Send error to client if message is not valid JSON
+                await websocket.send_json({"error": "Invalid JSON message"})
+    except WebSocketDisconnect:
+        connection_manager.disconnect(websocket)
+    except Exception as e:
+        logging.error(f"WebSocket error: {str(e)}")
+        connection_manager.disconnect(websocket)
+
+# Add background task startup event (at the bottom of the file, before startup_events)
+@app.on_event("startup")
+async def start_redis_subscriber():
+    """Start the Redis subscriber on application startup"""
+    try:
+        await vote_subscriber.connect()
+        await vote_subscriber.subscribe()
+        # Start the listener as a background task
+        asyncio.create_task(vote_subscriber.listen_for_events())
+        logging.info("Started Redis subscriber for vote events")
+    except Exception as e:
+        logging.error(f"Failed to start Redis subscriber: {e}")
+
+@app.on_event("shutdown")
+async def stop_redis_subscriber():
+    """Stop the Redis subscriber on application shutdown"""
+    await vote_subscriber.stop()
+    logging.info("Stopped Redis subscriber")
     
 # Root endpoint
 @app.get("/")
