@@ -1,14 +1,37 @@
-export const singin = async (payload: any) => {
-  const res = await fetch('http://localhost:8000/login', {
+import { API_ENDPOINTS } from '../config/api';
+
+interface LoginResponse {
+  access_token: string;
+  token_type: string;
+}
+
+export const singin = async (payload: { username: string; password: string }): Promise<LoginResponse> => {
+  const response = await fetch(API_ENDPOINTS.login, {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
+      'Content-Type': 'application/x-www-form-urlencoded',
     },
-    body: JSON.stringify(payload),
+    body: new URLSearchParams({
+      username: payload.username,
+      password: payload.password,
+    }),
   });
-  // const res = {
-  //   access_token: 'verynicetoken',
-  //   type: 'Bearer',
-  // };
-  return res;
+
+  if (!response.ok) {
+    throw new Error('Authentication failed');
+  }
+
+  return response.json();
+};
+
+export const getToken = (): string | null => {
+  const tokenData = localStorage.getItem('token');
+  if (!tokenData) return null;
+  
+  try {
+    const parsed = JSON.parse(tokenData);
+    return parsed.access_token;
+  } catch (e) {
+    return null;
+  }
 };

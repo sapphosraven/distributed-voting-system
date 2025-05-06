@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Layout from "../components/Layout";
-import { useNavigate } from "react-router";
+import { useNavigate } from 'react-router-dom';
 import { singin } from "../services/login";
 import Modal from "../components/common/Modal";
 interface Credentials {
@@ -8,7 +8,7 @@ interface Credentials {
   password: string;
 }
 
-const Login = () => {
+export const Login = () => {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [error, setError] = useState<string>("");

@@ -1,7 +1,7 @@
 import { LogOut } from "lucide-react";
 import { useState } from "react";
 import Modal from "../common/Modal";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 
 const Header = () => {
   const navigate = useNavigate();
