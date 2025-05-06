@@ -156,3 +156,251 @@
 2025-05-06 07:38:50,897 - INFO - Vote successfully forwarded to http://voting-node-1:5000/votes
 2025-05-06 07:38:50,898 - INFO - Broadcasting vote event to 1 clients
 2025-05-06 07:39:31,122 - INFO - Client disconnected
+2025-05-06 07:46:13,478 - INFO - Attempting to forward vote to nodes: ['http://voting-node-1:5000', 'http://voting-node-2:5000', 'http://voting-node-3:5000']
+2025-05-06 07:46:13,479 - INFO - Trying to connect to http://voting-node-1:5000/votes
+2025-05-06 07:46:13,511 - DEBUG - connect_tcp.started host='voting-node-1' port=5000 local_address=None timeout=5.0 socket_options=None
+2025-05-06 07:46:13,515 - DEBUG - connect_tcp.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x7f85c20f8620>
+2025-05-06 07:46:13,515 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2025-05-06 07:46:13,516 - DEBUG - send_request_headers.complete
+2025-05-06 07:46:13,517 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2025-05-06 07:46:13,517 - DEBUG - send_request_body.complete
+2025-05-06 07:46:13,518 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2025-05-06 07:46:13,974 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 409, b'Conflict', [(b'date', b'Tue, 06 May 2025 07:46:05 GMT'), (b'server', b'uvicorn'), (b'content-length', b'59'), (b'content-type', b'application/json')])
+2025-05-06 07:46:13,974 - INFO - HTTP Request: POST http://voting-node-1:5000/votes "HTTP/1.1 409 Conflict"
+2025-05-06 07:46:13,975 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2025-05-06 07:46:13,976 - DEBUG - receive_response_body.complete
+2025-05-06 07:46:13,976 - DEBUG - response_closed.started
+2025-05-06 07:46:13,976 - DEBUG - response_closed.complete
+2025-05-06 07:46:13,977 - DEBUG - close.started
+2025-05-06 07:46:13,977 - DEBUG - close.complete
+2025-05-06 07:46:13,978 - WARNING - Node http://voting-node-1:5000/votes returned status 409
+2025-05-06 07:46:13,978 - INFO - Trying to connect to http://voting-node-2:5000/votes
+2025-05-06 07:46:14,006 - DEBUG - connect_tcp.started host='voting-node-2' port=5000 local_address=None timeout=5.0 socket_options=None
+2025-05-06 07:46:14,008 - DEBUG - connect_tcp.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x7f85c20f94f0>
+2025-05-06 07:46:14,009 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2025-05-06 07:46:14,010 - DEBUG - send_request_headers.complete
+2025-05-06 07:46:14,010 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2025-05-06 07:46:14,011 - DEBUG - send_request_body.complete
+2025-05-06 07:46:14,011 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2025-05-06 07:46:14,021 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 409, b'Conflict', [(b'date', b'Tue, 06 May 2025 07:46:11 GMT'), (b'server', b'uvicorn'), (b'content-length', b'59'), (b'content-type', b'application/json')])
+2025-05-06 07:46:14,022 - INFO - HTTP Request: POST http://voting-node-2:5000/votes "HTTP/1.1 409 Conflict"
+2025-05-06 07:46:14,023 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2025-05-06 07:46:14,023 - DEBUG - receive_response_body.complete
+2025-05-06 07:46:14,024 - DEBUG - response_closed.started
+2025-05-06 07:46:14,024 - DEBUG - response_closed.complete
+2025-05-06 07:46:14,024 - DEBUG - close.started
+2025-05-06 07:46:14,025 - DEBUG - close.complete
+2025-05-06 07:46:14,025 - WARNING - Node http://voting-node-2:5000/votes returned status 409
+2025-05-06 07:46:14,025 - INFO - Trying to connect to http://voting-node-3:5000/votes
+2025-05-06 07:46:14,052 - DEBUG - connect_tcp.started host='voting-node-3' port=5000 local_address=None timeout=5.0 socket_options=None
+2025-05-06 07:46:14,055 - DEBUG - connect_tcp.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x7f85c20fa3f0>
+2025-05-06 07:46:14,056 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2025-05-06 07:46:14,057 - DEBUG - send_request_headers.complete
+2025-05-06 07:46:14,057 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2025-05-06 07:46:14,058 - DEBUG - send_request_body.complete
+2025-05-06 07:46:14,059 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2025-05-06 07:46:14,066 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 409, b'Conflict', [(b'date', b'Tue, 06 May 2025 07:46:09 GMT'), (b'server', b'uvicorn'), (b'content-length', b'59'), (b'content-type', b'application/json')])
+2025-05-06 07:46:14,067 - INFO - HTTP Request: POST http://voting-node-3:5000/votes "HTTP/1.1 409 Conflict"
+2025-05-06 07:46:14,067 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2025-05-06 07:46:15,068 - DEBUG - receive_response_body.complete
+2025-05-06 07:46:15,069 - DEBUG - response_closed.started
+2025-05-06 07:46:15,069 - DEBUG - response_closed.complete
+2025-05-06 07:46:15,070 - DEBUG - close.started
+2025-05-06 07:46:15,070 - DEBUG - close.complete
+2025-05-06 07:46:15,071 - WARNING - Node http://voting-node-3:5000/votes returned status 409
+2025-05-06 07:46:15,071 - ERROR - All voting nodes unreachable
+2025-05-06 07:46:55,718 - ERROR - Failed to start Redis subscriber: 'VoteEventSubscriber' object has no attribute 'connect'
+2025-05-06 07:46:58,051 - INFO - Attempting to forward vote to nodes: ['http://voting-node-1:5000', 'http://voting-node-2:5000', 'http://voting-node-3:5000']
+2025-05-06 07:46:58,052 - INFO - Trying to connect to http://voting-node-1:5000/votes
+2025-05-06 07:46:58,121 - DEBUG - connect_tcp.started host='voting-node-1' port=5000 local_address=None timeout=5.0 socket_options=None
+2025-05-06 07:46:58,129 - DEBUG - connect_tcp.failed exception=ConnectError(OSError('All connection attempts failed'))
+2025-05-06 07:46:58,130 - ERROR - Failed to connect to http://voting-node-1:5000/votes: All connection attempts failed
+2025-05-06 07:46:58,131 - INFO - Trying to connect to http://voting-node-2:5000/votes
+2025-05-06 07:46:58,157 - DEBUG - connect_tcp.started host='voting-node-2' port=5000 local_address=None timeout=5.0 socket_options=None
+2025-05-06 07:46:58,160 - DEBUG - connect_tcp.failed exception=ConnectError(OSError('All connection attempts failed'))
+2025-05-06 07:46:58,161 - ERROR - Failed to connect to http://voting-node-2:5000/votes: All connection attempts failed
+2025-05-06 07:46:58,161 - INFO - Trying to connect to http://voting-node-3:5000/votes
+2025-05-06 07:46:58,188 - DEBUG - connect_tcp.started host='voting-node-3' port=5000 local_address=None timeout=5.0 socket_options=None
+2025-05-06 07:46:58,191 - DEBUG - connect_tcp.failed exception=ConnectError(OSError('All connection attempts failed'))
+2025-05-06 07:46:58,192 - ERROR - Failed to connect to http://voting-node-3:5000/votes: All connection attempts failed
+2025-05-06 07:46:58,193 - ERROR - All voting nodes unreachable
+2025-05-06 07:52:41,128 - INFO - Connecting to Redis nodes: ['redis-node-1:7000', 'redis-node-2:7001', 'redis-node-3:7002']
+2025-05-06 07:52:41,129 - ERROR - Failed to connect to Redis: 'dict' object has no attribute 'host'
+2025-05-06 07:52:41,129 - ERROR - Failed to start Redis subscriber: 'dict' object has no attribute 'host'
+2025-05-06 07:52:43,206 - INFO - Attempting to forward vote to nodes: ['http://voting-node-1:5000', 'http://voting-node-2:5000', 'http://voting-node-3:5000']
+2025-05-06 07:52:43,207 - INFO - Trying to connect to http://voting-node-1:5000/votes
+2025-05-06 07:52:43,269 - DEBUG - connect_tcp.started host='voting-node-1' port=5000 local_address=None timeout=5.0 socket_options=None
+2025-05-06 07:52:43,275 - DEBUG - connect_tcp.failed exception=ConnectError(OSError('All connection attempts failed'))
+2025-05-06 07:52:43,277 - ERROR - Failed to connect to http://voting-node-1:5000/votes: All connection attempts failed
+2025-05-06 07:52:43,278 - INFO - Trying to connect to http://voting-node-2:5000/votes
+2025-05-06 07:52:43,305 - DEBUG - connect_tcp.started host='voting-node-2' port=5000 local_address=None timeout=5.0 socket_options=None
+2025-05-06 07:52:43,307 - DEBUG - connect_tcp.failed exception=ConnectError(OSError('All connection attempts failed'))
+2025-05-06 07:52:43,308 - ERROR - Failed to connect to http://voting-node-2:5000/votes: All connection attempts failed
+2025-05-06 07:52:43,309 - INFO - Trying to connect to http://voting-node-3:5000/votes
+2025-05-06 07:52:43,337 - DEBUG - connect_tcp.started host='voting-node-3' port=5000 local_address=None timeout=5.0 socket_options=None
+2025-05-06 07:52:43,339 - DEBUG - connect_tcp.failed exception=ConnectError(OSError('All connection attempts failed'))
+2025-05-06 07:52:43,340 - ERROR - Failed to connect to http://voting-node-3:5000/votes: All connection attempts failed
+2025-05-06 07:52:43,340 - ERROR - All voting nodes unreachable
+2025-05-06 07:59:31,208 - INFO - Stopped Redis subscriber
+2025-05-06 07:59:31,209 - INFO - Stopped Redis subscriber
+2025-05-06 08:00:10,269 - INFO - Connecting to Redis nodes: ['redis-node-1:7000', 'redis-node-2:7001', 'redis-node-3:7002']
+2025-05-06 08:00:10,303 - INFO - Connected to Redis Cluster
+2025-05-06 08:00:10,305 - ERROR - Failed to subscribe to Redis channels: object NoneType can't be used in 'await' expression
+2025-05-06 08:00:10,306 - ERROR - Failed to start Redis subscriber: object NoneType can't be used in 'await' expression
+2025-05-06 08:03:00,597 - INFO - Connecting to Redis nodes: ['redis-node-1:7000', 'redis-node-2:7001', 'redis-node-3:7002']
+2025-05-06 08:03:00,626 - INFO - Connected to Redis Cluster
+2025-05-06 08:03:00,629 - ERROR - Failed to subscribe to Redis channels: object NoneType can't be used in 'await' expression
+2025-05-06 08:03:00,629 - ERROR - Failed to start Redis subscriber: object NoneType can't be used in 'await' expression
+2025-05-06 08:03:33,614 - INFO - Attempting to forward vote to nodes: ['http://voting-node-1:5000', 'http://voting-node-2:5000', 'http://voting-node-3:5000']
+2025-05-06 08:03:33,615 - INFO - Trying to connect to http://voting-node-1:5000/votes
+2025-05-06 08:03:33,680 - DEBUG - connect_tcp.started host='voting-node-1' port=5000 local_address=None timeout=5.0 socket_options=None
+2025-05-06 08:03:33,687 - DEBUG - connect_tcp.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x7fb8706147d0>
+2025-05-06 08:03:33,688 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2025-05-06 08:03:33,689 - DEBUG - send_request_headers.complete
+2025-05-06 08:03:33,690 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2025-05-06 08:03:33,691 - DEBUG - send_request_body.complete
+2025-05-06 08:03:33,691 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2025-05-06 08:03:34,277 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'date', b'Tue, 06 May 2025 08:03:34 GMT'), (b'server', b'uvicorn'), (b'content-length', b'90'), (b'content-type', b'application/json')])
+2025-05-06 08:03:34,278 - INFO - HTTP Request: POST http://voting-node-1:5000/votes "HTTP/1.1 202 Accepted"
+2025-05-06 08:03:34,278 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2025-05-06 08:03:34,279 - DEBUG - receive_response_body.complete
+2025-05-06 08:03:34,280 - DEBUG - response_closed.started
+2025-05-06 08:03:34,280 - DEBUG - response_closed.complete
+2025-05-06 08:03:34,281 - DEBUG - close.started
+2025-05-06 08:03:34,281 - DEBUG - close.complete
+2025-05-06 08:03:34,282 - INFO - Vote successfully forwarded to http://voting-node-1:5000/votes
+2025-05-06 08:03:34,282 - INFO - Broadcasting vote event to 0 clients
+2025-05-06 08:03:56,156 - INFO - Client connected - Subscribed to: ['vote_updates']
+2025-05-06 08:03:59,847 - INFO - Client subscribed to: vote_updates
+2025-05-06 08:04:02,771 - INFO - Attempting to forward vote to nodes: ['http://voting-node-1:5000', 'http://voting-node-2:5000', 'http://voting-node-3:5000']
+2025-05-06 08:04:02,772 - INFO - Trying to connect to http://voting-node-1:5000/votes
+2025-05-06 08:04:02,800 - DEBUG - connect_tcp.started host='voting-node-1' port=5000 local_address=None timeout=5.0 socket_options=None
+2025-05-06 08:04:02,803 - DEBUG - connect_tcp.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x7fb8702dc5f0>
+2025-05-06 08:04:02,804 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2025-05-06 08:04:02,805 - DEBUG - send_request_headers.complete
+2025-05-06 08:04:02,805 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2025-05-06 08:04:02,806 - DEBUG - send_request_body.complete
+2025-05-06 08:04:02,806 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2025-05-06 08:04:03,239 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 409, b'Conflict', [(b'date', b'Tue, 06 May 2025 08:03:54 GMT'), (b'server', b'uvicorn'), (b'content-length', b'59'), (b'content-type', b'application/json')])
+2025-05-06 08:04:03,239 - INFO - HTTP Request: POST http://voting-node-1:5000/votes "HTTP/1.1 409 Conflict"
+2025-05-06 08:04:03,240 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2025-05-06 08:04:03,240 - DEBUG - receive_response_body.complete
+2025-05-06 08:04:03,241 - DEBUG - response_closed.started
+2025-05-06 08:04:03,241 - DEBUG - response_closed.complete
+2025-05-06 08:04:03,241 - DEBUG - close.started
+2025-05-06 08:04:03,242 - DEBUG - close.complete
+2025-05-06 08:04:03,242 - WARNING - Node http://voting-node-1:5000/votes returned status 409
+2025-05-06 08:04:03,243 - INFO - Trying to connect to http://voting-node-2:5000/votes
+2025-05-06 08:04:03,270 - DEBUG - connect_tcp.started host='voting-node-2' port=5000 local_address=None timeout=5.0 socket_options=None
+2025-05-06 08:04:03,273 - DEBUG - connect_tcp.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x7fb8702dd490>
+2025-05-06 08:04:03,274 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2025-05-06 08:04:03,274 - DEBUG - send_request_headers.complete
+2025-05-06 08:04:03,281 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2025-05-06 08:04:03,282 - DEBUG - send_request_body.complete
+2025-05-06 08:04:03,283 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2025-05-06 08:04:03,290 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 409, b'Conflict', [(b'date', b'Tue, 06 May 2025 08:03:55 GMT'), (b'server', b'uvicorn'), (b'content-length', b'59'), (b'content-type', b'application/json')])
+2025-05-06 08:04:03,291 - INFO - HTTP Request: POST http://voting-node-2:5000/votes "HTTP/1.1 409 Conflict"
+2025-05-06 08:04:03,291 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2025-05-06 08:04:03,291 - DEBUG - receive_response_body.complete
+2025-05-06 08:04:03,292 - DEBUG - response_closed.started
+2025-05-06 08:04:03,292 - DEBUG - response_closed.complete
+2025-05-06 08:04:03,293 - DEBUG - close.started
+2025-05-06 08:04:03,293 - DEBUG - close.complete
+2025-05-06 08:04:03,293 - WARNING - Node http://voting-node-2:5000/votes returned status 409
+2025-05-06 08:04:03,294 - INFO - Trying to connect to http://voting-node-3:5000/votes
+2025-05-06 08:04:03,320 - DEBUG - connect_tcp.started host='voting-node-3' port=5000 local_address=None timeout=5.0 socket_options=None
+2025-05-06 08:04:03,323 - DEBUG - connect_tcp.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x7fb8702de420>
+2025-05-06 08:04:03,324 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2025-05-06 08:04:03,325 - DEBUG - send_request_headers.complete
+2025-05-06 08:04:03,325 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2025-05-06 08:04:03,326 - DEBUG - send_request_body.complete
+2025-05-06 08:04:03,327 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2025-05-06 08:04:04,349 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 409, b'Conflict', [(b'date', b'Tue, 06 May 2025 08:03:55 GMT'), (b'server', b'uvicorn'), (b'content-length', b'59'), (b'content-type', b'application/json')])
+2025-05-06 08:04:04,349 - INFO - HTTP Request: POST http://voting-node-3:5000/votes "HTTP/1.1 409 Conflict"
+2025-05-06 08:04:04,350 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2025-05-06 08:04:04,350 - DEBUG - receive_response_body.complete
+2025-05-06 08:04:04,351 - DEBUG - response_closed.started
+2025-05-06 08:04:04,351 - DEBUG - response_closed.complete
+2025-05-06 08:04:04,352 - DEBUG - close.started
+2025-05-06 08:04:04,352 - DEBUG - close.complete
+2025-05-06 08:04:04,352 - WARNING - Node http://voting-node-3:5000/votes returned status 409
+2025-05-06 08:04:04,353 - ERROR - All voting nodes unreachable
+2025-05-06 08:04:19,192 - INFO - Client disconnected
+2025-05-06 08:04:24,703 - INFO - Connecting to Redis nodes: ['redis-node-1:7000', 'redis-node-2:7001', 'redis-node-3:7002']
+2025-05-06 08:04:24,762 - INFO - Connected to Redis Cluster
+2025-05-06 08:04:24,762 - ERROR - Failed to subscribe to Redis channels: object NoneType can't be used in 'await' expression
+2025-05-06 08:04:24,763 - ERROR - Failed to start Redis subscriber: object NoneType can't be used in 'await' expression
+2025-05-06 08:04:27,941 - INFO - Client connected - Subscribed to: ['vote_updates']
+2025-05-06 08:04:31,241 - INFO - Client subscribed to: vote_updates
+2025-05-06 08:04:35,252 - INFO - Attempting to forward vote to nodes: ['http://voting-node-1:5000', 'http://voting-node-2:5000', 'http://voting-node-3:5000']
+2025-05-06 08:04:35,252 - INFO - Trying to connect to http://voting-node-1:5000/votes
+2025-05-06 08:04:35,303 - DEBUG - connect_tcp.started host='voting-node-1' port=5000 local_address=None timeout=5.0 socket_options=None
+2025-05-06 08:04:35,306 - DEBUG - connect_tcp.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x7f76a983dd00>
+2025-05-06 08:04:35,307 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2025-05-06 08:04:35,308 - DEBUG - send_request_headers.complete
+2025-05-06 08:04:35,309 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2025-05-06 08:04:35,310 - DEBUG - send_request_body.complete
+2025-05-06 08:04:35,311 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2025-05-06 08:04:35,645 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'date', b'Tue, 06 May 2025 08:04:27 GMT'), (b'server', b'uvicorn'), (b'content-length', b'90'), (b'content-type', b'application/json')])
+2025-05-06 08:04:35,646 - INFO - HTTP Request: POST http://voting-node-1:5000/votes "HTTP/1.1 202 Accepted"
+2025-05-06 08:04:35,647 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2025-05-06 08:04:35,648 - DEBUG - receive_response_body.complete
+2025-05-06 08:04:35,648 - DEBUG - response_closed.started
+2025-05-06 08:04:35,649 - DEBUG - response_closed.complete
+2025-05-06 08:04:35,649 - DEBUG - close.started
+2025-05-06 08:04:35,650 - DEBUG - close.complete
+2025-05-06 08:04:35,651 - INFO - Vote successfully forwarded to http://voting-node-1:5000/votes
+2025-05-06 08:04:35,651 - INFO - Broadcasting vote event to 1 clients
+2025-05-06 08:04:53,196 - INFO - Attempting to forward vote to nodes: ['http://voting-node-1:5000', 'http://voting-node-2:5000', 'http://voting-node-3:5000']
+2025-05-06 08:04:53,197 - INFO - Trying to connect to http://voting-node-1:5000/votes
+2025-05-06 08:04:53,229 - DEBUG - connect_tcp.started host='voting-node-1' port=5000 local_address=None timeout=5.0 socket_options=None
+2025-05-06 08:04:53,232 - DEBUG - connect_tcp.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x7f76a96323f0>
+2025-05-06 08:04:53,234 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2025-05-06 08:04:53,235 - DEBUG - send_request_headers.complete
+2025-05-06 08:04:53,235 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2025-05-06 08:04:53,236 - DEBUG - send_request_body.complete
+2025-05-06 08:04:53,237 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2025-05-06 08:04:53,488 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 409, b'Conflict', [(b'date', b'Tue, 06 May 2025 08:04:46 GMT'), (b'server', b'uvicorn'), (b'content-length', b'59'), (b'content-type', b'application/json')])
+2025-05-06 08:04:53,489 - INFO - HTTP Request: POST http://voting-node-1:5000/votes "HTTP/1.1 409 Conflict"
+2025-05-06 08:04:53,489 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2025-05-06 08:04:53,489 - DEBUG - receive_response_body.complete
+2025-05-06 08:04:53,490 - DEBUG - response_closed.started
+2025-05-06 08:04:53,490 - DEBUG - response_closed.complete
+2025-05-06 08:04:53,491 - DEBUG - close.started
+2025-05-06 08:04:53,491 - DEBUG - close.complete
+2025-05-06 08:04:53,492 - WARNING - Node http://voting-node-1:5000/votes returned status 409
+2025-05-06 08:04:53,492 - INFO - Trying to connect to http://voting-node-2:5000/votes
+2025-05-06 08:04:53,521 - DEBUG - connect_tcp.started host='voting-node-2' port=5000 local_address=None timeout=5.0 socket_options=None
+2025-05-06 08:04:53,525 - DEBUG - connect_tcp.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x7f76a9428bf0>
+2025-05-06 08:04:53,525 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2025-05-06 08:04:53,526 - DEBUG - send_request_headers.complete
+2025-05-06 08:04:53,527 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2025-05-06 08:04:53,528 - DEBUG - send_request_body.complete
+2025-05-06 08:04:53,528 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2025-05-06 08:04:53,606 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 409, b'Conflict', [(b'date', b'Tue, 06 May 2025 08:04:52 GMT'), (b'server', b'uvicorn'), (b'content-length', b'59'), (b'content-type', b'application/json')])
+2025-05-06 08:04:53,607 - INFO - HTTP Request: POST http://voting-node-2:5000/votes "HTTP/1.1 409 Conflict"
+2025-05-06 08:04:53,607 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2025-05-06 08:04:53,608 - DEBUG - receive_response_body.complete
+2025-05-06 08:04:53,608 - DEBUG - response_closed.started
+2025-05-06 08:04:53,609 - DEBUG - response_closed.complete
+2025-05-06 08:04:53,609 - DEBUG - close.started
+2025-05-06 08:04:53,610 - DEBUG - close.complete
+2025-05-06 08:04:53,610 - WARNING - Node http://voting-node-2:5000/votes returned status 409
+2025-05-06 08:04:53,610 - INFO - Trying to connect to http://voting-node-3:5000/votes
+2025-05-06 08:04:53,637 - DEBUG - connect_tcp.started host='voting-node-3' port=5000 local_address=None timeout=5.0 socket_options=None
+2025-05-06 08:04:53,640 - DEBUG - connect_tcp.complete return_value=<httpcore._backends.anyio.AnyIOStream object at 0x7f76a947ec30>
+2025-05-06 08:04:53,641 - DEBUG - send_request_headers.started request=<Request [b'POST']>
+2025-05-06 08:04:53,642 - DEBUG - send_request_headers.complete
+2025-05-06 08:04:53,642 - DEBUG - send_request_body.started request=<Request [b'POST']>
+2025-05-06 08:04:53,643 - DEBUG - send_request_body.complete
+2025-05-06 08:04:53,644 - DEBUG - receive_response_headers.started request=<Request [b'POST']>
+2025-05-06 08:04:53,660 - DEBUG - receive_response_headers.complete return_value=(b'HTTP/1.1', 409, b'Conflict', [(b'date', b'Tue, 06 May 2025 08:04:50 GMT'), (b'server', b'uvicorn'), (b'content-length', b'59'), (b'content-type', b'application/json')])
+2025-05-06 08:04:53,661 - INFO - HTTP Request: POST http://voting-node-3:5000/votes "HTTP/1.1 409 Conflict"
+2025-05-06 08:04:53,661 - DEBUG - receive_response_body.started request=<Request [b'POST']>
+2025-05-06 08:04:53,662 - DEBUG - receive_response_body.complete
+2025-05-06 08:04:53,663 - DEBUG - response_closed.started
+2025-05-06 08:04:53,663 - DEBUG - response_closed.complete
+2025-05-06 08:04:53,664 - DEBUG - close.started
+2025-05-06 08:04:53,664 - DEBUG - close.complete
+2025-05-06 08:04:53,665 - WARNING - Node http://voting-node-3:5000/votes returned status 409
+2025-05-06 08:04:53,665 - ERROR - All voting nodes unreachable

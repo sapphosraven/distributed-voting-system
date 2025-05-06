@@ -3,7 +3,7 @@ import json
 import logging
 from typing import Dict, Any
 import os
-from redis.asyncio import RedisCluster
+from redis.cluster import RedisCluster, ClusterNode
 from websocket_manager import connection_manager
 
 logger = logging.getLogger("redis_subscriber")
@@ -14,40 +14,39 @@ class VoteEventSubscriber:
         self.redis_client = None
         self.pubsub = None
         self.running = False
-        
-    # Change the connect method:
+    
+    async def connect(self):
+        """Connect to Redis Cluster"""
+        if self.redis_client:
+            return
+                
+        # Add debug logging
+        logger.info(f"Connecting to Redis nodes: {self.redis_nodes}")
 
-async def connect(self):
-    """Connect to Redis Cluster"""
-    if self.redis_client:
-        return
-            
-    # Add debug logging
-    logger.info(f"Connecting to Redis nodes: {self.redis_nodes}")
+        # Format host/port for RedisCluster - Use ClusterNode objects
+        startup_nodes = []
+        for node in self.redis_nodes:
+            host, port = node.split(":")
+            startup_nodes.append(ClusterNode(host=host, port=int(port)))  # Use ClusterNode instead of dict
+
+        try:
+            # Connect to Redis Cluster
+            self.redis_client = RedisCluster(
+                startup_nodes=startup_nodes,
+                decode_responses=True
+            )
+            self.pubsub = self.redis_client.pubsub()
+            logger.info("Connected to Redis Cluster")
+        except Exception as e:
+            logger.error(f"Failed to connect to Redis: {e}")
+            raise
     
-    # Format host/port for RedisCluster
-    startup_nodes = []
-    for node in self.redis_nodes:
-        host, port = node.split(":")
-        startup_nodes.append({"host": host, "port": int(port)})
-    
-    try:
-        # Fix the connection code - don't mix from_url with startup_nodes
-        self.redis_client = RedisCluster(
-            startup_nodes=startup_nodes,
-            decode_responses=True
-        )
-        self.pubsub = self.redis_client.pubsub()
-        logger.info("Connected to Redis Cluster")
-    except Exception as e:
-        logger.error(f"Failed to connect to Redis: {e}")
-        raise
-    
+    # FIX: These methods should be at class level, not nested in connect()
     async def subscribe(self):
         """Subscribe to vote-related channels"""
         if not self.redis_client:
             await self.connect()
-            
+                
         channels = [
             "vote_finalization",  # Vote finalized events
             "vote_proposal",      # New vote proposals
@@ -77,7 +76,7 @@ async def connect(self):
                     try:
                         if isinstance(data, str):
                             data = json.loads(data)
-                            
+                                
                         # Format and broadcast the message
                         ws_message = self._format_vote_event(channel, data)
                         if ws_message:
