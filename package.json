@@ -3,7 +3,7 @@
     "private": true,
     "scripts": {
       "frontend": "cd frontend && npm run dev",
-      "backend": "docker-compose up",
+      "backend": "docker-compose up -d",
       "start": "concurrently \"npm run backend\" \"npm run frontend\""
     },
     "devDependencies": {

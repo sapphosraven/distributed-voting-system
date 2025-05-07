@@ -38,9 +38,10 @@ export const Login = () => {
 };
 
   return (
-    <Layout showHeader={false} showSidebar={false} showFooter={false}>
-      <div className="h-full w-full flex flex-col gap-16 items-center justify-center bg-gradient-to-b from-[#28003e] via-[#400057] to-[#5b006b] p-2 overflow-y-auto">
-        {showModal && (
+    <Layout showHeader={false} showFooter={false}>
+
+      <div className="min-h-screen w-full flex gap-8 flex-col items-center justify-center bg-gradient-to-b from-[#28003e] via-[#400057] to-[#5b006b] p-4">
+         {showModal && (
           <Modal
             title="Error"
             description={error}
@@ -121,7 +122,7 @@ export const Login = () => {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full bg-gradient-to-r from-[#400057] via-[rgb(66,25,84)] to-[rgb(109,32,97)] mt-8 py-2 px-4 rounded-lg transition duration-300 ${
+            className={`w-full bg-gradient-to-r from-[#400057] via-[rgb(66,25,84)] to-[rgb(109,32,97)] text-[rgb(200,200,200)] mt-8 py-2 px-4 rounded-lg transition duration-300 ${
               loading
                 ? "opacity-50 cursor-default"
                 : "hover:scale-105 cursor-pointer"

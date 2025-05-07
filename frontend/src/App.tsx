@@ -1,4 +1,5 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import { Login } from './pages/Login';
 import { Voting } from './pages/Voting';
 import { Result } from './pages/Result';
@@ -6,22 +7,24 @@ import ElectionsList from './pages/ElectionsList';
 import ResultsList from './pages/ResultsList';
 import CreateElection from './pages/CreateElection';
 import ProtectedRoute from './components/ProtectedRoute';
-import { useEffect } from 'react';
 
 function App() {
+  const navigate = useNavigate();
+  
   useEffect(() => {
     const token = localStorage.getItem('token');
     const path = window.location.pathname;
     
-    // If not on login page and no token, redirect to login
+    // Only redirect if not already on login page to prevent infinite loops
     if (path !== '/login' && !token) {
-      window.location.href = '/login';
+      // Use React Router's navigate instead of window.location
+      navigate('/login', { replace: true });
     }
-  }, []);
+  }, [navigate]);
   
   return (
     <Routes>
-     <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="/login" element={<Login />} />
       
       <Route path="/" element={<Navigate to="/elections" replace />} />
       
