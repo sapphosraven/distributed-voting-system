@@ -281,3 +281,100 @@ async def stop_redis_subscriber():
 @app.get("/")
 def root():
     return {"message": "Distributed Voting System is running!"}
+
+# Add these routes to your FastAPI app:
+@app.get("/elections")
+async def get_elections(username: str = Depends(get_current_user)):
+    """Get list of elections available to the user"""
+    try:
+        # In this example we're forwarding to a node, you might need to adapt this
+        node_url = voting_nodes[0]
+        async with httpx.AsyncClient() as client:
+            response = await client.get(f"{node_url}/elections", 
+                                      headers={"X-User": username})
+            
+            if response.status_code == 200:
+                return response.json()
+            else:
+                raise HTTPException(status_code=response.status_code, 
+                                   detail=response.text)
+    except Exception as e:
+        logging.error(f"Error fetching elections: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch elections")
+
+@app.post("/elections")
+async def create_election(election: dict, username: str = Depends(get_current_user)):
+    """Create a new election"""
+    try:
+        # Add the creator to the election data
+        election["created_by"] = username
+        
+        # Forward to node
+        node_url = voting_nodes[0]
+        async with httpx.AsyncClient() as client:
+            response = await client.post(f"{node_url}/elections", 
+                                      json=election,
+                                      headers={"X-User": username})
+            
+            if response.status_code == 200 or response.status_code == 201:
+                return response.json()
+            else:
+                raise HTTPException(status_code=response.status_code, 
+                                   detail=response.text)
+    except Exception as e:
+        logging.error(f"Error creating election: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to create election")
+
+@app.get("/elections/{election_id}")
+async def get_election(election_id: str, username: str = Depends(get_current_user)):
+    """Get details of a specific election"""
+    try:
+        node_url = voting_nodes[0]
+        async with httpx.AsyncClient() as client:
+            response = await client.get(f"{node_url}/elections/{election_id}", 
+                                      headers={"X-User": username})
+            
+            if response.status_code == 200:
+                return response.json()
+            else:
+                raise HTTPException(status_code=response.status_code, 
+                                   detail=response.text)
+    except Exception as e:
+        logging.error(f"Error fetching election {election_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch election details")
+
+@app.get("/user/voted-elections")
+async def get_voted_elections(username: str = Depends(get_current_user)):
+    """Get elections the user has voted in"""
+    try:
+        node_url = voting_nodes[0]
+        async with httpx.AsyncClient() as client:
+            response = await client.get(f"{node_url}/user/voted-elections", 
+                                      headers={"X-User": username})
+            
+            if response.status_code == 200:
+                return response.json()
+            else:
+                raise HTTPException(status_code=response.status_code, 
+                                   detail=response.text)
+    except Exception as e:
+        logging.error(f"Error fetching voted elections: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch voted elections")
+
+@app.get("/results/{election_id}")
+async def get_election_results(election_id: str, username: str = Depends(get_current_user)):
+    """Get results for a specific election"""
+    try:
+        node_url = voting_nodes[0]
+        async with httpx.AsyncClient() as client:
+            response = await client.get(f"{node_url}/elections/{election_id}/results", 
+                                      headers={"X-User": username})
+            
+            if response.status_code == 200:
+                return response.json()
+            else:
+                raise HTTPException(status_code=response.status_code, 
+                                   detail=response.text)
+    except Exception as e:
+        logging.error(f"Error fetching results for election {election_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to fetch election results")

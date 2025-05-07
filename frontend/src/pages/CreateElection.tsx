@@ -1,8 +1,10 @@
+// Replace lines 1-6 with:
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
 import Modal from "../components/common/Modal";
 import { createElection } from "../services/elections";
+import { Election } from "../types/election";
 
 // Component to create a new election (multi-step form)
 const CreateElection = () => {
@@ -141,48 +143,39 @@ const CreateElection = () => {
   };
   
   // Form submission
-  const handleSubmit = async () => {
-    if (!validateStep(3)) return;
+  // Replace lines 116-172 with:
+const handleSubmit = async () => {
+  if (!validateStep(3)) return;
+  
+  setLoading(true);
+  try {
+    // Format data for backend
+    const electionData = {
+      ...election,
+      status: 'active',
+      created_by: "alice@example.com" // Would come from context in real app
+    };
     
-    setLoading(true);
-    try {
-      // Generate ID for the new election
-      const newId = String(Date.now());
-      
-      // Create the new election
-      const newElection = {
-        ...election,
-        id: newId,
-        status: 'active',
-        created_by: "alice@example.com" // Current user
-      };
-      
-      // Add to mock data
-      mockElectionDetails[newId] = newElection;
-      mockElections.push({
-        id: newId,
-        title: election.title,
-        description: election.description,
-        end_date: election.end_date,
-        hasVoted: false,
-        status: 'active'
-      });
-      
-      setModalMessage({
-        title: "Success!",
-        description: "Your election has been created successfully."
-      });
-      setShowModal(true);
-    } catch (error) {
-      setModalMessage({
-        title: "Creation Failed",
-        description: "There was a problem creating your election. Please try again."
-      });
-      setShowModal(true);
-    } finally {
-      setLoading(false);
-    }
-  };
+    // Call the actual API
+    await createElection(electionData);
+    
+    setModalMessage({
+      title: "Success!",
+      description: "Your election has been created successfully."
+    });
+    setShowModal(true);
+    
+  } catch (error) {
+    console.error("Failed to create election:", error);
+    setModalMessage({
+      title: "Creation Failed",
+      description: error instanceof Error ? error.message : "There was a problem creating your election. Please try again."
+    });
+    setShowModal(true);
+  } finally {
+    setLoading(false);
+  }
+};
   
   return (
     <Layout>

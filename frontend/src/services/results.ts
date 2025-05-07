@@ -1,31 +1,37 @@
+// Replace the entire file with:
 import { API_ENDPOINTS } from '../config/api';
 import { getToken } from './login';
 
 export interface ElectionResults {
-  candidates: {
-    [key: string]: number;
-  };
+  election_id: string;
   total_votes: number;
+  results: {
+    [candidateId: string]: number;
+  };
 }
 
-export const getResults = async (): Promise<ElectionResults> => {
+export const getResults = async (electionId: string): Promise<ElectionResults> => {
   const token = getToken();
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-  };
-  
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+  if (!token) {
+    throw new Error('Authentication required');
   }
   
-  const response = await fetch(API_ENDPOINTS.results, {
-    method: 'GET',
-    headers
-  });
-  
-  if (!response.ok) {
-    throw new Error('Failed to fetch results');
+  try {
+    const response = await fetch(`${API_ENDPOINTS.results}/${electionId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch results: ${response.status}`);
+    }
+    
+    return response.json();
+  } catch (error) {
+    console.error('Error fetching results:', error);
+    throw error;
   }
-  
-  return response.json();
 };

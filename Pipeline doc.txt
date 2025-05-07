@@ -203,53 +203,81 @@ Define Required Backend Endpoints:
 8.3 Enhanced Voting & Results Flow
 ✅ Update Voting.tsx - COMPLETED (needs bug fixes for confirmation dialog)
 ✅ Enhance Result.tsx - COMPLETED
+9. Frontend-Backend Integration Plan (Added May 7, 2025)
+Target Completion: 4 hours
 
-8.4 Integration, Routing & Testing (Hour 4)
-Update Application Routing:
-  - Add routes for new pages with parameters
-  - Implement protected routes with auth guards
-  - Add navigation between related pages
-  - Handle deep linking and URL sharing
+9.1 Bug Fixing & API Connection (Hour 1)
+Fix Identified Issues:
+  - Vote confirmation dialog not progressing after confirmation 
+  - Election creation dialog stuck on confirmation
 
-End-to-End Testing:
-  - Multi-user login and voting flow
-  - Election creation and management
-  - Real-time update verification
-  - Permission and access control testing
-  - Edge cases and error handling
+API Connection Implementation:
+  - Update API_URL configuration to point to API Gateway (http://localhost:8000)
+  - Implement proper error handling for API responses
+  - Add token validation and refresh mechanisms
+  - Connect mock services to real API endpoints
 
-Final Polish:
-  - Consistent loading states across app
-  - Proper error handling and user feedback
-  - Mobile responsiveness
-  - Accessibility improvements
-  - Performance optimization
+9.2 WebSocket Integration for Real-time Updates (Hour 2)
+WebSocket Manager Implementation:
+  - Create WebSocketService.ts to manage connections to ws://localhost:8000/ws
+  - Implement connection establishment and reconnection logic
+  - Add message parsing and event distribution
+  - Create subscription mechanism for components
 
-Integration Touchpoints with Backend:
-- Election API endpoints must align with existing authentication
-- WebSocket connections must handle election-specific updates
-- Vote submission must integrate with existing consensus mechanism
-- Result calculation must leverage the distributed vote counting
+Real-time Update Integration:
+  - Connect Results page to WebSocket for live vote updates
+  - Display consensus progress indicators during voting
+  - Update ElectionsList with real-time status changes
+  - Add notifications for vote confirmations
 
-Timeline and Dependencies:
-1. Core Data & API (Hour 1) - Required for all subsequent work
-2. List & Creation Pages (Hour 2) - Required for end-to-end flow
-3. Enhanced Voting/Results (Hour 3) - Dependent on List pages
-4. Integration & Testing (Hour 4) - Final validation of all features
+9.3 Voting Flow & Consensus Integration (Hour 2)
+Vote Submission Flow:
+  - Connect submitVote() to actual API Gateway endpoint
+  - Update Voting.tsx confirmVote function to use real backend
+  - Add loading state and progress indicators during consensus
+  - Implement proper error handling for vote failures
 
-Integration Points with Other Modules
-Backend Integration (Shahliza)
+Election Creation Flow:
+  - Connect createElection() to actual API Gateway endpoint
+  - Implement validation of server responses
+  - Add proper error handling for creation failures
+  - Update UI to reflect backend validation rules
 
-✅ Receive votes via agreed API endpoints
-✅ Process vote validation results back to backend
-✅ Successfully integrate authentication between frontend and backend
-⚠ Share vote tallies for database persistence
-⚠ Coordinate authentication status for admin operations
+9.4 Testing & Verification
+Multi-user Testing:
+  - Test with multiple browser windows representing different nodes
+  - Verify real-time updates between instances
+  - Confirm consensus is reached across nodes
 
-Frontend Integration (Areesha)
+End-to-End Workflow Testing:
+  1. Authentication:
+     - Login with test credentials (alice@example.com/alicepass)
+     - Verify token storage and API access
 
-✅ Provide WebSocket endpoints for real-time vote updates
-✅ Implement successful user authentication flow
-⚠ Push vote confirmation messages for user feedback
-⚠ Supply voting results data for dashboard display
-⚠ Share system status for administrative interfaces
+  2. Election Management:
+     - List available elections from backend
+     - Create new election and verify it appears in list
+     - Verify voter eligibility rules are applied
+
+  3. Voting Process:
+     - Cast vote in active election
+     - Verify consensus progress indicators
+     - Confirm vote appears in results
+     - Test edge cases (connection loss, duplicate votes)
+
+  4. Results Viewing:
+     - Verify real-time updates via WebSocket
+     - Test access control (only voted elections viewable)
+     - Verify result integrity across different clients
+
+Integration Verification:
+  - Verify Redis cluster receives and processes votes correctly
+  - Confirm proper distribution of vote data across shards
+  - Validate consensus mechanism works end-to-end
+  - Test fault tolerance by stopping individual Redis nodes
+
+Implementation Dependencies:
+  - API Gateway must be running on port 8000
+  - Redis cluster must be properly configured
+  - Auth service must be operational
+  - WebSocket server must be active on API Gateway
