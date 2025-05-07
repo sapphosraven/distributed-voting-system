@@ -18,24 +18,24 @@ export const Login = () => {
     password: "",
   });
 
-  const handleSignin = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    // alert('Creds are: ' + JSON.stringify(creds));
-    setLoading(true);
-    try {
-      const res = await signin(creds);
-      // console.log(res);
-      localStorage.setItem("token", JSON.stringify(res));
-      navigate("/voting");
-      // throw new Error('Forcing to catch block!');
-    } catch {
-      // alert('here');
-      setError("Signin was unsuccesful");
-      setShowModal(true);
-    } finally {
-      setLoading(false);
-    }
-  };
+ // Fix in handleSignin function:
+
+const handleSignin = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
+  setLoading(true);
+  
+  try {
+    const response = await signin({ email: creds.email, password: creds.password });
+    // Save token directly without showing error
+    localStorage.setItem('token', JSON.stringify(response));
+    navigate('/elections');
+  } catch (error) {
+    setError("Authentication failed. Please check your credentials.");
+    // Don't navigate on error
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <Layout showHeader={false} showSidebar={false} showFooter={false}>

@@ -1,35 +1,51 @@
-import { Routes, Route, Navigate } from 'react-router-dom'; // Note: from react-router-dom, not react-router
-import Login from './pages/Login';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { Login } from './pages/Login';
 import { Voting } from './pages/Voting';
 import { Result } from './pages/Result';
-import { WebSocketProvider } from './context/WebSocketContext';
+import ElectionsList from './pages/ElectionsList';
+import ResultsList from './pages/ResultsList';
+import CreateElection from './pages/CreateElection';
 import ProtectedRoute from './components/ProtectedRoute';
 
-// Rest of your component...
 function App() {
   return (
-    <WebSocketProvider>
-      <Routes>
-        <Route path='/login' element={<Login />} />
-        <Route 
-          path='/voting' 
-          element={
-            <ProtectedRoute>
-              <Voting />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path='/result' 
-          element={
-            <ProtectedRoute>
-              <Result />
-            </ProtectedRoute>
-          } 
-        />
-        <Route path="/" element={<Navigate to="/login" replace />} />
-      </Routes>
-    </WebSocketProvider>
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      
+      <Route path="/" element={<Navigate to="/elections" replace />} />
+      
+      <Route path="/elections" element={
+        <ProtectedRoute>
+          <ElectionsList />
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/voting/:electionId" element={
+        <ProtectedRoute>
+          <Voting />
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/results" element={
+        <ProtectedRoute>
+          <ResultsList />
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/results/:electionId" element={
+        <ProtectedRoute>
+          <Result />
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/create-election" element={
+        <ProtectedRoute>
+          <CreateElection />
+        </ProtectedRoute>
+      } />
+      
+      <Route path="*" element={<Navigate to="/elections" replace />} />
+    </Routes>
   );
 }
 
