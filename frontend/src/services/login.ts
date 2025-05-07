@@ -5,28 +5,34 @@ interface LoginResponse {
   token_type: string;
 }
 
+// Change to this
 export const signin = async (payload: { email: string; password: string }): Promise<LoginResponse> => {
   const response = await fetch(API_ENDPOINTS.login, {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
+      'Content-Type': 'application/json',
     },
-    body: new URLSearchParams({
+    body: JSON.stringify({ // Use JSON.stringify to match the content-type
       username: payload.email,
       password: payload.password,
-    }).toString(),
+    }),
   });
 
   if (!response.ok) {
     throw new Error('Authentication failed');
   }
 
-  const data = await response.json();
-  localStorage.setItem('token', JSON.stringify(data));
-  
-  return data;
+  return response.json();
 };
 
-export const signout = () => {
-  localStorage.removeItem('token');
+export const getToken = (): string | null => {
+  const tokenData = localStorage.getItem('token');
+  if (!tokenData) return null;
+  
+  try {
+    const parsed = JSON.parse(tokenData);
+    return parsed.access_token;
+  } catch (e) {
+    return null;
+  }
 };

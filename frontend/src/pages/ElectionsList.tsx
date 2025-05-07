@@ -19,20 +19,20 @@ export const ElectionsList = () => {
   useEffect(() => {
     const fetchElections = async () => {
       try {
-        setLoading(true);
-        // First try the real API
-        try {
-          const data = await getEligibleElections();
-          setElections(data);
-        } catch (apiError) {
-          console.error("API call failed, using mock data:", apiError);
-          // Fallback to mock data
-          setElections(mockElections);
-        }
-      } catch (error) {
-        console.error("Failed to fetch elections:", error);
-        setError("Failed to fetch elections");
-      } finally {
+        // Comment this and uncomment the API call when backend is ready
+        setElections(mockElections);
+        setLoading(false);
+        
+        // Uncomment when backend is ready
+        // const data = await getEligibleElections();
+        // setElections(data);
+      } catch (err) {
+        console.error("Failed to fetch elections:", err);
+        setModalMessage({
+          title: "Error",
+          description: "Failed to load elections. Please try again."
+        });
+        setShowModal(true);
         setLoading(false);
       }
     };

@@ -1,35 +1,31 @@
-import { API_ENDPOINTS, getToken } from '../config/api';
+import { API_ENDPOINTS } from '../config/api';
+import { getToken } from './login';
 
 export interface ElectionResults {
-  election_id: string;
-  title: string;
-  description: string;
-  candidates: any[];
-  votes: {
-    candidate_id: string;
-    name: string;
-    count: number;
-  }[];
+  candidates: {
+    [key: string]: number;
+  };
   total_votes: number;
 }
 
-export const getResults = async (electionId: string): Promise<ElectionResults> => {
+export const getResults = async (): Promise<ElectionResults> => {
   const token = getToken();
-  if (!token) {
-    throw new Error('No authentication token found');
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
   }
-
-  const response = await fetch(API_ENDPOINTS.electionResults(electionId), {
+  
+  const response = await fetch(API_ENDPOINTS.results, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    }
+    headers
   });
-
+  
   if (!response.ok) {
     throw new Error('Failed to fetch results');
   }
-
+  
   return response.json();
 };

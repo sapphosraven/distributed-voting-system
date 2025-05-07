@@ -34,17 +34,17 @@ const Header = () => {
           <div className="flex items-center gap-2 text-lg">
             {/* <h1 className='text-xl'>Contents</h1> */}
             <div className="flex items-center gap-2">
-            <Link
-                to="/elections"
+              <Link
+                to="/voting"
                 className="flex items-center justify-center !text-[rgb(109,32,97)] hover:bg-gradient-to-r from-[rgb(66,25,84)] to-[rgb(109,32,97)] h-12 px-9 rounded-full hover:!text-[rgb(175,170,188)] transition-color duration-300"
               >
-                Elections
+                Voting
               </Link>
               <Link
-                to="/results"
+                to="/result"
                 className="flex items-center justify-center !text-[rgb(109,32,97)] hover:bg-gradient-to-r from-[rgb(66,25,84)] to-[rgb(109,32,97)] h-12 px-9 rounded-full hover:!text-[rgb(175,170,188)] transition-color duration-300"
               >
-                Results
+                Result
               </Link>
             </div>
             <div
