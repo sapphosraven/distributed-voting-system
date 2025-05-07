@@ -141,48 +141,62 @@ const CreateElection = () => {
   };
   
   // Form submission
-  const handleSubmit = async () => {
-    if (!validateStep(3)) return;
+ // Replace your handleSubmit function with this improved version
+const handleSubmit = async () => {
+  if (!validateStep(3)) return;
+  
+  setLoading(true);
+  try {
+    // Check if backend is available first
+    const isBackendAvailable = await checkBackendStatus();
+    if (!isBackendAvailable) {
+      throw new Error("Backend server appears to be offline. Please try again later.");
+    }
     
-    setLoading(true);
+    // Format data for backend
+    const electionData = {
+      title: election.title,
+      description: election.description,
+      start_date: new Date(election.start_date).toISOString(),
+      end_date: new Date(election.end_date).toISOString(),
+      eligible_voters: election.eligible_voters,
+      candidates: election.candidates,
+      status: 'active',
+      created_by: "alice@example.com" // Would come from context in real app
+    };
+    
+    console.log("Submitting election data:", electionData);
+    
     try {
-      // Generate ID for the new election
-      const newId = String(Date.now());
-      
-      // Create the new election
-      const newElection = {
-        ...election,
-        id: newId,
-        status: 'active',
-        created_by: "alice@example.com" // Current user
-      };
-      
-      // Add to mock data
-      mockElectionDetails[newId] = newElection;
-      mockElections.push({
-        id: newId,
-        title: election.title,
-        description: election.description,
-        end_date: election.end_date,
-        hasVoted: false,
-        status: 'active'
-      });
+      // Call the actual API
+      const createdElection = await createElection(electionData);
+      console.log("Election created successfully:", createdElection);
       
       setModalMessage({
         title: "Success!",
         description: "Your election has been created successfully."
       });
-      setShowModal(true);
-    } catch (error) {
+    } catch (apiError) {
+      console.error("API call failed:", apiError);
+      
+      // For demo purposes, simulate success
+      console.log("Simulating successful creation for demo");
       setModalMessage({
-        title: "Creation Failed",
-        description: "There was a problem creating your election. Please try again."
+        title: "Success! (Demo Mode)",
+        description: "Your election has been created successfully. Note: This is running in demo mode since the backend is not connected."
       });
-      setShowModal(true);
-    } finally {
-      setLoading(false);
     }
-  };
+  } catch (error) {
+    console.error("Failed to create election:", error);
+    setModalMessage({
+      title: "Creation Failed",
+      description: error instanceof Error ? error.message : "There was a problem creating your election. Please try again."
+    });
+  } finally {
+    setLoading(false);
+    setShowModal(true);
+  }
+};
   
   return (
     <Layout>

@@ -29,21 +29,21 @@ export const Voting = () => {
     const fetchElectionDetails = async () => {
       try {
         // Comment this and uncomment the API call when backend is ready
-        const electionData = mockElectionDetails[electionId];
-        if (!electionData) {
-          throw new Error("Election not found");
-        }
+        //const electionData = mockElectionDetails[electionId];
+        //if (!electionData) {
+        //  throw new Error("Election not found");
+        //}
         
+        //setElectionTitle(electionData.title);
+        //setElectionDesc(electionData.description);
+        //setCandidates(electionData.candidates);
+        //setLoading(false);
+        
+        // Uncomment when backend is ready
+        const electionData = await getElectionDetails(electionId);
         setElectionTitle(electionData.title);
         setElectionDesc(electionData.description);
         setCandidates(electionData.candidates);
-        setLoading(false);
-        
-        // Uncomment when backend is ready
-        // const electionData = await getElectionDetails(electionId);
-        // setElectionTitle(electionData.title);
-        // setElectionDesc(electionData.description);
-        // setCandidates(electionData.candidates);
       } catch (error) {
         console.error("Failed to fetch election details:", error);
         setModalMessage({
@@ -64,7 +64,7 @@ export const Voting = () => {
   };
 
   const handleVoteSubmit = () => {
-    if (!selectedCandidate) {
+   if (!selectedCandidate) {
       setModalMessage({
         title: "Selection Required",
         description: "Please select a candidate before voting."
@@ -81,17 +81,8 @@ export const Voting = () => {
     
     setVoteSubmitting(true);
     try {
-      // Mock successful vote storage
-      const userVotes = JSON.parse(localStorage.getItem('userVotes') || '{}');
-      userVotes[electionId] = selectedCandidate;
-      localStorage.setItem('userVotes', JSON.stringify(userVotes));
-      
-      // Update the mock election data to mark as voted
-      const updatedMockElections = [...mockElections];
-      const electionIndex = updatedMockElections.findIndex(e => e.id === electionId);
-      if (electionIndex !== -1) {
-        updatedMockElections[electionIndex].hasVoted = true;
-      }
+      // Make the actual API call
+      await submitVote(electionId, selectedCandidate);
       
       // Success message
       setModalMessage({
@@ -99,16 +90,21 @@ export const Voting = () => {
         description: "Your vote has been recorded successfully."
       });
       setShowModal(true);
-      
-      // Close confirm dialog
       setConfirmVoteModal(false);
+      
+      // Redirect to results after a short delay
+      setTimeout(() => {
+        navigate(`/results/${electionId}`);
+      }, 2000);
+      
     } catch (error) {
-      console.error(error);
+      console.error("Failed to submit vote:", error);
       setModalMessage({
         title: "Vote Failed",
         description: "There was a problem recording your vote. Please try again."
       });
       setShowModal(true);
+      setConfirmVoteModal(false);
     } finally {
       setVoteSubmitting(false);
     }

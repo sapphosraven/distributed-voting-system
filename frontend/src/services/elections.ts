@@ -1,81 +1,132 @@
-import { API_ENDPOINTS } from "../config/api";
-import { Election, ElectionListItem } from "../types/election";
-import { getToken } from "./login";
+import { API_ENDPOINTS, getToken } from '../config/api';
 
-// Get elections the user is eligible to vote in
-export const getEligibleElections = async (): Promise<ElectionListItem[]> => {
-  const response = await fetch(API_ENDPOINTS.elections, {
-    headers: {
-      'Authorization': `Bearer ${getToken()}`
-    }
-  });
+export interface Election {
+  id: string;
+  title: string;
+  description: string;
+  end_date: string;
+  hasVoted: boolean;
+  status: string;
+}
+
+
+
+export const getEligibleElections = async (): Promise<Election[]> => {
+  const token = getToken();
+  console.log('Using token:', token?.substring(0, 20) + '...');
   
-  if (!response.ok) {
-    throw new Error('Failed to fetch eligible elections');
+  if (!token) {
+    throw new Error('No authentication token found');
   }
-  
-  return response.json();
+
+  // Ensure proper header format for Bearer token
+  const headers = {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`
+  };
+
+  try {
+    const response = await fetch(API_ENDPOINTS.elections, {
+      method: 'GET',
+      headers,
+      credentials: 'include' // Add this line for cookies if needed
+    });
+    
+    console.log('Elections API response status:', response.status);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Error response:', errorText);
+      throw new Error('Failed to fetch elections');
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error('Error in getEligibleElections:', error);
+    throw error;
+  }
 };
 
-// Get specific election details
-export const getElectionDetails = async (electionId: string): Promise<Election> => {
+export const getElectionDetails = async (electionId: string) => {
+
+  
+  const token = getToken();
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+
   const response = await fetch(`${API_ENDPOINTS.elections}/${electionId}`, {
-    headers: {
-      'Authorization': `Bearer ${getToken()}`
-    }
-  });
-  
-  if (!response.ok) {
-    throw new Error(`Failed to fetch election details for ${electionId}`);
-  }
-  
-  return response.json();
-};
-
-// Create a new election
-export const createElection = async (election: Omit<Election, 'id'>): Promise<Election> => {
-  const response = await fetch(API_ENDPOINTS.elections, {
-    method: 'POST',
+    method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${getToken()}`
-    },
-    body: JSON.stringify(election)
+      'Authorization': `Bearer ${token}`,
+    }
   });
-  
+
   if (!response.ok) {
-    throw new Error('Failed to create election');
+    throw new Error('Failed to fetch election details');
   }
-  
+
   return response.json();
 };
 
-// Get elections the user has voted in
-export const getVotedElections = async (): Promise<ElectionListItem[]> => {
+// Update the createElection function with better error handling
+export const createElection = async (electionData: any) => {
+  const token = getToken();
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+
+  console.log("Creating election with token:", token?.substring(0, 15) + "...");
+  
+  try {
+    const response = await fetch(API_ENDPOINTS.elections, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(electionData)
+    });
+
+    console.log("API response status:", response.status);
+    
+    if (!response.ok) {
+      let errorMessage = 'Failed to create election';
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.detail || errorMessage;
+      } catch {
+        // If parsing fails, use the status text
+        errorMessage = response.statusText || errorMessage;
+      }
+      throw new Error(errorMessage);
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error('Error in createElection:', error);
+    throw error;
+  }
+};
+
+export const getVotedElections = async (): Promise<Election[]> => {
+  const token = getToken();
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+
   const response = await fetch(API_ENDPOINTS.votedElections, {
+    method: 'GET',
     headers: {
-      'Authorization': `Bearer ${getToken()}`
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
     }
   });
-  
+
   if (!response.ok) {
     throw new Error('Failed to fetch voted elections');
   }
-  
-  return response.json();
-};
 
-// Get candidates for a specific election
-export const getElectionCandidates = async (electionId: string) => {
-  const response = await fetch(`${API_ENDPOINTS.elections}/${electionId}/candidates`, {
-    headers: {
-      'Authorization': `Bearer ${getToken()}`
-    }
-  });
-  
-  if (!response.ok) {
-    throw new Error(`Failed to fetch candidates for election ${electionId}`);
-  }
-  
   return response.json();
 };

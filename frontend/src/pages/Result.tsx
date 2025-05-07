@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
-import { mockElectionDetails } from "../mocks/electionMocks"; // Import mocks
+import { getResults } from "../services/results"; // Add this import
 
 export const Result = () => {
   const { electionId } = useParams<{ electionId: string }>();
@@ -11,31 +11,24 @@ export const Result = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Safely use mockElectionDetails for demo
-    try {
-      const electionData = electionId ? mockElectionDetails[electionId] : null;
-      if (!electionData) {
-        setError("Election not found");
-        return;
+    const fetchResults = async () => {
+      try {
+        if (!electionId) {
+          setError("Election ID is missing");
+          return;
+        }
+        
+        const results = await getResults(electionId);
+        setElection(results);
+      } catch (err) {
+        console.error("Failed to load election results:", err);
+        setError("Failed to load election results");
+      } finally {
+        setLoading(false);
       }
-      
-      // Create fake results
-      const results = electionData.candidates.map(candidate => ({
-        candidate_id: candidate.id,
-        name: candidate.name,
-        count: Math.floor(Math.random() * 50) + 1
-      }));
-      
-      setElection({
-        ...electionData,
-        votes: results,
-        total_votes: results.reduce((sum, vote) => sum + vote.count, 0)
-      });
-    } catch (err) {
-      setError("Failed to load election results");
-    } finally {
-      setLoading(false);
-    }
+    };
+    
+    fetchResults();
   }, [electionId]);
 
   if (loading) {

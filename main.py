@@ -1,283 +1,291 @@
-import time
-from fastapi import FastAPI, Depends, HTTPException
-from auth.models import VoteRequest
-from auth import get_current_user
-import logging
-import os
-from auth.router import auth_router
-from fastapi import WebSocket, WebSocketDisconnect
-import websocket_manager
-import redis_subscriber
-from websocket_manager import connection_manager
-from redis_subscriber import vote_subscriber
+from fastapi import FastAPI, HTTPException, Depends, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import OAuth2PasswordBearer
+from node.Models import ElectionCreate, ElectionResponse, CandidateBase
+import uuid
+import logging
 import json
-import asyncio
-import socket
-import subprocess
+from typing import Dict, List
+from datetime import datetime
 
-# Create log directory
-if not os.path.exists("logs"):
-    os.makedirs("logs")
+# Import authentication from auth file
+from auth.auth import get_current_user
 
-# Configure logging to both file and console
-logging.basicConfig(
-    level=logging.DEBUG,  # Change to DEBUG level
-    format="%(asctime)s - %(levelname)s - %(message)s",
-    handlers=[
-        logging.FileHandler("logs/vote_audit.log"),
-        logging.StreamHandler()  # Add console output
-    ]
-)
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-voting_nodes = os.getenv("VOTING_NODES", "http://voting-node-1:5000,http://voting-node-2:5000,http://voting-node-3:5000").split(",")
-logging.info(f"Initialized with voting nodes: {voting_nodes}")
+app = FastAPI()
 
-def standard_error_response(status_code: int, message: str, error_type: str = "general_error"):
-    """Create a standardized error response"""
-    return {
-        "error": {
-            "type": error_type,
-            "message": message,
-            "status_code": status_code
-        },
-        "timestamp": time.time()
-    }
-
-app = FastAPI(title="Distributed Voting System")
-
-
+# Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # During development; restrict this in production
+    allow_origins=["http://localhost:5173"],  # Frontend dev server
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-@app.get("/debug/network")
-def debug_network():
-    """Debug network connectivity between containers"""
-    results = {}
-    
-    # Test DNS resolution
+# In-memory databases for demo
+elections_db: Dict[str, Dict] = {}
+votes_db: Dict[str, Dict] = {}  # election_id -> {user_email -> candidate_id}
+
+# Authentication
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+
+# API Endpoints
+
+@app.get("/")
+async def root():
+    return {"message": "Distributed Voting System API"}
+
+# Election Management Endpoints
+
+@app.post("/elections", response_model=ElectionResponse)
+async def create_election(election: ElectionCreate, username: str = Depends(get_current_user)):
+    """Create a new election"""
     try:
-        results["environment"] = {"VOTING_NODES": voting_nodes}
+        # Generate a unique ID for the election
+        election_id = str(uuid.uuid4())
         
-        for node_url in voting_nodes:
-            hostname = node_url.split("//")[1].split(":")[0]
-            try:
-                ip = socket.gethostbyname(hostname)
-                results[f"{hostname}_ip"] = ip
-                
-                # Try TCP connection
-                port = int(node_url.split(":")[-1].split("/")[0])
-                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                s.settimeout(2)
-                conn_result = s.connect_ex((ip, port))
-                s.close()
-                results[f"{hostname}:{port}_connection"] = "Success" if conn_result == 0 else f"Failed with code {conn_result}"
-            except Exception as e:
-                results[f"{hostname}_error"] = str(e)
+        # Store the election
+        election_data = election.dict()
+        election_data["id"] = election_id
+        
+        # Convert datetime objects to strings for storage
+        election_data["start_date"] = election_data["start_date"].isoformat()
+        election_data["end_date"] = election_data["end_date"].isoformat()
+        
+        # Add candidate IDs if they don't have them
+        for i, candidate in enumerate(election_data["candidates"]):
+            if "id" not in candidate or not candidate["id"]:
+                candidate["id"] = f"{election_id}-candidate-{i+1}"
+        
+        # Store in our in-memory DB
+        elections_db[election_id] = election_data
+        
+        # Initialize votes for this election
+        votes_db[election_id] = {}
+        
+        logging.info(f"Created new election: {election_id} - {election_data['title']}")
+        
+        return election_data
     except Exception as e:
-        results["error"] = str(e)
+        logging.error(f"Error creating election: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to create election: {str(e)}")
+
+@app.get("/elections")
+async def get_elections(username: str = Depends(get_current_user)):
+    """Get list of elections available to the user"""
+    try:
+        elections_list = []
+        for election_id, election_data in elections_db.items():
+            # Check if user is eligible by email or domain
+            is_eligible = False
+            for voter in election_data["eligible_voters"]:
+                if voter.startswith("@"):
+                    # Domain check
+                    if username.endswith(voter):
+                        is_eligible = True
+                        break
+                elif voter == username:
+                    # Direct email match
+                    is_eligible = True
+                    break
+            
+            if is_eligible:
+                # Check if the user has voted
+                has_voted = election_id in votes_db and username in votes_db[election_id]
+                
+                # Create a simpler version for listings
+                elections_list.append({
+                    "id": election_id,
+                    "title": election_data["title"],
+                    "description": election_data["description"],
+                    "end_date": election_data["end_date"],
+                    "hasVoted": has_voted,
+                    "status": election_data["status"]
+                })
         
-    return results
+        return elections_list
+    except Exception as e:
+        logging.error(f"Error fetching elections: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch elections: {str(e)}")
 
-# Comment out node_app mounting - we'll just forward API calls directly
-# try:
-#     from node.node_server import node_app
-#     app.mount("/node", node_app)
-#     print("Successfully mounted node_app")
-# except Exception as e:
-#     import logging
-#     logging.error(f"Failed to import and mount node_app: {e}")
-#     print(f"Error mounting node_app: {e}")
+@app.get("/elections/{election_id}")
+async def get_election(election_id: str, username: str = Depends(get_current_user)):
+    """Get details of a specific election"""
+    try:
+        if election_id not in elections_db:
+            raise HTTPException(status_code=404, detail="Election not found")
+            
+        election_data = elections_db[election_id]
+        
+        # Check if user is eligible
+        is_eligible = False
+        for voter in election_data["eligible_voters"]:
+            if voter.startswith("@"):
+                # Domain check
+                if username.endswith(voter):
+                    is_eligible = True
+                    break
+            elif voter == username:
+                # Direct email match
+                is_eligible = True
+                break
+                
+        if not is_eligible:
+            raise HTTPException(status_code=403, detail="Not eligible for this election")
+            
+        return election_data
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        logging.error(f"Error fetching election {election_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch election: {str(e)}")
 
-# Include authentication routes
-app.include_router(auth_router, prefix="/auth")
-
-import httpx
-# Replace the /vote endpoint function with:
+# Voting endpoints
 
 @app.post("/vote")
-async def cast_vote(vote: VoteRequest, username: str = Depends(get_current_user)):
-    """Forward vote to a voting node"""
+async def cast_vote(vote: dict, username: str = Depends(get_current_user)):
+    """Cast a vote in an election"""
     try:
-        # Get list of voting nodes from environment
-        logging.info(f"Attempting to forward vote to nodes: {voting_nodes}")
+        # Validate required fields
+        if "election_id" not in vote or "candidate_id" not in vote:
+            raise HTTPException(status_code=400, detail="Missing required fields")
         
-        # Try each node until successful
-        for node_url in voting_nodes:
-            try:
-                # Make sure URL has /votes endpoint
-                vote_url = f"{node_url}/votes" if not node_url.endswith("/votes") else node_url
-                
-                logging.info(f"Trying to connect to {vote_url}")
-                async with httpx.AsyncClient() as client:
-                    response = await client.post(
-                        vote_url,
-                        json={
-                            "voter_id": username,
-                            "candidate_id": vote.candidate_id,
-                            "election_id": "election-2025"
-                        },
-                        timeout=5.0
-                    )
-                
-                if response.status_code in (200, 202):  # Accept either OK or Accepted
-                    result = response.json()
-                    logging.info(f"Vote successfully forwarded to {vote_url}")
-                    
-                    # Broadcast vote event directly to WebSocket clients
-                    try:
-                        vote_event = {
-                            "event": "vote_submitted",
-                            "vote_id": result.get("vote_id", "unknown"),
-                            "candidate_id": vote.candidate_id,
-                            "voter_id": username,
-                            "timestamp": time.time()
-                        }
-                        # No await here if we're not in an async function
-                        asyncio.create_task(connection_manager.broadcast(vote_event))
-                        logging.info(f"Broadcasting vote event to {len(connection_manager.active_connections)} clients")
-                    except Exception as e:
-                        logging.error(f"Failed to broadcast vote event: {e}")
-                        
-                    return {
-                        "message": f"Vote for {vote.candidate_id} received",
-                        "vote_id": result.get("vote_id", "unknown"),
-                        "status": result.get("status", "processed")
-                    }
-                logging.warning(f"Node {vote_url} returned status {response.status_code}")
-            except Exception as e:
-                logging.error(f"Failed to connect to {vote_url}: {str(e)}")
-                continue
+        election_id = vote["election_id"]
+        candidate_id = vote["candidate_id"]
         
-        # If all nodes failed
-        logging.error("All voting nodes unreachable")
-        return {"message": "Error: All connection attempts failed"}
+        # Validate election exists
+        if election_id not in elections_db:
+            raise HTTPException(status_code=404, detail="Election not found")
+        
+        election = elections_db[election_id]
+        
+        # Check if election is active
+        if election["status"] != "active":
+            raise HTTPException(status_code=400, detail="Election is not active")
+        
+        # Check if user is eligible
+        is_eligible = False
+        for voter in election["eligible_voters"]:
+            if voter.startswith("@"):
+                if username.endswith(voter):
+                    is_eligible = True
+                    break
+            elif voter == username:
+                is_eligible = True
+                break
+                
+        if not is_eligible:
+            raise HTTPException(status_code=403, detail="Not eligible to vote in this election")
+        
+        # Check if candidate exists
+        candidate_exists = False
+        for candidate in election["candidates"]:
+            if candidate["id"] == candidate_id:
+                candidate_exists = True
+                break
+                
+        if not candidate_exists:
+            raise HTTPException(status_code=404, detail="Candidate not found")
+        
+        # Check if user already voted
+        if election_id in votes_db and username in votes_db[election_id]:
+            raise HTTPException(status_code=400, detail="Already voted in this election")
+        
+        # Store the vote
+        if election_id not in votes_db:
+            votes_db[election_id] = {}
+        
+        votes_db[election_id][username] = candidate_id
+        
+        return {"message": "Vote recorded successfully"}
+    except HTTPException as e:
+        raise e
     except Exception as e:
-        logging.error(f"Vote processing error: {str(e)}")
-        return {"message": f"Vote processing error: {str(e)}"}
-    
-# Candidates endpoint
-@app.get("/candidates")
-async def get_candidates():
-    """Get list of available candidates"""
-    try:
-        # For MVP, we'll return a static list
-        # In a full implementation, this would come from a database
-        return [
-            {"id": "Candidate_A", "name": "Candidate A", "party": "Party A", "photo": "candidate_a.jpg"},
-            {"id": "Candidate_B", "name": "Candidate B", "party": "Party B", "photo": "candidate_b.jpg"},
-            {"id": "Candidate_C", "name": "Candidate C", "party": "Party C", "photo": "candidate_c.jpg"}
-        ]
-    except Exception as e:
-        logging.error(f"Error fetching candidates: {str(e)}")
-        raise HTTPException(status_code=500, detail="Failed to fetch candidates")
+        logging.error(f"Error recording vote: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to record vote: {str(e)}")
 
-# Results endpoint
-@app.get("/results")
-async def get_results():
-    """Get current election results"""
+@app.get("/elections/{election_id}/results")
+async def get_election_results(election_id: str, username: str = Depends(get_current_user)):
+    """Get results for a specific election"""
     try:
-        # In MVP, we'll query one node for results
-        # In full implementation, we'd aggregate from all nodes
-        for node_url in voting_nodes:
-            try:
-                results_url = f"{node_url}/results"
-                logging.info(f"Fetching results from {results_url}")
-                
-                async with httpx.AsyncClient() as client:
-                    response = await client.get(results_url, timeout=5.0)
-                    if response.status_code == 200:
-                        return response.json()
-            except Exception as e:
-                logging.error(f"Failed to fetch results from {node_url}: {str(e)}")
-                continue
-                
-        # If we couldn't get results from any node, return empty results
-        return {"candidates": {
-                "Candidate_A": 0,
-                "Candidate_B": 0, 
-                "Candidate_C": 0
-            }, 
-            "total_votes": 0
+        if election_id not in elections_db:
+            raise HTTPException(status_code=404, detail="Election not found")
+            
+        election_data = elections_db[election_id]
+        
+        # Count votes for each candidate
+        candidate_votes = {}
+        total_votes = 0
+        
+        if election_id in votes_db:
+            for voter, candidate_id in votes_db[election_id].items():
+                if candidate_id not in candidate_votes:
+                    candidate_votes[candidate_id] = 0
+                candidate_votes[candidate_id] += 1
+                total_votes += 1
+        
+        # Format results
+        results = []
+        for candidate in election_data["candidates"]:
+            candidate_id = candidate["id"]
+            vote_count = candidate_votes.get(candidate_id, 0)
+            
+            results.append({
+                "candidate_id": candidate_id,
+                "name": candidate["name"],
+                "count": vote_count
+            })
+        
+        return {
+            "election_id": election_id,
+            "title": election_data["title"],
+            "description": election_data["description"],
+            "candidates": election_data["candidates"],
+            "votes": results,
+            "total_votes": total_votes
         }
+    except HTTPException as e:
+        raise e
     except Exception as e:
-        logging.error(f"Error fetching results: {str(e)}")
-        raise HTTPException(status_code=500, detail="Failed to fetch election results")
+        logging.error(f"Error fetching results for election {election_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch election results: {str(e)}")
 
-# System status endpoint
-@app.get("/system/status")
-async def system_status():
-    """Get system health status"""
-    status = {
-        "api_gateway": "healthy",
-        "voting_nodes": {},
-        "websocket_connections": len(connection_manager.active_connections),
-        "timestamp": time.time()
-    }
-    
-    # Check voting nodes
-    for node_url in voting_nodes:
-        try:
-            health_url = f"{node_url}/health"
-            async with httpx.AsyncClient() as client:
-                response = await client.get(health_url, timeout=2.0)
-                status["voting_nodes"][node_url] = "healthy" if response.status_code == 200 else "unhealthy"
-        except:
-            status["voting_nodes"][node_url] = "unreachable"
-    
-    return status
+@app.get("/user/voted-elections")
+async def get_voted_elections(username: str = Depends(get_current_user)):
+    """Get list of elections the user has voted in"""
+    try:
+        voted_elections = []
+        
+        for election_id, voters in votes_db.items():
+            if username in voters and election_id in elections_db:
+                election_data = elections_db[election_id]
+                
+                voted_elections.append({
+                    "id": election_id,
+                    "title": election_data["title"],
+                    "description": election_data["description"],
+                    "end_date": election_data["end_date"],
+                    "hasVoted": True,
+                    "status": election_data["status"]
+                })
+        
+        return voted_elections
+    except Exception as e:
+        logging.error(f"Error fetching voted elections for {username}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch voted elections: {str(e)}")
 
-# Add this after the /vote endpoint (around line 35)
+# WebSocket endpoint for real-time updates
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
-    """WebSocket endpoint for real-time vote updates"""
-    await connection_manager.connect(websocket)
+    await websocket.accept()
     try:
         while True:
-            # Receive and process messages from the client
             data = await websocket.receive_text()
-            try:
-                message = json.loads(data)
-                action = message.get("action")
-                
-                if action == "subscribe" and "topic" in message:
-                    await connection_manager.subscribe(websocket, message["topic"])
-                elif action == "unsubscribe" and "topic" in message:
-                    await connection_manager.unsubscribe(websocket, message["topic"])
-            except json.JSONDecodeError:
-                # Send error to client if message is not valid JSON
-                await websocket.send_json({"error": "Invalid JSON message"})
-    except WebSocketDisconnect:
-        connection_manager.disconnect(websocket)
+            # Process the received data
+            await websocket.send_text(f"Message received: {data}")
     except Exception as e:
         logging.error(f"WebSocket error: {str(e)}")
-        connection_manager.disconnect(websocket)
-
-# Add background task startup event (at the bottom of the file, before startup_events)
-@app.on_event("startup")
-async def start_redis_subscriber():
-    """Start the Redis subscriber on application startup"""
-    try:
-        await vote_subscriber.connect()
-        await vote_subscriber.subscribe()
-        # Start the listener as a background task
-        asyncio.create_task(vote_subscriber.listen_for_events())
-        logging.info("Started Redis subscriber for vote events")
-    except Exception as e:
-        logging.error(f"Failed to start Redis subscriber: {e}")
-
-@app.on_event("shutdown")
-async def stop_redis_subscriber():
-    """Stop the Redis subscriber on application shutdown"""
-    await vote_subscriber.stop()
-    logging.info("Stopped Redis subscriber")
-    
-# Root endpoint
-@app.get("/")
-def root():
-    return {"message": "Distributed Voting System is running!"}
