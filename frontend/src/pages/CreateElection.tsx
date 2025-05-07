@@ -146,26 +146,34 @@ const CreateElection = () => {
     
     setLoading(true);
     try {
-      // Comment this and uncomment the API call when backend is ready
-      // Mock successful creation
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Generate ID for the new election
+      const newId = String(Date.now());
       
-      // Uncomment when backend is ready
-      // await createElection(election);
+      // Create the new election
+      const newElection = {
+        ...election,
+        id: newId,
+        status: 'active',
+        created_by: "alice@example.com" // Current user
+      };
+      
+      // Add to mock data
+      mockElectionDetails[newId] = newElection;
+      mockElections.push({
+        id: newId,
+        title: election.title,
+        description: election.description,
+        end_date: election.end_date,
+        hasVoted: false,
+        status: 'active'
+      });
       
       setModalMessage({
         title: "Success!",
         description: "Your election has been created successfully."
       });
       setShowModal(true);
-      
-      // Redirect to elections page after a short delay
-      setTimeout(() => {
-        navigate('/elections');
-      }, 2000);
-      
     } catch (error) {
-      console.error("Failed to create election:", error);
       setModalMessage({
         title: "Creation Failed",
         description: "There was a problem creating your election. Please try again."

@@ -20,21 +20,21 @@ export const Login = () => {
 
  // Fix in handleSignin function:
 
-const handleSignin = async (e: React.FormEvent<HTMLFormElement>) => {
+ const handleSignin = async (e: React.FormEvent<HTMLFormElement>) => {
   e.preventDefault();
   setLoading(true);
   
   try {
     const response = await signin({ email: creds.email, password: creds.password });
-    // Save token directly without showing error
     localStorage.setItem('token', JSON.stringify(response));
     navigate('/elections');
   } catch (error) {
     setError("Authentication failed. Please check your credentials.");
-    // Don't navigate on error
-  } finally {
-    setLoading(false);
+    setLoading(false); // Stop loading here on error
+    return; // Important: Don't continue past this point on error
   }
+  
+  setLoading(false);
 };
 
   return (

@@ -81,18 +81,38 @@ export const Voting = () => {
     
     setVoteSubmitting(true);
     try {
-      // Comment this and uncomment the API call when backend is ready
-      // Mock successful vote
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Mock successful vote storage
+      const userVotes = JSON.parse(localStorage.getItem('userVotes') || '{}');
+      userVotes[electionId] = selectedCandidate;
+      localStorage.setItem('userVotes', JSON.stringify(userVotes));
       
-      // Uncomment when backend is ready
-      // await submitVote(electionId, selectedCandidate);
+      // Update the mock election data to mark as voted
+      const updatedMockElections = [...mockElections];
+      const electionIndex = updatedMockElections.findIndex(e => e.id === electionId);
+      if (electionIndex !== -1) {
+        updatedMockElections[electionIndex].hasVoted = true;
+      }
       
+      // Success message
       setModalMessage({
         title: "Success!",
         description: "Your vote has been recorded successfully."
       });
+      setShowModal(true);
       
+      // Close confirm dialog
+      setConfirmVoteModal(false);
+    } catch (error) {
+      console.error(error);
+      setModalMessage({
+        title: "Vote Failed",
+        description: "There was a problem recording your vote. Please try again."
+      });
+      setShowModal(true);
+    } finally {
+      setVoteSubmitting(false);
+    }
+  };
 
   if (loading) {
     return (

@@ -1,40 +1,21 @@
 import React from 'react';
 import Header from './layout/Header';
-import Sidebar from './layout/Sidebar';
-import Content from './layout/Content';
 import Footer from './layout/Footer';
 
 interface LayoutProps {
   children: React.ReactNode;
   showHeader?: boolean;
-  showSidebar?: boolean;
   showFooter?: boolean;
 }
 
-const Layout = ({
-  children,
-  showHeader = true,
-  showSidebar = true,
-  showFooter = true,
-}: LayoutProps) => {
+const Layout: React.FC<LayoutProps> = ({ children, showHeader = true, showFooter = true }) => {
   return (
-    <div className='w-[100dvw] h-[100dvh]'>
+    <div className="flex flex-col min-h-screen bg-gray-50">
       {showHeader && <Header />}
-      <div
-        className={`bg-pink-500 ${
-          showHeader ? 'h-[calc(100%-96px)]' : 'h-full'
-        } flex relative`}
-      >
-        {showSidebar && <Sidebar />}
-        <main
-          className={`${showSidebar && 'pl-[64px]'} ${
-            showFooter && 'h-[calc(100%-128px)]'
-          } w-full`}
-        >
-          <Content show={showFooter}>{children}</Content>
-          {showFooter && <Footer />}
-        </main>
-      </div>
+      <main className="flex-1 py-8 px-4 container mx-auto">
+        {children}
+      </main>
+      {showFooter && <Footer />}
     </div>
   );
 };

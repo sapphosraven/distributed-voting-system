@@ -1,75 +1,121 @@
-// Replace lines 1-3 with these imports:
-import { useState, useEffect } from 'react';
-import Layout from '../components/Layout';
-import { getResults, ElectionResults } from '../services/results';
-import { useWebSocket } from '../context/WebSocketContext';
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import Layout from "../components/Layout";
+import { mockElectionDetails } from "../mocks/electionMocks"; // Import mocks
 
-// Delete the import from constants:
-// import { candidates } from '../constants/voting';
-
-// Update the component function:
 export const Result = () => {
-  const [results, setResults] = useState<ElectionResults | null>(null);
+  const { electionId } = useParams<{ electionId: string }>();
   const [loading, setLoading] = useState(true);
-  const { lastMessage } = useWebSocket();
-  
-  // Fetch initial results
+  const [election, setElection] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
+
   useEffect(() => {
-    const fetchResults = async () => {
-      setLoading(true);
-      try {
-        const data = await getResults();
-        setResults(data);
-      } catch (error) {
-        console.error("Failed to fetch results:", error);
-      } finally {
-        setLoading(false);
+    // Safely use mockElectionDetails for demo
+    try {
+      const electionData = electionId ? mockElectionDetails[electionId] : null;
+      if (!electionData) {
+        setError("Election not found");
+        return;
       }
-    };
-    
-    fetchResults();
-  }, []);
-  
-  // Update results when new votes come in
-  useEffect(() => {
-    if (lastMessage && (lastMessage.event === 'vote_submitted' || lastMessage.event === 'vote_finalized')) {
-      // Refresh results
-      getResults().then(data => setResults(data)).catch(console.error);
+      
+      // Create fake results
+      const results = electionData.candidates.map(candidate => ({
+        candidate_id: candidate.id,
+        name: candidate.name,
+        count: Math.floor(Math.random() * 50) + 1
+      }));
+      
+      setElection({
+        ...electionData,
+        votes: results,
+        total_votes: results.reduce((sum, vote) => sum + vote.count, 0)
+      });
+    } catch (err) {
+      setError("Failed to load election results");
+    } finally {
+      setLoading(false);
     }
-  }, [lastMessage]);
-  
-  // Update your JSX to display the results from the API
-  return (
-    <Layout showFooter={false} showSidebar={false}>
-      <div className='bg-zinc-950 h-full w-full'>
-        <h1 className='text-3xl font-bold text-center pt-6'>Election Results</h1>
-        
-        {loading ? (
-          <div className='flex justify-center items-center h-48'>
-            <p>Loading results...</p>
+  }, [electionId]);
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-700"></div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (error || !election) {
+    return (
+      <Layout>
+        <div className="p-6 max-w-4xl mx-auto">
+          <div className="bg-red-100 p-4 rounded-md text-red-700 mb-4">
+            {error || "Failed to load results"}
           </div>
-        ) : results ? (
-          <div className='p-8'>
-            <h2 className='text-xl mb-4'>Total Votes: {results.total_votes || 0}</h2>
-            <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-              {Object.entries(results.candidates || {}).map(([candidateId, votes]) => (
-                <div key={candidateId} className='bg-zinc-900 p-4 rounded-lg'>
-                  <h3 className='text-xl font-semibold'>{candidateId}</h3>
-                  <p className='text-3xl font-bold text-purple-400'>{votes} votes</p>
-                  <div className='w-full bg-gray-700 rounded-full h-2.5 mt-2'>
+          <button 
+            className="px-4 py-2 bg-indigo-600 text-white rounded-md"
+            onClick={() => navigate('/elections')}
+          >
+            Back to Elections
+          </button>
+        </div>
+      </Layout>
+    );
+  }
+
+  // Calculate percentages
+  const totalVotes = election.total_votes;
+  
+  return (
+    <Layout>
+      <div className="p-6 max-w-4xl mx-auto">
+        <h1 className="text-3xl font-bold mb-2 text-indigo-800">{election.title}</h1>
+        <p className="text-gray-600 mb-8">{election.description}</p>
+        
+        <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+          <h2 className="text-2xl font-semibold mb-4 text-indigo-700">Results</h2>
+          <div className="mb-4 text-sm text-gray-500">
+            Total votes: {totalVotes}
+          </div>
+          
+          <div className="space-y-6">
+            {election.votes.map((vote: any) => {
+              const percentage = totalVotes > 0 
+                ? Math.round((vote.count / totalVotes) * 100) 
+                : 0;
+              
+              return (
+                <div key={vote.candidate_id} className="mb-4">
+                  <div className="flex justify-between mb-1">
+                    <span className="font-medium">
+                      {election.candidates.find((c: any) => c.id === vote.candidate_id)?.name || vote.name}
+                    </span>
+                    <span>{vote.count} votes ({percentage}%)</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-4">
                     <div 
-                      className='bg-purple-500 h-2.5 rounded-full' 
-                      style={{ width: `${results.total_votes ? (votes / results.total_votes) * 100 : 0}%` }}
+                      className="bg-indigo-600 h-4 rounded-full"
+                      style={{ width: `${percentage}%` }}
                     ></div>
                   </div>
                 </div>
-              ))}
-            </div>
+              );
+            })}
           </div>
-        ) : (
-          <p className='text-center mt-8'>No results available yet</p>
-        )}
+        </div>
+        
+        <button 
+          className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md"
+          onClick={() => navigate('/elections')}
+        >
+          Back to Elections
+        </button>
       </div>
     </Layout>
   );
 };
+
+export default Result;
