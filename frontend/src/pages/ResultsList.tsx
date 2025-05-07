@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
 import { ElectionListItem } from "../types/election";
 import { getVotedElections } from "../services/elections";
+import { mockElections } from "../mocks/electionMocks"; // Remove in production
 import Modal from "../components/common/Modal";
 
 export const ResultsList = () => {
@@ -17,10 +18,15 @@ export const ResultsList = () => {
   useEffect(() => {
     const fetchVotedElections = async () => {
       try {
-       // Use the real API
-       const data = await getVotedElections();
-       setElections(data);
-     } catch (err) {
+        // Comment this and uncomment the API call when backend is ready
+        // Filter mock elections to only those voted on
+        setElections(mockElections.filter(e => e.hasVoted));
+        setLoading(false);
+        
+        // Uncomment when backend is ready
+        // const data = await getVotedElections();
+        // setElections(data);
+      } catch (err) {
         console.error("Failed to fetch voted elections:", err);
         setModalMessage({
           title: "Error",
