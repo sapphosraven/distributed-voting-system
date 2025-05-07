@@ -10,12 +10,12 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children, showHeader = true, showFooter = true }) => {
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
+    <div className="flex flex-col min-h-screen bg-gray-50 w-full">
       {showHeader && <Header />}
-      <main className="flex-1 py-8 px-4 container mx-auto">
+      <main className="flex-1 py-8 px-4 w-full">
         {children}
       </main>
-      {showFooter && <Footer />}
+      {showFooter && <Footer />};
     </div>
   );
 };

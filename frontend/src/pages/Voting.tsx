@@ -126,7 +126,7 @@ export const Voting = () => {
 
   return (
     <Layout>
-      <div className="p-6 max-w-6xl mx-auto">
+      <div className="p-6 w-full">
         <h1 className="text-3xl font-bold mb-2 text-purple-800">{electionTitle}</h1>
         <p className="text-gray-600 mb-8">{electionDesc}</p>
         
