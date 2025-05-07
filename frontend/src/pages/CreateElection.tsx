@@ -195,7 +195,7 @@ const CreateElection = () => {
             {[1, 2, 3, 4].map((i) => (
               <div key={i} className="flex items-center">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center font-semibold ${
-                  step === i ? 'bg-purple-700 text-white' : 
+                  step === i ? 'bg-purple-900 text-white' : 
                   step > i ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-600'
                 }`}>
                   {step > i ? (
@@ -211,17 +211,17 @@ const CreateElection = () => {
             ))}
           </div>
           <div className="flex justify-between mt-2">
-            <span className={step >= 1 ? 'text-purple-700 font-medium' : 'text-gray-500'}>Basic Details</span>
-            <span className={step >= 2 ? 'text-purple-700 font-medium' : 'text-gray-500'}>Voter Eligibility</span>
-            <span className={step >= 3 ? 'text-purple-700 font-medium' : 'text-gray-500'}>Candidates</span>
-            <span className={step >= 4 ? 'text-purple-700 font-medium' : 'text-gray-500'}>Review</span>
+            <span className={step >= 1 ? 'text-purple-900 font-medium' : 'text-gray-500'}>Basic Details</span>
+            <span className={step >= 2 ? 'text-purple-900 font-medium' : 'text-gray-500'}>Voter Eligibility</span>
+            <span className={step >= 3 ? 'text-purple-900 font-medium' : 'text-gray-500'}>Candidates</span>
+            <span className={step >= 4 ? 'text-purple-900 font-medium' : 'text-gray-500'}>Review</span>
           </div>
         </div>
         
         {/* Step 1: Basic Details */}
         {step === 1 && (
           <div>
-            <h2 className="text-2xl font-semibold mb-4 text-purple-700">Basic Details</h2>
+            <h2 className="text-2xl font-semibold mb-4 text-purple-900">Basic Details</h2>
             <div className="space-y-4">
               <div>
                 <label className="block mb-1 font-medium">Title <span className="text-red-500">*</span></label>
@@ -281,7 +281,7 @@ const CreateElection = () => {
         {/* Step 2: Voter Eligibility */}
         {step === 2 && (
           <div>
-            <h2 className="text-2xl font-semibold mb-4 text-purple-700">Voter Eligibility</h2>
+            <h2 className="text-2xl font-semibold mb-4 text-purple-900">Voter Eligibility</h2>
             <p className="mb-4 text-gray-600">
               Specify email addresses or domains (e.g., @example.com) of voters eligible to participate in this election.
             </p>
@@ -311,7 +311,7 @@ const CreateElection = () => {
             <button
               type="button"
               onClick={addVoterEmail}
-              className="mt-2 flex items-center text-purple-700 hover:text-purple-900"
+              className="mt-2 flex items-center text-purple-900 hover:text-purple-900"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
@@ -324,7 +324,7 @@ const CreateElection = () => {
         {/* Step 3: Candidates */}
         {step === 3 && (
           <div>
-            <h2 className="text-2xl font-semibold mb-4 text-purple-700">Candidates</h2>
+            <h2 className="text-2xl font-semibold mb-4 text-purple-900">Candidates</h2>
             <p className="mb-4 text-gray-600">
               Add all the candidates for this election. Each candidate must have at least a name.
             </p>
@@ -397,7 +397,7 @@ const CreateElection = () => {
             <button
               type="button"
               onClick={addCandidate}
-              className="mt-2 flex items-center text-purple-700 hover:text-purple-900"
+              className="mt-2 flex items-center text-purple-900 hover:text-purple-900"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
@@ -410,7 +410,7 @@ const CreateElection = () => {
         {/* Step 4: Review */}
         {step === 4 && (
           <div>
-            <h2 className="text-2xl font-semibold mb-4 text-purple-700">Review Your Election</h2>
+            <h2 className="text-2xl font-semibold mb-4 text-purple-900">Review Your Election</h2>
             
             <div className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50">
               <h3 className="font-medium text-lg mb-2">Basic Details</h3>
@@ -477,7 +477,7 @@ const CreateElection = () => {
             <button 
               type="button"
               onClick={handleNext}
-              className="px-6 py-2 bg-purple-700 hover:bg-purple-800 text-white rounded-md font-medium"
+              className="px-6 py-2 bg-purple-900 hover:bg-purple-800 text-white rounded-md font-medium"
             >
               Next
             </button>
@@ -486,7 +486,7 @@ const CreateElection = () => {
               type="button"
               onClick={handleSubmit}
               disabled={loading}
-              className="px-6 py-2 bg-purple-700 hover:bg-purple-800 text-white rounded-md font-medium flex items-center"
+              className="px-6 py-2 bg-purple-900 hover:bg-purple-800 text-white rounded-md font-medium flex items-center"
             >
               {loading ? (
                 <>

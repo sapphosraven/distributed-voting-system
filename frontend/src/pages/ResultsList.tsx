@@ -51,7 +51,7 @@ export const ResultsList = () => {
         
         {loading ? (
           <div className="flex justify-center my-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-700"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-900"></div>
           </div>
         ) : error ? (
           <div className="bg-red-100 p-4 rounded-md text-red-700">
@@ -61,7 +61,7 @@ export const ResultsList = () => {
           <div className="bg-gray-100 p-8 rounded-md text-center">
             <p>You haven't voted in any elections yet.</p>
             <button 
-              className="mt-4 bg-purple-700 hover:bg-purple-800 text-white px-4 py-2 rounded-md"
+              className="mt-4 bg-purple-900 hover:bg-purple-800 text-white px-4 py-2 rounded-md"
               onClick={() => navigate('/elections')}
             >
               Browse Available Elections
@@ -103,7 +103,7 @@ export const ResultsList = () => {
 
         <div className="mt-8">
           <button 
-            className="bg-purple-700 hover:bg-purple-800 text-white px-6 py-3 rounded-md font-medium"
+            className="bg-purple-900 hover:bg-purple-800 text-white px-6 py-3 rounded-md font-medium"
             onClick={() => navigate('/elections')}
           >
             Back to Elections

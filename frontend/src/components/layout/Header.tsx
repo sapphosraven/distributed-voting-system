@@ -27,7 +27,7 @@ const Header = () => {
           <Link
             className="flex items-center justify-center hover:!text-[rgb(175,170,188)] text-2xl font-semibold !text-[#400057] hover:bg-gradient-to-r from-[#28003e] to-[#400057]
  h-12 px-6 rounded-full transition-color duration-300 cursor-pointer"
-            to="/login"
+            to="elections"
           >
             Distributed Voting System
           </Link>

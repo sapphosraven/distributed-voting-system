@@ -63,7 +63,7 @@ export const ElectionsList = () => {
         <div className="flex space-x-4 mb-6">
           <button 
             className={`px-4 py-2 rounded-md ${activeTab === 'active' 
-              ? 'bg-purple-700 text-white' 
+              ? 'bg-purple-900 text-white' 
               : 'bg-gray-200 text-gray-700'}`}
             onClick={() => setActiveTab('active')}
           >
@@ -71,7 +71,7 @@ export const ElectionsList = () => {
           </button>
           <button 
             className={`px-4 py-2 rounded-md ${activeTab === 'past' 
-              ? 'bg-purple-700 text-white' 
+              ? 'bg-purple-900 text-white' 
               : 'bg-gray-200 text-gray-700'}`}
             onClick={() => setActiveTab('past')}
           >
@@ -81,7 +81,7 @@ export const ElectionsList = () => {
 
         {loading ? (
           <div className="flex justify-center my-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-700"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-900"></div>
           </div>
         ) : error ? (
           <div className="bg-red-100 p-4 rounded-md text-red-700">
@@ -132,7 +132,7 @@ export const ElectionsList = () => {
 
         <div className="mt-8">
           <button 
-            className="bg-purple-700 hover:bg-purple-800 text-white px-6 py-3 rounded-md font-medium flex items-center"
+            className="bg-purple-900 hover:bg-purple-800 text-white px-6 py-3 rounded-md font-medium flex items-center"
             onClick={() => navigate('/create-election')}
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
