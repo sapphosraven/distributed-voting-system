@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
 import Modal from "../components/common/Modal";
-import { createElection } from "../services/elections";
+import { createElection, } from "../services/elections";
+
 
 // Component to create a new election (multi-step form)
 const CreateElection = () => {
@@ -158,7 +159,7 @@ const CreateElection = () => {
       };
       
       // Add to mock data
-      mockElectionDetails[newId] = newElection;
+      /*await createElection(newElection);
       mockElections.push({
         id: newId,
         title: election.title,
@@ -166,7 +167,7 @@ const CreateElection = () => {
         end_date: election.end_date,
         hasVoted: false,
         status: 'active'
-      });
+      });*/
       
       setModalMessage({
         title: "Success!",
@@ -511,6 +512,9 @@ const CreateElection = () => {
             if (modalMessage.title === "Success!") {
               navigate('/elections');
             }
+          }}
+          onConfirm={() => {
+            setShowModal(false);
           }}
         />
       )}

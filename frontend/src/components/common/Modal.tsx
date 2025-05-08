@@ -6,6 +6,7 @@ interface ModalProps {
   description: string;
   onClose: () => void;
   onConfirm: () => void;
+  actions?: React.ReactNode;
 }
 
 const Modal = ({ title, description, onClose, onConfirm }: ModalProps) => {

@@ -116,6 +116,7 @@ export const ResultsList = () => {
           title={modalMessage.title}
           description={modalMessage.description}
           onClose={() => setShowModal(false)}
+          onConfirm={() => setShowModal(false)} // Add a default onConfirm handler
         />
       )}
     </Layout>

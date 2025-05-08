@@ -148,6 +148,10 @@ export const ElectionsList = () => {
           title={modalMessage.title}
           description={modalMessage.description}
           onClose={() => setShowModal(false)}
+          onConfirm={() => {
+            setShowModal(false);
+            console.log("Confirmed");
+          }}
         />
       )}
     </Layout>

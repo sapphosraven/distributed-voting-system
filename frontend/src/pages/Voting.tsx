@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
 import { getElectionDetails } from "../services/elections";
-import { mockElectionDetails } from "../mocks/electionMocks"; // Remove in production
+import { mockElectionDetails, mockElections } from "../mocks/electionMocks"; // Remove in production
 import { submitVote } from "../services/vote"; // Make sure this exists
 import Modal from "../components/common/Modal";
 import { Candidate } from "../types/election";
@@ -202,6 +202,7 @@ export const Voting = () => {
               navigate(`/results/${electionId}`);
             }
           }}
+          onConfirm={() => setShowModal(false)} // Provide a default or meaningful action for onConfirm
         />
       )}
       
@@ -210,6 +211,7 @@ export const Voting = () => {
           title="Confirm Your Vote"
           description={`Are you sure you want to vote for ${candidates.find(c => c.id === selectedCandidate)?.name}? This action cannot be undone.`}
           onClose={() => setConfirmVoteModal(false)}
+          onConfirm={() => setConfirmVoteModal(false)}
           actions={
             <>
               <button

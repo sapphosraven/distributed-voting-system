@@ -9,4 +9,5 @@ export const API_ENDPOINTS = {
   results: `${API_URL}/results`,
   elections: `${API_URL}/elections`,
   votedElections: `${API_URL}/user/voted-elections`,
+  websocket: WS_BASE_URL
 };
