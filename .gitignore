@@ -1,3 +1,7 @@
 # Ignore all log files and directories
 logs/
 *.log
+node_modules
+*.pyc
+
+git rm --cached -r frontend/node_modules
