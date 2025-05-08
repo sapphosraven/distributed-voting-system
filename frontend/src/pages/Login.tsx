@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Layout from "../components/Layout";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 import { signin } from "../services/login";
 import Modal from "../components/common/Modal";
 interface Credentials {
@@ -18,30 +18,33 @@ export const Login = () => {
     password: "",
   });
 
- // Fix in handleSignin function:
+  // Fix in handleSignin function:
 
- const handleSignin = async (e: React.FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
-  setLoading(true);
-  
-  try {
-    const response = await signin({ email: creds.email, password: creds.password });
-    localStorage.setItem('token', JSON.stringify(response));
-    navigate('/elections');
-  } catch (error) {
-    setError("Authentication failed. Please check your credentials.");
-    setLoading(false); // Stop loading here on error
-    return; // Important: Don't continue past this point on error
-  }
-  
-  setLoading(false);
-};
+  const handleSignin = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      // const response = await signin({
+      //   email: creds.email,
+      //   password: creds.password,
+      // });
+      // localStorage.setItem("token", JSON.stringify(response));
+      // navigate('/elections');
+      navigate("/otp-verification"); // Changed from '/elections'
+    } catch (error) {
+      setError("Authentication failed. Please check your credentials.");
+      setLoading(false); // Stop loading here on error
+      return; // Important: Don't continue past this point on error
+    }
+
+    setLoading(false);
+  };
 
   return (
     <Layout showHeader={false} showFooter={false}>
-
       <div className="min-h-screen w-full flex gap-8 flex-col items-center justify-center bg-gradient-to-b from-[#28003e] via-[#400057] to-[#5b006b] p-4">
-         {showModal && (
+        {showModal && (
           <Modal
             title="Error"
             description={error}
@@ -79,7 +82,7 @@ export const Login = () => {
           >
             LOGIN
           </h1>
-            <div className="flex flex-col gap-2 w-full">
+          <div className="flex flex-col gap-2 w-full">
             <label
               htmlFor="email"
               className="text-[#28003e]"
@@ -92,13 +95,13 @@ export const Login = () => {
               name="email"
               value={creds.email}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-              setCreds({ ...creds, email: e.target.value });
+                setCreds({ ...creds, email: e.target.value });
               }}
               type="email"
               className="w-full h-10 bg-[rgb(167,157,176)] hover:bg-[rgb(155,145,163)] p-2 rounded focus:outline-none text-[rgb(109,32,97)]"
               style={{ caretColor: "rgb(21,21,21)" }}
             />
-            </div>
+          </div>
           <div className="flex flex-col gap-2 w-full">
             <label
               htmlFor="password"
