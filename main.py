@@ -98,7 +98,73 @@ def debug_network():
 app.include_router(auth_router, prefix="/auth")
 
 import httpx
-# Replace the /vote endpoint function with:
+
+@app.post("/elections")
+async def create_election(election: dict):
+    """Forward election creation to a voting node"""
+    for node_url in voting_nodes:
+        try:
+            url = f"{node_url}/elections"
+            async with httpx.AsyncClient() as client:
+                response = await client.post(url, json=election, timeout=5.0)
+                if response.status_code == 201:
+                    return response.json()
+        except Exception as e:
+            logging.error(f"Failed to create election on {node_url}: {e}")
+    raise HTTPException(status_code=500, detail="Failed to create election")
+
+@app.get("/elections")
+async def list_elections():
+    for node_url in voting_nodes:
+        try:
+            url = f"{node_url}/elections"
+            async with httpx.AsyncClient() as client:
+                response = await client.get(url, timeout=5.0)
+                if response.status_code == 200:
+                    return response.json()
+        except Exception as e:
+            logging.error(f"Failed to list elections from {node_url}: {e}")
+    return []
+
+@app.get("/elections/{election_id}")
+async def get_election(election_id: str):
+    for node_url in voting_nodes:
+        try:
+            url = f"{node_url}/elections/{election_id}"
+            async with httpx.AsyncClient() as client:
+                response = await client.get(url, timeout=5.0)
+                if response.status_code == 200:
+                    return response.json()
+        except Exception as e:
+            logging.error(f"Failed to get election {election_id} from {node_url}: {e}")
+    raise HTTPException(status_code=404, detail="Election not found")
+
+@app.get("/elections/{election_id}/candidates")
+async def get_candidates_for_election(election_id: str):
+    for node_url in voting_nodes:
+        try:
+            url = f"{node_url}/elections/{election_id}/candidates"
+            async with httpx.AsyncClient() as client:
+                response = await client.get(url, timeout=5.0)
+                if response.status_code == 200:
+                    return response.json()
+        except Exception as e:
+            logging.error(f"Failed to get candidates for election {election_id} from {node_url}: {e}")
+    return []
+
+@app.get("/user/voted-elections")
+async def get_voted_elections(username: str = Depends(get_current_user)):
+    for node_url in voting_nodes:
+        try:
+            url = f"{node_url}/user/voted-elections"
+            headers = {"x-user-id": username}
+            async with httpx.AsyncClient() as client:
+                response = await client.get(url, headers=headers, timeout=5.0)
+                if response.status_code == 200:
+                    return response.json()
+        except Exception as e:
+            logging.error(f"Failed to get voted elections for {username} from {node_url}: {e}")
+    return []
 
 @app.post("/vote")
 async def cast_vote(vote: VoteRequest, username: str = Depends(get_current_user)):

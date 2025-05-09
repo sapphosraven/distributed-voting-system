@@ -18,14 +18,10 @@ export const ResultsList = () => {
   useEffect(() => {
     const fetchVotedElections = async () => {
       try {
-        // Comment this and uncomment the API call when backend is ready
-        // Filter mock elections to only those voted on
-        setElections(mockElections.filter(e => e.hasVoted));
+        // Use real API
+        const data = await getVotedElections();
+        setElections(data);
         setLoading(false);
-        
-        // Uncomment when backend is ready
-        // const data = await getVotedElections();
-        // setElections(data);
       } catch (err) {
         console.error("Failed to fetch voted elections:", err);
         setModalMessage({

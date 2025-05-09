@@ -28,22 +28,12 @@ export const Voting = () => {
   useEffect(() => {
     const fetchElectionDetails = async () => {
       try {
-        // Comment this and uncomment the API call when backend is ready
-        const electionData = mockElectionDetails[electionId];
-        if (!electionData) {
-          throw new Error("Election not found");
-        }
-        
+        // Use real API
+        const electionData = await getElectionDetails(electionId);
         setElectionTitle(electionData.title);
         setElectionDesc(electionData.description);
         setCandidates(electionData.candidates);
         setLoading(false);
-        
-        // Uncomment when backend is ready
-        // const electionData = await getElectionDetails(electionId);
-        // setElectionTitle(electionData.title);
-        // setElectionDesc(electionData.description);
-        // setCandidates(electionData.candidates);
       } catch (error) {
         console.error("Failed to fetch election details:", error);
         setModalMessage({
@@ -78,35 +68,22 @@ export const Voting = () => {
   
   const confirmVote = async () => {
     if (!selectedCandidate) return;
-    
+
     setVoteSubmitting(true);
     try {
-      // Mock successful vote storage
-      const userVotes = JSON.parse(localStorage.getItem('userVotes') || '{}');
-      userVotes[electionId] = selectedCandidate;
-      localStorage.setItem('userVotes', JSON.stringify(userVotes));
-      
-      // Update the mock election data to mark as voted
-      const updatedMockElections = [...mockElections];
-      const electionIndex = updatedMockElections.findIndex(e => e.id === electionId);
-      if (electionIndex !== -1) {
-        updatedMockElections[electionIndex].hasVoted = true;
-      }
-      
-      // Success message
+      // Use real API
+      await submitVote(electionId, selectedCandidate);
+
       setModalMessage({
         title: "Success!",
         description: "Your vote has been recorded successfully."
       });
       setShowModal(true);
-      
-      // Close confirm dialog
       setConfirmVoteModal(false);
-    } catch (error) {
-      console.error(error);
+    } catch (error: any) {
       setModalMessage({
         title: "Vote Failed",
-        description: "There was a problem recording your vote. Please try again."
+        description: error?.message || "There was a problem recording your vote. Please try again."
       });
       setShowModal(true);
     } finally {

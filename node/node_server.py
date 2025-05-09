@@ -438,6 +438,12 @@ async def get_vote_status(vote_id: str):
 @app.get("/elections/{election_id}/results")
 async def get_election_results(election_id: str):
     """Get the current results for an election"""
+    election = elections.get(election_id)
+    if not election:
+        raise HTTPException(status_code=404, detail="Election not found")
+    status = get_election_status(election)
+    if status != "completed":
+        raise HTTPException(status_code=403, detail="Results only available after election ends")
     # Filter finalized votes for this election
     election_votes = [vote for vote in consensus.finalized_votes.values() 
                       if vote.election_id == election_id]
@@ -517,6 +523,14 @@ async def validate_vote(vote: Vote) -> Dict[str, Any]:
     # Check timestamp is not in the future
     if vote.timestamp > time.time() + 5:  # 5 seconds tolerance for clock skew
         return {"valid": False, "reason": "Vote timestamp is in the future"}
+    
+    # Check election exists and is active
+    election = elections.get(vote.election_id)
+    if not election:
+        return {"valid": False, "reason": "Election does not exist"}
+    status = get_election_status(election)
+    if status != "active":
+        return {"valid": False, "reason": f"Election is not active (status: {status})"}
     
     # Here you would add more validation like checking voter eligibility,
     # whether the election is active, etc. - this would involve database lookups
@@ -873,6 +887,94 @@ async def leader_time_sync_task():
             break
 """
 
+# --- Election Data Model and Storage ---
+class Election(BaseModel):
+    id: str
+    title: str
+    description: str
+    start_date: str
+    end_date: str
+    created_by: str
+    eligible_voters: List[str]
+    candidates: List[Dict[str, Any]]
+    status: str = "upcoming"  # 'upcoming', 'active', 'completed'
+
+# In-memory storage for elections (replace with Redis for prod)
+elections: Dict[str, Election] = {}
+
+def get_election_status(election: Election) -> str:
+    now = time.time()
+    start_ts = datetime.fromisoformat(election.start_date).timestamp()
+    end_ts = datetime.fromisoformat(election.end_date).timestamp()
+    if now < start_ts:
+        return "upcoming"
+    elif now > end_ts:
+        return "completed"
+    else:
+        return "active"
+
+# --- Election Endpoints ---
+from fastapi import Request
+
+@app.post("/elections", status_code=201)
+async def create_election(election: Election, request: Request):
+    # In production, validate user from request
+    if election.id in elections:
+        raise HTTPException(status_code=409, detail="Election ID already exists")
+    elections[election.id] = election
+    return election
+
+@app.get("/elections")
+async def list_elections():
+    # Return all elections with status
+    result = []
+    for e in elections.values():
+        status = get_election_status(e)
+        result.append({
+            "id": e.id,
+            "title": e.title,
+            "description": e.description,
+            "end_date": e.end_date,
+            "hasVoted": False,  # Set by user history endpoint
+            "status": status
+        })
+    return result
+
+@app.get("/elections/{election_id}")
+async def get_election(election_id: str):
+    e = elections.get(election_id)
+    if not e:
+        raise HTTPException(status_code=404, detail="Election not found")
+    # Add status field
+    data = e.dict()
+    data["status"] = get_election_status(e)
+    return data
+
+@app.get("/elections/{election_id}/candidates")
+async def get_candidates_for_election(election_id: str):
+    e = elections.get(election_id)
+    if not e:
+        raise HTTPException(status_code=404, detail="Election not found")
+    return e.candidates
+
+@app.get("/user/voted-elections")
+async def get_voted_elections(request: Request):
+    # In production, get user from JWT
+    user_id = request.headers.get("x-user-id", "demo-user")
+    voted = []
+    for e in elections.values():
+        status = get_election_status(e)
+        has_voted = user_id in consensus.voter_history and e.id in consensus.voter_history[user_id]
+        voted.append({
+            "id": e.id,
+            "title": e.title,
+            "description": e.description,
+            "end_date": e.end_date,
+            "hasVoted": has_voted,
+            "status": status
+        })
+    # Only return those the user has voted in
+    return [x for x in voted if x["hasVoted"]]
 
 # Start server if running as main
 if __name__ == "__main__":

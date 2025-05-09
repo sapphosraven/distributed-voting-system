@@ -16,7 +16,7 @@ export interface VoteResponse {
   status: string;
 }
 
-export const submitVote = async (candidateId: string): Promise<VoteResponse> => {
+export const submitVote = async (electionId: string, candidateId: string): Promise<VoteResponse> => {
   const token = getToken();
   if (!token) {
     throw new Error('No authentication token found');
@@ -29,6 +29,7 @@ export const submitVote = async (candidateId: string): Promise<VoteResponse> => 
       'Authorization': `Bearer ${token}`,
     },
     body: JSON.stringify({
+      election_id: electionId,
       candidate_id: candidateId,
     }),
   });
