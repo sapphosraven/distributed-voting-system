@@ -11,3 +11,4 @@ lerna-debug.log*
 
 # Node logs
 .node_repl_history
+node_modules
