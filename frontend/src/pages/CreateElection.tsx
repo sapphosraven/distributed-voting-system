@@ -198,6 +198,21 @@ const CreateElection = () => {
   
   return (
     <Layout>
+      {/* Add style for dark calendar icons */}
+      <style>
+        {`
+          /* Make calendar icons in datetime-local inputs dark */
+          input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+            filter: invert(0.7) brightness(0.5);
+          }
+          input[type="datetime-local"]::-moz-calendar-picker-indicator {
+            filter: invert(0.7) brightness(0.5);
+          }
+          input[type="datetime-local"]::-ms-input-placeholder {
+            color: #222;
+          }
+        `}
+      </style>
       <div className="p-6 max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold mb-6 text-purple-800">Create New Election</h1>
         
@@ -226,13 +241,7 @@ const CreateElection = () => {
                 </span>
               </div>
             ))}
-          </div>
-          {/* Progress bar */}
-          <div className="flex items-center mt-2">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className={`flex-1 h-1 mx-2 ${step > i ? 'bg-green-500' : 'bg-gray-200'}`}></div>
-            ))}
-          </div>
+          </div> 
         </div>
         
         {/* Step 1: Basic Details */}

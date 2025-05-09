@@ -170,15 +170,10 @@ async def get_voted_elections(username: str = Depends(get_current_user)):
 async def cast_vote(vote: VoteRequest, username: str = Depends(get_current_user)):
     """Forward vote to a voting node"""
     try:
-        # Get list of voting nodes from environment
         logging.info(f"Attempting to forward vote to nodes: {voting_nodes}")
-        
-        # Try each node until successful
         for node_url in voting_nodes:
             try:
-                # Make sure URL has /votes endpoint
                 vote_url = f"{node_url}/votes" if not node_url.endswith("/votes") else node_url
-                
                 logging.info(f"Trying to connect to {vote_url}")
                 async with httpx.AsyncClient() as client:
                     response = await client.post(
@@ -186,16 +181,13 @@ async def cast_vote(vote: VoteRequest, username: str = Depends(get_current_user)
                         json={
                             "voter_id": username,
                             "candidate_id": vote.candidate_id,
-                            "election_id": "election-2025"
+                            "election_id": vote.election_id  # <-- use correct election_id
                         },
                         timeout=5.0
                     )
-                
-                if response.status_code in (200, 202):  # Accept either OK or Accepted
+                if response.status_code in (200, 202):
                     result = response.json()
                     logging.info(f"Vote successfully forwarded to {vote_url}")
-                    
-                    # Broadcast vote event directly to WebSocket clients
                     try:
                         vote_event = {
                             "event": "vote_submitted",
@@ -204,12 +196,10 @@ async def cast_vote(vote: VoteRequest, username: str = Depends(get_current_user)
                             "voter_id": username,
                             "timestamp": time.time()
                         }
-                        # No await here if we're not in an async function
                         asyncio.create_task(connection_manager.broadcast(vote_event))
                         logging.info(f"Broadcasting vote event to {len(connection_manager.active_connections)} clients")
                     except Exception as e:
                         logging.error(f"Failed to broadcast vote event: {e}")
-                        
                     return {
                         "message": f"Vote for {vote.candidate_id} received",
                         "vote_id": result.get("vote_id", "unknown"),
@@ -219,14 +209,30 @@ async def cast_vote(vote: VoteRequest, username: str = Depends(get_current_user)
             except Exception as e:
                 logging.error(f"Failed to connect to {vote_url}: {str(e)}")
                 continue
-        
-        # If all nodes failed
         logging.error("All voting nodes unreachable")
         return {"message": "Error: All connection attempts failed"}
     except Exception as e:
         logging.error(f"Vote processing error: {str(e)}")
         return {"message": f"Vote processing error: {str(e)}"}
-    
+
+@app.get("/results/{election_id}")
+async def get_results_for_election(election_id: str):
+    """Get results for a specific election"""
+    for node_url in voting_nodes:
+        try:
+            results_url = f"{node_url}/elections/{election_id}/results"
+            logging.info(f"Fetching results from {results_url}")
+            async with httpx.AsyncClient() as client:
+                response = await client.get(results_url, timeout=5.0)
+                if response.status_code == 200:
+                    return response.json()
+                elif response.status_code == 403:
+                    return {"error": "Results only available after election ends"}
+        except Exception as e:
+            logging.error(f"Failed to fetch results from {node_url}: {str(e)}")
+            continue
+    return {"error": "Could not fetch results"}
+
 # Candidates endpoint
 @app.get("/candidates")
 async def get_candidates():
@@ -242,6 +248,32 @@ async def get_candidates():
     except Exception as e:
         logging.error(f"Error fetching candidates: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to fetch candidates")
+
+# Add this after the /vote endpoint (around line 35)
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    """WebSocket endpoint for real-time vote updates"""
+    await connection_manager.connect(websocket)
+    try:
+        while True:
+            # Receive and process messages from the client
+            data = await websocket.receive_text()
+            try:
+                message = json.loads(data)
+                action = message.get("action")
+                
+                if action == "subscribe" and "topic" in message:
+                    await connection_manager.subscribe(websocket, message["topic"])
+                elif action == "unsubscribe" and "topic" in message:
+                    await connection_manager.unsubscribe(websocket, message["topic"])
+            except json.JSONDecodeError:
+                # Send error to client if message is not valid JSON
+                await websocket.send_json({"error": "Invalid JSON message"})
+    except WebSocketDisconnect:
+        connection_manager.disconnect(websocket)
+    except Exception as e:
+        logging.error(f"WebSocket error: {str(e)}")
+        connection_manager.disconnect(websocket)
 
 # Results endpoint
 @app.get("/results")
@@ -297,32 +329,6 @@ async def system_status():
             status["voting_nodes"][node_url] = "unreachable"
     
     return status
-
-# Add this after the /vote endpoint (around line 35)
-@app.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
-    """WebSocket endpoint for real-time vote updates"""
-    await connection_manager.connect(websocket)
-    try:
-        while True:
-            # Receive and process messages from the client
-            data = await websocket.receive_text()
-            try:
-                message = json.loads(data)
-                action = message.get("action")
-                
-                if action == "subscribe" and "topic" in message:
-                    await connection_manager.subscribe(websocket, message["topic"])
-                elif action == "unsubscribe" and "topic" in message:
-                    await connection_manager.unsubscribe(websocket, message["topic"])
-            except json.JSONDecodeError:
-                # Send error to client if message is not valid JSON
-                await websocket.send_json({"error": "Invalid JSON message"})
-    except WebSocketDisconnect:
-        connection_manager.disconnect(websocket)
-    except Exception as e:
-        logging.error(f"WebSocket error: {str(e)}")
-        connection_manager.disconnect(websocket)
 
 # Add background task startup event (at the bottom of the file, before startup_events)
 @app.on_event("startup")

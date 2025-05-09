@@ -8,6 +8,7 @@ export interface Candidate {
   party?: string;
   shortDesc?: string;
   longDesc?: string;
+  description?: string;
 }
 
 export interface VoteResponse {
@@ -35,19 +36,37 @@ export const submitVote = async (electionId: string, candidateId: string): Promi
   });
 
   if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || 'Failed to submit vote');
+    let errorData: any = {};
+    try {
+      errorData = await response.json();
+    } catch {
+      // ignore
+    }
+    throw new Error(errorData.message || errorData.detail || 'Failed to submit vote');
   }
 
   return response.json();
 };
 
+// Fetch all candidates (legacy/global)
 export const fetchCandidates = async (): Promise<Candidate[]> => {
   const response = await fetch(API_ENDPOINTS.candidates);
-  
   if (!response.ok) {
     throw new Error('Failed to fetch candidates');
   }
-  
+  return response.json();
+};
+
+// Fetch candidates for a specific election
+export const fetchElectionCandidates = async (electionId: string): Promise<Candidate[]> => {
+  const token = getToken();
+  const response = await fetch(`${API_ENDPOINTS.elections}/${electionId}/candidates`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    }
+  });
+  if (!response.ok) {
+    throw new Error('Failed to fetch candidates for this election');
+  }
   return response.json();
 };

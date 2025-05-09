@@ -8,32 +8,32 @@ export interface Election {
     eligible_voters: string[]; // emails or domains
     candidates: Candidate[];
     status: 'active' | 'completed' | 'upcoming';
-  }
-  
-  export interface ElectionListItem {
+}
+
+export interface ElectionListItem {
     id: string;
     title: string;
     description: string;
     end_date: string;
     hasVoted: boolean;
     status: 'active' | 'completed' | 'upcoming';
-  }
-  
-  export interface Candidate {
+}
+
+export interface Candidate {
     id: string;
     name: string;
     photo?: string;
     party?: string;
     description?: string;
-  }
-  
-  export interface VoteRecord {
+}
+
+export interface VoteRecord {
     election_id: string;
     candidate_id: string;
     timestamp: string;
-  }
-  
-  export interface ElectionResult {
+}
+
+export interface ElectionResult {
     election_id: string;
     title: string;
     candidates: Candidate[];
@@ -43,4 +43,4 @@ export interface Election {
     }[];
     total_votes: number;
     end_date: string;
-  }
+}

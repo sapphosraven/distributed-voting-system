@@ -438,10 +438,12 @@ async def get_vote_status(vote_id: str):
 @app.get("/elections/{election_id}/results")
 async def get_election_results(election_id: str):
     """Get the current results for an election"""
-    election = elections.get(election_id)
-    if not election:
+    data = r.get(redis_election_key(election_id))
+    if not data:
         raise HTTPException(status_code=404, detail="Election not found")
-    status = get_election_status(election)
+    e = Election.parse_raw(data)
+    elections[e.id] = e  # update cache
+    status = get_election_status(e)
     if status != "completed":
         raise HTTPException(status_code=403, detail="Results only available after election ends")
     # Filter finalized votes for this election
@@ -527,7 +529,11 @@ async def validate_vote(vote: Vote) -> Dict[str, Any]:
     # Check election exists and is active
     election = elections.get(vote.election_id)
     if not election:
-        return {"valid": False, "reason": "Election does not exist"}
+        data = r.get(redis_election_key(vote.election_id))
+        if not data:
+            return {"valid": False, "reason": "Election does not exist"}
+        election = Election.parse_raw(data)
+        elections[vote.election_id] = election
     status = get_election_status(election)
     if status != "active":
         return {"valid": False, "reason": f"Election is not active (status: {status})"}
@@ -899,9 +905,6 @@ class Election(BaseModel):
     candidates: List[Dict[str, Any]]
     status: str = "upcoming"  # 'upcoming', 'active', 'completed'
 
-# In-memory storage for elections (replace with Redis for prod)
-elections: Dict[str, Election] = {}
-
 def get_election_status(election: Election) -> str:
     now = time.time()
     start_ts = datetime.fromisoformat(election.start_date).timestamp()
@@ -913,22 +916,36 @@ def get_election_status(election: Election) -> str:
     else:
         return "active"
 
-# --- Election Endpoints ---
-from fastapi import Request
+def redis_election_key(election_id: str) -> str:
+    # Use hash slot aware key for elections
+    return f"{{elections}}.{election_id}"
+
+def redis_elections_set_key() -> str:
+    return "{elections}.all"
+
+# In-memory cache for elections (for validation, can be improved)
+elections = {}
 
 @app.post("/elections", status_code=201)
 async def create_election(election: Election, request: Request):
-    # In production, validate user from request
-    if election.id in elections:
+    key = redis_election_key(election.id)
+    if r.exists(key):
         raise HTTPException(status_code=409, detail="Election ID already exists")
-    elections[election.id] = election
+    r.set(key, election.json())
+    r.sadd(redis_elections_set_key(), election.id)
+    elections[election.id] = election  # cache in memory
     return election
 
 @app.get("/elections")
 async def list_elections():
-    # Return all elections with status
+    ids = r.smembers(redis_elections_set_key())
     result = []
-    for e in elections.values():
+    for eid in ids:
+        data = r.get(redis_election_key(eid))
+        if not data:
+            continue
+        e = Election.parse_raw(data)
+        elections[e.id] = e  # update cache
         status = get_election_status(e)
         result.append({
             "id": e.id,
@@ -942,27 +959,35 @@ async def list_elections():
 
 @app.get("/elections/{election_id}")
 async def get_election(election_id: str):
-    e = elections.get(election_id)
-    if not e:
+    data = r.get(redis_election_key(election_id))
+    if not data:
         raise HTTPException(status_code=404, detail="Election not found")
-    # Add status field
-    data = e.dict()
-    data["status"] = get_election_status(e)
-    return data
+    e = Election.parse_raw(data)
+    elections[e.id] = e  # update cache
+    d = e.dict()
+    d["status"] = get_election_status(e)
+    return d
 
 @app.get("/elections/{election_id}/candidates")
 async def get_candidates_for_election(election_id: str):
-    e = elections.get(election_id)
-    if not e:
+    data = r.get(redis_election_key(election_id))
+    if not data:
         raise HTTPException(status_code=404, detail="Election not found")
+    e = Election.parse_raw(data)
+    elections[e.id] = e  # update cache
     return e.candidates
 
 @app.get("/user/voted-elections")
 async def get_voted_elections(request: Request):
-    # In production, get user from JWT
     user_id = request.headers.get("x-user-id", "demo-user")
+    ids = r.smembers(redis_elections_set_key())
     voted = []
-    for e in elections.values():
+    for eid in ids:
+        data = r.get(redis_election_key(eid))
+        if not data:
+            continue
+        e = Election.parse_raw(data)
+        elections[e.id] = e  # update cache
         status = get_election_status(e)
         has_voted = user_id in consensus.voter_history and e.id in consensus.voter_history[user_id]
         voted.append({
@@ -973,7 +998,6 @@ async def get_voted_elections(request: Request):
             "hasVoted": has_voted,
             "status": status
         })
-    # Only return those the user has voted in
     return [x for x in voted if x["hasVoted"]]
 
 # Start server if running as main

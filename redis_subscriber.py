@@ -27,7 +27,7 @@ class VoteEventSubscriber:
         startup_nodes = []
         for node in self.redis_nodes:
             host, port = node.split(":")
-            startup_nodes.append(ClusterNode(host=host, port=int(port)))  # Use ClusterNode instead of dict
+            startup_nodes.append(ClusterNode(host=host, port=int(port)))
 
         try:
             # Connect to Redis Cluster
@@ -41,7 +41,6 @@ class VoteEventSubscriber:
             logger.error(f"Failed to connect to Redis: {e}")
             raise
     
-    # FIX: These methods should be at class level, not nested in connect()
     async def subscribe(self):
         """Subscribe to vote-related channels"""
         if not self.redis_client:
@@ -54,8 +53,9 @@ class VoteEventSubscriber:
         ]
         
         try:
+            # IMPORTANT FIX: Don't await the subscribe method - it's synchronous!
             for channel in channels:
-                await self.pubsub.subscribe(channel)
+                self.pubsub.subscribe(channel)  # Remove await here
             logger.info(f"Subscribed to channels: {channels}")
         except Exception as e:
             logger.error(f"Failed to subscribe to Redis channels: {e}")
@@ -67,7 +67,8 @@ class VoteEventSubscriber:
         
         try:
             while self.running:
-                message = await self.pubsub.get_message(ignore_subscribe_messages=True, timeout=1.0)
+                # IMPORTANT FIX: Don't await get_message - it's synchronous!
+                message = self.pubsub.get_message(ignore_subscribe_messages=True, timeout=1.0)  # Remove await
                 
                 if message:
                     channel = message.get("channel", "")
@@ -125,9 +126,13 @@ class VoteEventSubscriber:
         """Stop the subscriber"""
         self.running = False
         if self.pubsub:
-            await self.pubsub.unsubscribe()
+            # IMPORTANT FIX: Don't await unsubscribe - it's synchronous!
+            self.pubsub.unsubscribe()  # Remove await
         if self.redis_client:
-            await self.redis_client.close()
+            # IMPORTANT FIX: RedisCluster doesn't have an async close method
+            # Just set to None to allow garbage collection
+            self.redis_client = None
+            self.pubsub = None
         logger.info("Stopped Redis subscriber")
 
 # Create a global subscriber instance

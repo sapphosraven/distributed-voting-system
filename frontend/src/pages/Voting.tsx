@@ -2,8 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
 import { getElectionDetails } from "../services/elections";
-import { mockElectionDetails, mockElections } from "../mocks/electionMocks"; // Remove in production
-import { submitVote } from "../services/vote"; // Make sure this exists
+import { submitVote, fetchElectionCandidates } from "../services/vote";
 import Modal from "../components/common/Modal";
 import { Candidate } from "../types/election";
 
@@ -26,13 +25,18 @@ export const Voting = () => {
   const [voteSubmitting, setVoteSubmitting] = useState(false);
 
   useEffect(() => {
-    const fetchElectionDetails = async () => {
+    const fetchElectionDetailsAndCandidates = async () => {
       try {
-        // Use real API
         const electionData = await getElectionDetails(electionId);
         setElectionTitle(electionData.title);
         setElectionDesc(electionData.description);
-        setCandidates(electionData.candidates);
+        // Prefer fetching candidates from dedicated endpoint if available
+        try {
+          const fetchedCandidates = await fetchElectionCandidates(electionId);
+          setCandidates(fetchedCandidates);
+        } catch {
+          setCandidates(electionData.candidates || []);
+        }
         setLoading(false);
       } catch (error) {
         console.error("Failed to fetch election details:", error);
@@ -41,12 +45,11 @@ export const Voting = () => {
           description: "Failed to load election details. Please try again."
         });
         setShowModal(true);
-      } finally {
         setLoading(false);
       }
     };
 
-    fetchElectionDetails();
+    fetchElectionDetailsAndCandidates();
   }, [electionId]);
 
   const handleCandidateSelect = (candidateId: string) => {
@@ -71,7 +74,6 @@ export const Voting = () => {
 
     setVoteSubmitting(true);
     try {
-      // Use real API
       await submitVote(electionId, selectedCandidate);
 
       setModalMessage({
