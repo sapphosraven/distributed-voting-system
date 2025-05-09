@@ -204,32 +204,69 @@ Define Required Backend Endpoints:
 ✅ Update Voting.tsx - COMPLETED (needs bug fixes for confirmation dialog)
 ✅ Enhance Result.tsx - COMPLETED
 
-8.4 Integration, Routing & Testing (Hour 4)
-Update Application Routing:
-  - Add routes for new pages with parameters
-  - Implement protected routes with auth guards
-  - Add navigation between related pages
-  - Handle deep linking and URL sharing
+9. Backend-Frontend Integration Plan (Added May 8, 2025)
+Target Completion: 6 hours (Due End of Day)
 
-End-to-End Testing:
-  - Multi-user login and voting flow
-  - Election creation and management
-  - Real-time update verification
-  - Permission and access control testing
-  - Edge cases and error handling
+9.1 Backend API Enhancement
+⚠ Create Elections Management Endpoints:
+   - ⚠ Add GET /elections endpoint in main.py
+   - ⚠ Add GET /elections/{id} endpoint for specific election details
+   - ⚠ Add POST /elections endpoint for election creation
+   - ⚠ Implement /user/voted-elections endpoint for voting history
 
-Final Polish:
-  - Consistent loading states across app
-  - Proper error handling and user feedback
-  - Mobile responsiveness
-  - Accessibility improvements
-  - Performance optimization
+⚠ Modify Vote Submission:
+   - ⚠ Update /vote endpoint to accept election_id parameter
+   - ⚠ Add election eligibility validation
+   - ⚠ Enhance user voting history tracking
 
-Integration Touchpoints with Backend:
-- Election API endpoints must align with existing authentication
-- WebSocket connections must handle election-specific updates
-- Vote submission must integrate with existing consensus mechanism
-- Result calculation must leverage the distributed vote counting
+⚠ Results Enhancement:
+   - ⚠ Add election-specific filtering to results endpoint
+   - ⚠ Implement multi-node aggregation for complete results
+
+9.2 Frontend Service Integration
+⚠ Update API Service Files:
+   - ⚠ Connect elections.ts to real API endpoints
+   - ⚠ Update vote.ts to include election context
+   - ⚠ Modify results.ts for election-specific querying
+
+⚠ WebSocket Integration:
+   - ⚠ Implement proper WebSocket connection in a service
+   - ⚠ Add subscription to election-specific topics
+   - ⚠ Create UI update handlers for socket events
+
+9.3 Component Integration
+⚠ Elections Management:
+   - ⚠ Connect ElectionsList to /elections endpoint
+   - ⚠ Link CreateElection form to POST /elections
+   - ⚠ Add proper error handling and validation
+
+⚠ Voting Process:
+   - ⚠ Connect Voting page to election-specific candidate data
+   - ⚠ Fix vote submission confirmation flow
+   - ⚠ Implement proper redirect after successful vote
+
+⚠ Results Display:
+   - ⚠ Connect Results page to real-time data
+   - ⚠ Add access control based on voting history
+   - ⚠ Implement live updates via WebSocket
+
+9.4 Testing Strategy
+⚠ Integration Testing Steps:
+   - ⚠ Test authentication flow end-to-end
+   - ⚠ Verify election creation and listing
+   - ⚠ Test voting process with consensus validation
+   - ⚠ Verify results display and updating
+
+⚠ Multi-User Testing:
+   - ⚠ Test simultaneous voting from different users
+   - ⚠ Verify vote counting accuracy
+   - ⚠ Test real-time updates across sessions
+
+Implementation Priority:
+1. Backend API endpoints - Critical for all other integration
+2. Frontend service connections - Required for UI functionality
+3. Component-specific integration - Complete user flows
+4. End-to-end testing - Validate complete system functionality
 
 Timeline and Dependencies:
 1. Core Data & API (Hour 1) - Required for all subsequent work
