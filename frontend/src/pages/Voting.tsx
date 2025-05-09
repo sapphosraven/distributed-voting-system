@@ -25,6 +25,13 @@ export const Voting = () => {
   const [voteSubmitting, setVoteSubmitting] = useState(false);
 
   useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+    }
+  }, [navigate]);
+
+  useEffect(() => {
     const fetchElectionDetailsAndCandidates = async () => {
       try {
         const electionData = await getElectionDetails(electionId);
@@ -190,7 +197,7 @@ export const Voting = () => {
           title="Confirm Your Vote"
           description={`Are you sure you want to vote for ${candidates.find(c => c.id === selectedCandidate)?.name}? This action cannot be undone.`}
           onClose={() => setConfirmVoteModal(false)}
-          onConfirm={() => setConfirmVoteModal(false)}
+          onConfirm={confirmVote} // <-- Fix: call confirmVote on confirm
           actions={
             <>
               <button

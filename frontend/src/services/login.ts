@@ -5,14 +5,13 @@ interface LoginResponse {
   token_type: string;
 }
 
-// Change to this
 export const signin = async (payload: { email: string; password: string }): Promise<LoginResponse> => {
   const response = await fetch(API_ENDPOINTS.login, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ // Use JSON.stringify to match the content-type
+    body: JSON.stringify({
       username: payload.email,
       password: payload.password,
     }),

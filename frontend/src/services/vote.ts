@@ -18,7 +18,7 @@ export interface VoteResponse {
 }
 
 export const submitVote = async (electionId: string, candidateId: string): Promise<VoteResponse> => {
-  const token = getToken();
+  let token = getToken();
   if (!token) {
     throw new Error('No authentication token found');
   }

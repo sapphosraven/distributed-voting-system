@@ -18,20 +18,21 @@ export const Login = () => {
     password: "",
   });
 
-  // Fix in handleSignin function:
-
   const handleSignin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      // const response = await signin({
-      //   email: creds.email,
-      //   password: creds.password,
-      // });
-      // localStorage.setItem("token", JSON.stringify(response));
-      // navigate('/elections');
-      navigate("/otp-verification"); // Changed from '/elections'
+      const response = await signin({
+        email: creds.email,
+        password: creds.password,
+      });
+      // Debug: log the response to check its structure
+      console.log("Login response:", response);
+      // Store the token as a JSON string
+      localStorage.setItem("token", JSON.stringify(response)); // adjust as needed
+      // If you need OTP verification, navigate to that page, else go to elections
+      navigate("/otp-verification"); // Or navigate('/elections') if not using OTP
     } catch (error) {
       setError("Authentication failed. Please check your credentials.");
       setLoading(false); // Stop loading here on error

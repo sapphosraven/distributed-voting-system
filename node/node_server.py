@@ -371,15 +371,43 @@ async def enable_mutex_logging():
     return {"status": "Mutex logging enabled at DEBUG level"}
 
 # Vote API endpoints
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi import Security
+
+# Add a simple dependency to extract the user from the Authorization header
+def get_current_user(request: Request) -> str:
+    # Try to get the token from the Authorization header
+    auth_header = request.headers.get("authorization")
+    if (auth_header and auth_header.lower().startswith("bearer ")):
+        token = auth_header[7:]
+        # If your token is a JWT, decode it here to get the user email
+        # For now, just return the token as the user id (for demo)
+        # You can use jwt.decode(token, ...) if you have a secret and JWTs
+        return token
+    # Fallback: try x-user-id header (for dev/testing)
+    user_id = request.headers.get("x-user-id")
+    if user_id:
+        return user_id
+    # Fallback: demo user
+    return "demo-user"
+
 @app.post("/votes", status_code=status.HTTP_202_ACCEPTED)
-async def submit_vote(vote: Vote, background_tasks: BackgroundTasks):
+async def submit_vote(
+    vote: Vote, 
+    background_tasks: BackgroundTasks, 
+    request: Request
+):
     """Submit a vote for processing"""
-    api_logger.info(f"Received vote from voter {vote.voter_id} for election {vote.election_id}")
-    
-    # Generate a unique ID for this vote
+    # Extract user from token/header
+    voter_id = get_current_user(request)
+    api_logger.info(f"Received vote from voter {voter_id} for election {vote.election_id}")
+
+    # Overwrite the voter_id in the vote with the authenticated user
+    vote.voter_id = voter_id
+
+    # ...existing code for vote_id, validation, etc...
     vote_id = f"{vote.election_id}:{vote.voter_id}:{uuid.uuid4()}"
-    
-    # Validate the vote (basic checks)
+
     validation_result = await validate_vote(vote)
     if not validation_result["valid"]:
         api_logger.warning(f"Vote validation failed: {validation_result['reason']}")
@@ -387,24 +415,17 @@ async def submit_vote(vote: Vote, background_tasks: BackgroundTasks):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=validation_result["reason"]
         )
-    
-    # Check for duplicate votes
+
     if vote.voter_id in consensus.voter_history and vote.election_id in consensus.voter_history[vote.voter_id]:
         api_logger.warning(f"Duplicate vote detected from {vote.voter_id} for election {vote.election_id}")
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Voter has already cast a vote in this election"
         )
-    
-    # Store vote in pending votes
+
     consensus.pending_votes[vote_id] = vote
-    
-    # Initialize approvals with this node
     consensus.vote_approvals[vote_id] = {NODE_ID}
-    
-    # Start consensus process in background
     background_tasks.add_task(start_consensus_process, vote_id, vote)
-    
     return {"status": "accepted", "vote_id": vote_id}
 
 @app.get("/votes/{vote_id}")
