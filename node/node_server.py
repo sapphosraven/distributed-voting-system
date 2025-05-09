@@ -928,6 +928,12 @@ elections = {}
 
 @app.post("/elections", status_code=201)
 async def create_election(election: Election, request: Request):
+    # Log the incoming request body for debugging
+    try:
+        body = await request.body()
+        logger.info(f"Received /elections POST body: {body.decode()}")
+    except Exception as e:
+        logger.warning(f"Could not log request body: {e}")
     key = redis_election_key(election.id)
     if r.exists(key):
         raise HTTPException(status_code=409, detail="Election ID already exists")

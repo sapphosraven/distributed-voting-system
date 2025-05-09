@@ -30,6 +30,7 @@ logging.basicConfig(
     ]
 )
 
+# voting_nodes should use Docker-internal hostnames (e.g., voting-node-1:5000)
 voting_nodes = os.getenv("VOTING_NODES", "http://voting-node-1:5000,http://voting-node-2:5000,http://voting-node-3:5000").split(",")
 logging.info(f"Initialized with voting nodes: {voting_nodes}")
 

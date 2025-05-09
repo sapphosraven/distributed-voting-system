@@ -158,37 +158,44 @@ const CreateElection = () => {
     
     setLoading(true);
     try {
-      // Generate ID for the new election
+      // Generate ID for the new election as a string
       const newId = String(Date.now());
-      
+
+      // Add unique IDs to each candidate
+      const candidatesWithId = election.candidates.map((c, idx) => ({
+        id: `candidate_${idx}_${Date.now()}`,
+        name: c.name,
+        photo: c.photo,
+        party: c.party,
+        description: c.description,
+      }));
+
       // Create the new election
       const newElection = {
         ...election,
         id: newId,
         status: 'active',
-        created_by: "alice@example.com" // Current user
+        created_by: "alice@example.com", // Current user
+        candidates: candidatesWithId,
       };
-      
-      // Add to mock data
-      /*await createElection(newElection);
-      mockElections.push({
-        id: newId,
-        title: election.title,
-        description: election.description,
-        end_date: election.end_date,
-        hasVoted: false,
-        status: 'active'
-      });*/
-      
+
+      // Actually call the backend
+      await createElection(newElection);
+
       setModalMessage({
         title: "Success!",
         description: "Your election has been created successfully."
       });
       setShowModal(true);
-    } catch (error) {
+    } catch (error: any) {
+      // Show backend error message if available
+      let description = "There was a problem creating your election. Please try again.";
+      if (error?.response?.data?.detail) {
+        description = error.response.data.detail;
+      }
       setModalMessage({
         title: "Creation Failed",
-        description: "There was a problem creating your election. Please try again."
+        description
       });
       setShowModal(true);
     } finally {

@@ -22,6 +22,22 @@ uvicorn main:app --reload
 #test the login and vote
 
  .\test_login_vote.ps1
+
+## API Gateway Architecture (IMPORTANT)
+
+- **All frontend and test scripts must use the API Gateway at `http://localhost:8000` for all API calls.**
+- **Do NOT attempt to call voting nodes directly (e.g., `localhost:5001`, `localhost:5002`, etc.) from the host or frontend.**
+- **The API Gateway forwards requests to the distributed voting nodes using Docker-internal hostnames (e.g., `voting-node-1:5000`).**
+- **Voting nodes are only accessible from within the Docker network, not from the host.**
+
+### Example
+
+- To create an election, POST to `http://localhost:8000/elections`
+- To vote, POST to `http://localhost:8000/vote`
+- To get results, GET `http://localhost:8000/results`
+
+**If you run test scripts or use the frontend, always use the API Gateway URL.**
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.

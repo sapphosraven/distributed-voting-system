@@ -11,7 +11,7 @@ export const getEligibleElections = async (): Promise<ElectionListItem[]> => {
   });
   
   if (!response.ok) {
-    throw new Error('Failed to fetch eligible elections');
+    throw new Error(`Failed to fetch elections: ${response.status}`);
   }
   
   return response.json();
