@@ -9,5 +9,16 @@ const transporter = nodemailer.createTransport({
 });
 
 exports.sendOtpEmail = async (email, otp) => {
-  // Send OTP email logic
+  const mailOptions = {
+    from: 'no-reply@votingapp.com',
+    to: email,
+    subject: 'Your OTP Code',
+    text: `Your OTP code is: ${otp}`,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+  } catch (error) {
+    throw new Error('Failed to send OTP email');
+  }
 };

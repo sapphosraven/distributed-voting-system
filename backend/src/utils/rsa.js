@@ -1,12 +1,15 @@
-const crypto = require('crypto');
+const NodeRSA = require('node-rsa');
 
-const publicKey = process.env.RSA_PUBLIC_KEY;
 const privateKey = process.env.RSA_PRIVATE_KEY;
+const publicKey = process.env.RSA_PUBLIC_KEY;
+
+const privateKeyInstance = new NodeRSA(privateKey);
+const publicKeyInstance = new NodeRSA(publicKey);
 
 exports.encrypt = (data) => {
-  // RSA encryption logic
+  return publicKeyInstance.encrypt(data, 'base64');
 };
 
 exports.decrypt = (data) => {
-  // RSA decryption logic
+  return privateKeyInstance.decrypt(data, 'utf8');
 };
