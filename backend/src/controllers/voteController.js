@@ -1,7 +1,7 @@
 exports.castVote = async (req, res) => {
-  // Handle vote casting logic
+  // stub: decrypt payload via rsa.decrypt, verify signature, increment Redis
 };
 
 exports.getVoteResults = async (req, res) => {
-  // Handle fetching vote results logic
+  // stub: read tallies from Redis and/or Postgres
 };

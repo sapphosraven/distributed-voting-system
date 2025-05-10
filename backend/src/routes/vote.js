@@ -1,10 +1,15 @@
-const express = require('express');
-const { castVote, getVoteResults } = require('../controllers/voteController');
-const jwtAuth = require('../middleware/jwtAuth');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../utils/db');
+const Election = require('./Election');
+const User = require('./User');
 
-const router = express.Router();
+const Vote = sequelize.define('Vote', {
+  candidate: { type: DataTypes.STRING, allowNull: false },
+  encryptedPayload: { type: DataTypes.TEXT, allowNull: false },
+  signature: { type: DataTypes.TEXT, allowNull: false }
+});
 
-router.post('/', jwtAuth, castVote);
-router.get('/results', jwtAuth, getVoteResults);
+Vote.belongsTo(Election);
+Vote.belongsTo(User);
 
-module.exports = router;
+module.exports = Vote;

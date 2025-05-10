@@ -1,7 +1,7 @@
 exports.createElection = async (req, res) => {
-  // Handle election creation logic
+  // stub: validate input, save to Postgres
 };
 
 exports.getElections = async (req, res) => {
-  // Handle fetching elections logic
+  // stub: fetch from Postgres based on user eligibility
 };

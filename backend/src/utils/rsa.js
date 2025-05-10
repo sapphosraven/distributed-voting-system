@@ -1,15 +1,11 @@
+const fs = require('fs');
 const NodeRSA = require('node-rsa');
 
-const privateKey = process.env.RSA_PRIVATE_KEY;
-const publicKey = process.env.RSA_PUBLIC_KEY;
+const priv = fs.readFileSync(process.env.RSA_PRIVATE_KEY_PATH);
+const pub = fs.readFileSync(process.env.RSA_PUBLIC_KEY_PATH);
 
-const privateKeyInstance = new NodeRSA(privateKey);
-const publicKeyInstance = new NodeRSA(publicKey);
+const privateKey = new NodeRSA(priv);
+const publicKey = new NodeRSA(pub);
 
-exports.encrypt = (data) => {
-  return publicKeyInstance.encrypt(data, 'base64');
-};
-
-exports.decrypt = (data) => {
-  return privateKeyInstance.decrypt(data, 'utf8');
-};
+exports.encrypt = data => publicKey.encrypt(data, 'base64');
+exports.decrypt = data => privateKey.decrypt(data, 'utf8');

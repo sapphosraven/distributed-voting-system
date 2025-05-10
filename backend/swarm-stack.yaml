@@ -1,0 +1,36 @@
+version: "3.8"
+
+secrets:
+  rsa_private:
+    file: ./secrets/private.pem
+  rsa_public:
+    file: ./secrets/public.pem
+
+services:
+  backend:
+    image: your-dockerhub-username/voting-backend:latest
+    deploy:
+      replicas: 1
+    ports:
+      - "5000:5000"
+    env_file: .env
+    secrets:
+      - rsa_private
+      - rsa_public
+    depends_on:
+      - redis
+      - postgres
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+
+  postgres:
+    image: postgres:14
+    environment:
+      POSTGRES_DB: voting
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+    ports:
+      - "5432:5432"

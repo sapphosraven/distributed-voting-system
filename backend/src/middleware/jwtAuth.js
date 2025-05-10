@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-
 module.exports = (req, res, next) => {
-  // JWT authentication middleware
+  // stub: extract Bearer token, verify with JWT_SECRET
+  next();
 };

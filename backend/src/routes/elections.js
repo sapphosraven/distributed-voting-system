@@ -1,8 +1,9 @@
-const express = require('express');
-const { createElection, getElections } = require('../controllers/electionController');
+const router = require('express').Router();
 const jwtAuth = require('../middleware/jwtAuth');
-
-const router = express.Router();
+const {
+  createElection,
+  getElections
+} = require('../controllers/electionController');
 
 router.post('/', jwtAuth, createElection);
 router.get('/', jwtAuth, getElections);

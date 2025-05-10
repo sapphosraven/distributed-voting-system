@@ -1,18 +1,25 @@
 const express = require('express');
 const cors = require('cors');
+const { initDb } = require('../utils/db');
 const authRoutes = require('./routes/auth');
-const voteRoutes = require('./routes/vote');
 const electionRoutes = require('./routes/elections');
+const voteRoutes = require('./routes/vote');
 
 const app = express();
-
 app.use(cors());
 app.use(express.json());
 
 app.use('/api/auth', authRoutes);
-app.use('/api/vote', voteRoutes);
 app.use('/api/elections', electionRoutes);
+app.use('/api/vote', voteRoutes);
 
-app.listen(process.env.PORT, () => {
-  console.log(`Server running on port ${process.env.PORT}`);
-});
+initDb()
+  .then(() => {
+    app.listen(process.env.PORT, () => {
+      console.log(`Backend listening on port ${process.env.PORT}`);
+    });
+  })
+  .catch(err => {
+    console.error('Failed to initialize DB:', err);
+    process.exit(1);
+  });
