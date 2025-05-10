@@ -26,6 +26,7 @@ export const Voting = () => {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
+    console.log("Voting.tsx: token in localStorage:", token);
     if (!token) {
       navigate("/login");
     }
@@ -35,18 +36,21 @@ export const Voting = () => {
     const fetchElectionDetailsAndCandidates = async () => {
       try {
         const electionData = await getElectionDetails(electionId);
+        console.log("Voting.tsx: fetched election details:", electionData);
         setElectionTitle(electionData.title);
         setElectionDesc(electionData.description);
         // Prefer fetching candidates from dedicated endpoint if available
         try {
           const fetchedCandidates = await fetchElectionCandidates(electionId);
+          console.log("Voting.tsx: fetched candidates from endpoint:", fetchedCandidates);
           setCandidates(fetchedCandidates);
-        } catch {
+        } catch (err) {
+          console.log("Voting.tsx: fallback to electionData.candidates", electionData.candidates);
           setCandidates(electionData.candidates || []);
         }
         setLoading(false);
       } catch (error) {
-        console.error("Failed to fetch election details:", error);
+        console.error("Voting.tsx: Failed to fetch election details:", error);
         setModalMessage({
           title: "Error",
           description: "Failed to load election details. Please try again."
