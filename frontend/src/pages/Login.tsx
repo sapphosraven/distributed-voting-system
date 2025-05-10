@@ -29,10 +29,8 @@ export const Login = () => {
       });
       // Debug: log the response to check its structure
       console.log("Login response:", response);
-      // Store only the access token string
-      localStorage.setItem("token", response.access_token || response.token || response); // not JSON.stringify
-      // Debug: log the token after storing
-      console.log("Login.tsx: token stored in localStorage:", localStorage.getItem("token"));
+      // Store the token as a JSON string
+      localStorage.setItem("token", JSON.stringify(response)); // adjust as needed
       // If you need OTP verification, navigate to that page, else go to elections
       navigate("/otp-verification"); // Or navigate('/elections') if not using OTP
     } catch (error) {

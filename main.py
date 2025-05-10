@@ -1,5 +1,5 @@
 import time
-from fastapi import FastAPI, Depends, HTTPException, Request
+from fastapi import FastAPI, Depends, HTTPException
 from auth.models import VoteRequest
 from auth import get_current_user
 import logging
@@ -115,15 +115,12 @@ async def create_election(election: dict):
     raise HTTPException(status_code=500, detail="Failed to create election")
 
 @app.get("/elections")
-async def list_elections(request: Request):
-    headers = {}
-    if "authorization" in request.headers:
-        headers["authorization"] = request.headers["authorization"]
+async def list_elections():
     for node_url in voting_nodes:
         try:
             url = f"{node_url}/elections"
             async with httpx.AsyncClient() as client:
-                response = await client.get(url, headers=headers, timeout=5.0)
+                response = await client.get(url, timeout=5.0)
                 if response.status_code == 200:
                     return response.json()
         except Exception as e:

@@ -179,9 +179,6 @@ const CreateElection = () => {
         candidates: candidatesWithId,
       };
 
-      // Debug: log the election object before sending
-      console.log("CreateElection.tsx: submitting newElection:", newElection);
-
       // Actually call the backend
       await createElection(newElection);
 

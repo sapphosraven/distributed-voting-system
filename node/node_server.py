@@ -374,27 +374,21 @@ async def enable_mutex_logging():
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi import Security
 
-import jwt
-
-JWT_SECRET = os.environ.get("JWT_SECRET", "secret")  # Use your real secret in production
-
 # Add a simple dependency to extract the user from the Authorization header
 def get_current_user(request: Request) -> str:
+    # Try to get the token from the Authorization header
     auth_header = request.headers.get("authorization")
     if (auth_header and auth_header.lower().startswith("bearer ")):
         token = auth_header[7:]
-        try:
-            # Decode JWT to get user email (sub claim)
-            payload = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
-            user_email = payload.get("sub")
-            if user_email:
-                return user_email
-        except Exception as e:
-            logger.warning(f"JWT decode failed: {e}")
-            return token  # fallback for dev/testing
+        # If your token is a JWT, decode it here to get the user email
+        # For now, just return the token as the user id (for demo)
+        # You can use jwt.decode(token, ...) if you have a secret and JWTs
+        return token
+    # Fallback: try x-user-id header (for dev/testing)
     user_id = request.headers.get("x-user-id")
     if user_id:
         return user_id
+    # Fallback: demo user
     return "demo-user"
 
 @app.post("/votes", status_code=status.HTTP_202_ACCEPTED)
@@ -969,23 +963,8 @@ async def create_election(election: Election, request: Request):
     elections[election.id] = election  # cache in memory
     return election
 
-def is_user_eligible(election, user_email):
-    eligible = election.eligible_voters
-    if "all" in eligible:
-        return True
-    if user_email in eligible:
-        return True
-    # Check for domain match
-    if "@" in user_email:
-        user_domain = user_email[user_email.index("@") :]
-        if any(voter.strip().startswith("@") and user_domain == voter.strip() for voter in eligible):
-            return True
-    return False
-
 @app.get("/elections")
-async def list_elections(request: Request):
-    # Get user from token/header
-    user_id = get_current_user(request)
+async def list_elections():
     ids = r.smembers(redis_elections_set_key())
     result = []
     for eid in ids:
@@ -994,9 +973,6 @@ async def list_elections(request: Request):
             continue
         e = Election.parse_raw(data)
         elections[e.id] = e  # update cache
-        # Only include if user is eligible
-        if not is_user_eligible(e, user_id):
-            continue
         status = get_election_status(e)
         result.append({
             "id": e.id,
