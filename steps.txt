@@ -1,55 +1,33 @@
 # Step-by-Step Guide to Complete the Secure Distributed Voting System Demo (Updated)
 
-1. Database Schema & Sequelize Setup
-   - Define User, Election, and Vote models with correct fields and associations.
-   - User.hasMany(Vote), Election.hasMany(Vote), Vote.belongsTo(User), Vote.belongsTo(Election).
-   - Remove any redundant model definitions from route files.
+| Step                                                      | Status      | Notes                                                                                  |
+|-----------------------------------------------------------|-------------|----------------------------------------------------------------------------------------|
+| 1. DB Schema & Sequelize Associations                     | ✅ Done     | Models and associations are correct                                                    |
+| 2. Sequelize Sync                                         | ✅ Done     | Sync on boot, DB created                                                               |
+| 3. Docker Swarm Connectivity                              | ✅ Done     | Stack up, services use correct hostnames                                               |
+| 4. Running the Database                                   | ✅ Done     | All services 1/1, backend logs show successful startup                                 |
+| 5. Redis Connection                                       | ✅ Done     | Redis connection is working and confirmed in logs                                      |
+| 6. Controller Logic (auth, election, vote)                | ❌ Not done | Controllers are stubs, no real logic or responses                                      |
+| 7. OTP Logic (otp.js, Redis, mock email)                  | ❌ Not done | Not implemented                                                                       |
+| 8. Middleware Logic (jwtAuth, otpLimiter, sigVerifier)    | ⚠️ Partial  | Middleware files exist, logic not verified                                             |
+| 9. Distributed System Logic (consensus, leader, mutex)    | ❌ Not done | No leader election, consensus, or mutex/lock logic implemented                        |
+| 10. Double Voting/Data Conflict Prevention                | ❌ Not done | Not implemented                                                                       |
+| 11. Console Logging at Key Steps                          | ❌ Not done | Not implemented                                                                       |
+| 12. Inline Test/Dummy Endpoints                           | ❌ Not done | Not implemented                                                                       |
+| 13. Frontend Integration                                 | ✅ Done     | API prefix and CORS set                                                                |
+| 14. Test the Full Happy Path                              | ❌ Not done | Blocked by missing controller and business logic                                       |
+| 15. Console-Style Debug Tests                             | ❌ Not done | Not implemented                                                                       |
+| 16. Persistent Volumes (optional)                         | ❌ Not done | Not set up (optional for demo)                                                        |
 
-2. Sequelize Sync (Dev Mode)
-   - In db.js, ensure sequelize.sync({ alter: true }) is called on boot.
-   - On backend start, Sequelize will create tables if they don’t exist.
+---
 
-3. Docker Swarm: Service Connectivity
-   - Use service names (voting_postgres, voting_redis) in backend configs for hostnames.
-   - Ensure .env or config files use these hostnames.
+**Legend:**
+✅ = Complete  ⚠️ = Partially/Assumed  ❌ = Not done
 
-4. Running the Database
-   - Start Docker Swarm stack: docker stack deploy -c backend/swarm-stack.yaml voting
-   - Confirm all services (backend, postgres, redis) show 1/1 replicas.
-   - Check backend logs for 'Database synced' and 'Backend listening on port ...'.
-
-5. Redis Connection
-   - Use host 'voting_redis' or 'redis' in Redis client config.
-   - Test connection on backend boot with console logs.
-
-6. Implementation Checklist
-   - Implement controller logic in authController.js, electionController.js, voteController.js.
-   - Complete OTP logic in otp.js using Redis and mock email sender.
-   - Apply middleware: jwtAuth.js, otpLimiter.js, sigVerifier.js to correct routes.
-   - Add distributed system logic: leader election, consensus protocol, mutex/lock for vote recording.
-   - Prevent double voting and data conflicts across nodes.
-   - Add console logging at function entry, DB writes, consensus steps, and locks.
-   - Add simple inline test/debug functions or dummy endpoints to exercise:
-     - Full user login + OTP
-     - Election creation
-     - Secure vote casting
-     - Signature rejection
-     - Lock failure or retry
-     - Leader failover (mocked)
-
-7. Frontend Integration
-   - All backend routes are prefixed with /api.
-   - CORS is enabled for all origins.
-   - Frontend should set base URL to /api.
-
-8. Test the Full Happy Path
-   - Register → login → OTP → create election → vote (with encryption/signature) → view results.
-
-9. (Optional) Add Console-Style Debug Tests
-   - At the bottom of each controller, add test functions and call them conditionally (e.g., if process.env.DEBUG).
-
-10. (Optional) Persistent Volumes
-   - Set up persistent volumes for Postgres and Redis if needed for data durability.
+**Change Log:**
+- [2025-05-11] Step 5 (Redis Connection) marked as ✅ Done. Verified by 'Redis connected' in backend logs after stack restart.
+- [2025-05-11] Steps 1–4, 13 marked as ✅ Done based on infrastructure and logs.
+- [2025-05-11] Remaining steps pending implementation.
 
 ---
 
