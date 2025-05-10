@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
 import Modal from "../components/common/Modal";
-import { createElection, } from "../services/elections";
+import { createElection } from "../services/elections";
 
 
 // Component to create a new election (multi-step form)
@@ -99,37 +99,26 @@ const CreateElection = () => {
       }
     }
     else if (step === 2) {
-      // Require at least one non-empty voter/domain and none empty
-      const nonEmptyVoters = election.eligible_voters.filter(email => email.trim() !== "");
-      if (nonEmptyVoters.length === 0) {
-        setModalMessage({
-          title: "No Eligible Voters",
-          description: "Please add at least one eligible voter email or domain."
-        });
-        setShowModal(true);
-        return false;
-      }
-      if (election.eligible_voters.some(email => !email.trim())) {
+      if (election.eligible_voters.some(email => !email)) {
         setModalMessage({
           title: "Invalid Voters",
-          description: "Please ensure all voter entries are complete and not empty."
+          description: "Please ensure all voter entries are complete."
         });
         setShowModal(true);
         return false;
       }
     }
     else if (step === 3) {
-      // Require at least 2 candidates with non-empty names
-      const validCandidates = election.candidates.filter(c => c.name.trim());
-      if (validCandidates.length < 2) {
+      if (election.candidates.length === 0) {
         setModalMessage({
-          title: "Not Enough Candidates",
-          description: "Please add at least two candidates with names."
+          title: "No Candidates",
+          description: "Please add at least one candidate."
         });
         setShowModal(true);
         return false;
       }
-      if (election.candidates.some(c => !c.name.trim())) {
+      
+      if (election.candidates.some(c => !c.name)) {
         setModalMessage({
           title: "Incomplete Candidates",
           description: "All candidates must have at least a name."
@@ -158,44 +147,37 @@ const CreateElection = () => {
     
     setLoading(true);
     try {
-      // Generate ID for the new election as a string
+      // Generate ID for the new election
       const newId = String(Date.now());
-
-      // Add unique IDs to each candidate
-      const candidatesWithId = election.candidates.map((c, idx) => ({
-        id: `candidate_${idx}_${Date.now()}`,
-        name: c.name,
-        photo: c.photo,
-        party: c.party,
-        description: c.description,
-      }));
-
+      
       // Create the new election
       const newElection = {
         ...election,
         id: newId,
         status: 'active',
-        created_by: "alice@example.com", // Current user
-        candidates: candidatesWithId,
+        created_by: "alice@example.com" // Current user
       };
-
-      // Actually call the backend
-      await createElection(newElection);
-
+      
+      // Add to mock data
+      mockElectionDetails[newId] = newElection;
+      mockElections.push({
+        id: newId,
+        title: election.title,
+        description: election.description,
+        end_date: election.end_date,
+        hasVoted: false,
+        status: 'active'
+      });
+      
       setModalMessage({
         title: "Success!",
         description: "Your election has been created successfully."
       });
       setShowModal(true);
-    } catch (error: any) {
-      // Show backend error message if available
-      let description = "There was a problem creating your election. Please try again.";
-      if (error?.response?.data?.detail) {
-        description = error.response.data.detail;
-      }
+    } catch (error) {
       setModalMessage({
         title: "Creation Failed",
-        description
+        description: "There was a problem creating your election. Please try again."
       });
       setShowModal(true);
     } finally {
@@ -205,29 +187,14 @@ const CreateElection = () => {
   
   return (
     <Layout>
-      {/* Add style for dark calendar icons */}
-      <style>
-        {`
-          /* Make calendar icons in datetime-local inputs dark */
-          input[type="datetime-local"]::-webkit-calendar-picker-indicator {
-            filter: invert(0.7) brightness(0.5);
-          }
-          input[type="datetime-local"]::-moz-calendar-picker-indicator {
-            filter: invert(0.7) brightness(0.5);
-          }
-          input[type="datetime-local"]::-ms-input-placeholder {
-            color: #222;
-          }
-        `}
-      </style>
       <div className="p-6 max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold mb-6 text-purple-800">Create New Election</h1>
         
-        {/* Progress indicator and step labels */}
+        {/* Progress indicator */}
         <div className="mb-8">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="flex flex-col items-center flex-1">
+              <div key={i} className="flex items-center">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center font-semibold ${
                   step === i ? 'bg-purple-900 text-white' : 
                   step > i ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-600'
@@ -238,17 +205,18 @@ const CreateElection = () => {
                     </svg>
                   ) : i}
                 </div>
-                <span className={`mt-2 text-xs md:text-sm font-medium ${
-                  step >= i ? 'text-purple-900' : 'text-gray-500'
-                }`}>
-                  {i === 1 && "Basic Details"}
-                  {i === 2 && <>Voter Eligibility <span className="text-red-500">*</span></>}
-                  {i === 3 && "Candidates"}
-                  {i === 4 && "Review"}
-                </span>
+                {i < 4 && (
+                  <div className={`flex-1 h-1 mx-2 ${step > i ? 'bg-green-500' : 'bg-gray-200'}`}></div>
+                )}
               </div>
             ))}
-          </div> 
+          </div>
+          <div className="flex justify-between mt-2">
+            <span className={step >= 1 ? 'text-purple-900 font-medium' : 'text-gray-500'}>Basic Details</span>
+            <span className={step >= 2 ? 'text-purple-900 font-medium' : 'text-gray-500'}>Voter Eligibility</span>
+            <span className={step >= 3 ? 'text-purple-900 font-medium' : 'text-gray-500'}>Candidates</span>
+            <span className={step >= 4 ? 'text-purple-900 font-medium' : 'text-gray-500'}>Review</span>
+          </div>
         </div>
         
         {/* Step 1: Basic Details */}
@@ -314,9 +282,7 @@ const CreateElection = () => {
         {/* Step 2: Voter Eligibility */}
         {step === 2 && (
           <div>
-            <h2 className="text-2xl font-semibold mb-4 text-purple-900">
-              Voter Eligibility <span className="text-red-500">*</span>
-            </h2>
+            <h2 className="text-2xl font-semibold mb-4 text-purple-900">Voter Eligibility</h2>
             <p className="mb-4 text-gray-600">
               Specify email addresses or domains (e.g., @example.com) of voters eligible to participate in this election.
             </p>
@@ -549,9 +515,6 @@ const CreateElection = () => {
           }}
           onConfirm={() => {
             setShowModal(false);
-            if (modalMessage.title === "Success!") {
-              navigate('/elections');
-            }
           }}
         />
       )}

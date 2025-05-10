@@ -8,5 +8,10 @@
         "frontend": "cd frontend && npm run dev",
         "backend": "docker-compose up -d",
         "start": "concurrently \"npm run backend\" \"npm run frontend\""
+    },
+    "dependencies": {
+        "express-rate-limit": "^7.5.0",
+        "pg": "^8.15.6",
+        "sequelize": "^6.37.7"
     }
 }

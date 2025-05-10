@@ -1,9 +1,9 @@
 const express = require('express');
 const cors = require('cors');
-const { initDb } = require('../utils/db');
-const authRoutes = require('./routes/auth');
+const { initDb } = require('./utils/db');
 const electionRoutes = require('./routes/elections');
 const voteRoutes = require('./routes/vote');
+const authRoutes = require('./routes/auth');
 
 const app = express();
 app.use(cors());

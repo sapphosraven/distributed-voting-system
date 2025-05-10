@@ -1,15 +1,23 @@
-const Sequelize = require('sequelize');
-const Redis = require('ioredis');
+// This file is responsible for connecting to the database and syncing the models.
+// It uses Sequelize as the ORM to interact with the PostgreSQL database.
+// It also exports the sequelize instance and a function to initialize the database.
+const { Sequelize } = require('sequelize');
 
-const sequelize = new Sequelize(process.env.POSTGRES_URI);
-const redis = new Redis({
-  host: process.env.REDIS_HOST,
-  port: process.env.REDIS_PORT
-});
+const sequelize = new Sequelize(
+  process.env.POSTGRES_DB || 'voting',
+  process.env.POSTGRES_USER || 'user',
+  process.env.POSTGRES_PASSWORD || 'pass',
+  {
+    host: process.env.POSTGRES_HOST || 'postgres',
+    dialect: 'postgres',
+    logging: false,
+  }
+);
 
-exports.initDb = async () => {
-  // stub: await sequelize.sync();
-};
+// Helper to sync DB (called from index.js)
+async function initDb() {
+  await sequelize.sync({ alter: true }); // Use { force: true } only for dev
+  console.log('Database synced');
+}
 
-exports.sequelize = sequelize;
-exports.redis = redis;
+module.exports = { sequelize, initDb };

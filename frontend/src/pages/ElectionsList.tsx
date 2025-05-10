@@ -19,10 +19,13 @@ export const ElectionsList = () => {
   useEffect(() => {
     const fetchElections = async () => {
       try {
-        // Use real API
-        const data = await getEligibleElections();
-        setElections(data);
+        // Comment this and uncomment the API call when backend is ready
+        setElections(mockElections);
         setLoading(false);
+        
+        // Uncomment when backend is ready
+        // const data = await getEligibleElections();
+        // setElections(data);
       } catch (err) {
         console.error("Failed to fetch elections:", err);
         setModalMessage({

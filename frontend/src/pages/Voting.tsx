@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
 import { getElectionDetails } from "../services/elections";
-import { submitVote, fetchElectionCandidates } from "../services/vote";
+import { mockElectionDetails, mockElections } from "../mocks/electionMocks"; // Remove in production
+import { submitVote } from "../services/vote"; // Make sure this exists
 import Modal from "../components/common/Modal";
 import { Candidate } from "../types/election";
 
@@ -25,26 +26,24 @@ export const Voting = () => {
   const [voteSubmitting, setVoteSubmitting] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/login");
-    }
-  }, [navigate]);
-
-  useEffect(() => {
-    const fetchElectionDetailsAndCandidates = async () => {
+    const fetchElectionDetails = async () => {
       try {
-        const electionData = await getElectionDetails(electionId);
+        // Comment this and uncomment the API call when backend is ready
+        const electionData = mockElectionDetails[electionId];
+        if (!electionData) {
+          throw new Error("Election not found");
+        }
+        
         setElectionTitle(electionData.title);
         setElectionDesc(electionData.description);
-        // Prefer fetching candidates from dedicated endpoint if available
-        try {
-          const fetchedCandidates = await fetchElectionCandidates(electionId);
-          setCandidates(fetchedCandidates);
-        } catch {
-          setCandidates(electionData.candidates || []);
-        }
+        setCandidates(electionData.candidates);
         setLoading(false);
+        
+        // Uncomment when backend is ready
+        // const electionData = await getElectionDetails(electionId);
+        // setElectionTitle(electionData.title);
+        // setElectionDesc(electionData.description);
+        // setCandidates(electionData.candidates);
       } catch (error) {
         console.error("Failed to fetch election details:", error);
         setModalMessage({
@@ -52,11 +51,12 @@ export const Voting = () => {
           description: "Failed to load election details. Please try again."
         });
         setShowModal(true);
+      } finally {
         setLoading(false);
       }
     };
 
-    fetchElectionDetailsAndCandidates();
+    fetchElectionDetails();
   }, [electionId]);
 
   const handleCandidateSelect = (candidateId: string) => {
@@ -78,21 +78,35 @@ export const Voting = () => {
   
   const confirmVote = async () => {
     if (!selectedCandidate) return;
-
+    
     setVoteSubmitting(true);
     try {
-      await submitVote(electionId, selectedCandidate);
-
+      // Mock successful vote storage
+      const userVotes = JSON.parse(localStorage.getItem('userVotes') || '{}');
+      userVotes[electionId] = selectedCandidate;
+      localStorage.setItem('userVotes', JSON.stringify(userVotes));
+      
+      // Update the mock election data to mark as voted
+      const updatedMockElections = [...mockElections];
+      const electionIndex = updatedMockElections.findIndex(e => e.id === electionId);
+      if (electionIndex !== -1) {
+        updatedMockElections[electionIndex].hasVoted = true;
+      }
+      
+      // Success message
       setModalMessage({
         title: "Success!",
         description: "Your vote has been recorded successfully."
       });
       setShowModal(true);
+      
+      // Close confirm dialog
       setConfirmVoteModal(false);
-    } catch (error: any) {
+    } catch (error) {
+      console.error(error);
       setModalMessage({
         title: "Vote Failed",
-        description: error?.message || "There was a problem recording your vote. Please try again."
+        description: "There was a problem recording your vote. Please try again."
       });
       setShowModal(true);
     } finally {
@@ -197,7 +211,7 @@ export const Voting = () => {
           title="Confirm Your Vote"
           description={`Are you sure you want to vote for ${candidates.find(c => c.id === selectedCandidate)?.name}? This action cannot be undone.`}
           onClose={() => setConfirmVoteModal(false)}
-          onConfirm={confirmVote} // <-- Fix: call confirmVote on confirm
+          onConfirm={() => setConfirmVoteModal(false)}
           actions={
             <>
               <button
