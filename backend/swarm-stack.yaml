@@ -8,7 +8,7 @@ secrets:
 
 services:
   backend:
-    image: shahliza27/voting-backend:latest
+    image: zik44/voting-backend:latest
     deploy:
       replicas: 1
     ports:
