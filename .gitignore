@@ -48,4 +48,3 @@ __pycache__
 
 *.pem
 .env
-secrets.yaml
