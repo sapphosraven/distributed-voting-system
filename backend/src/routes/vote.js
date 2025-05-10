@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../utils/db');
-const Election = require('../models/Election');
-const User = require('../models/User');
+const Election = require('./Election');
+const User = require('./User');
 
 const Vote = sequelize.define('Vote', {
   candidate: { type: DataTypes.STRING, allowNull: false },
@@ -12,4 +12,4 @@ const Vote = sequelize.define('Vote', {
 Vote.belongsTo(Election);
 Vote.belongsTo(User);
 
-module.exports = Vote;
+module.exports = router;
