@@ -4,6 +4,7 @@ const { sequelize } = require('../utils/db');
 const Election = require('./Election');
 const User = require('./User');
 
+
 const Vote = sequelize.define('Vote', {
   candidate: {
     type: DataTypes.STRING,
