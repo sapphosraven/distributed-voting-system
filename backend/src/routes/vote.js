@@ -1,15 +1,8 @@
-const { DataTypes } = require('sequelize');
-const { sequelize } = require('../utils/db');
-const Election = require('./Election');
-const User = require('./User');
+const { DataTypes } = require("sequelize");
+const { sequelize } = require("../utils/db");
+const Election = require("./Election");
+const User = require("./User");
 
-const Vote = sequelize.define('Vote', {
-  candidate: { type: DataTypes.STRING, allowNull: false },
-  encryptedPayload: { type: DataTypes.TEXT, allowNull: false },
-  signature: { type: DataTypes.TEXT, allowNull: false }
-});
-
-Vote.belongsTo(Election);
-Vote.belongsTo(User);
+// Removed model definition and associations from this route file. Models should be defined in /models only.
 
 module.exports = router;
