@@ -1,5 +1,4 @@
 const crypto = require('crypto');
-const fs = require('fs');
 
 const privateKey = crypto.createPrivateKey({
   key: fs.readFileSync(process.env.RSA_PRIVATE_KEY_PATH),

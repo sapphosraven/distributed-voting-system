@@ -1,10 +1,15 @@
-const router = require('express').Router();
-const voteController = require('../controllers/voteController');
-const jwtAuth = require('../middleware/jwtAuth');
-const sigVerifier = require('../middleware/sigVerifier');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../utils/db');
+const Election = require('./Election');
+const User = require('./User');
 
-// Example protected vote route
-router.post('/cast', jwtAuth, sigVerifier, voteController.castVote);
-router.get('/results/:electionId', jwtAuth, voteController.getVoteResults);
+const Vote = sequelize.define('Vote', {
+  candidate: { type: DataTypes.STRING, allowNull: false },
+  encryptedPayload: { type: DataTypes.TEXT, allowNull: false },
+  signature: { type: DataTypes.TEXT, allowNull: false }
+});
+
+Vote.belongsTo(Election);
+Vote.belongsTo(User);
 
 module.exports = router;
