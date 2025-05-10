@@ -1,3 +1,4 @@
+// backend/src/models/Vote.js
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../utils/db');
 const Election = require('./Election');
@@ -8,9 +9,18 @@ const Vote = sequelize.define('Vote', {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  encryptedPayload: {
+    type: DataTypes.TEXT,
+    allowNull: false,
+  },
+  signature: {
+    type: DataTypes.TEXT,
+    allowNull: false,
+  },
 });
 
-Vote.belongsTo(Election);
-Vote.belongsTo(User);
+// Associations
+Vote.belongsTo(Election, { foreignKey: 'electionId', onDelete: 'CASCADE' });
+Vote.belongsTo(User,     { foreignKey: 'userId',     onDelete: 'CASCADE' });
 
 module.exports = Vote;
