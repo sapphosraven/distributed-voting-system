@@ -8,15 +8,17 @@ secrets:
 
 services:
   backend:
-    image: your-dockerhub-username/voting-backend:latest
+    image: shahliza27/voting-backend:latest
     deploy:
       replicas: 1
     ports:
       - "5000:5000"
     env_file: .env
     secrets:
-      - rsa_private
-      - rsa_public
+      - source: rsa_private
+        target: /secrets/private.pem
+      - source: rsa_public
+        target: /secrets/public.pem
     depends_on:
       - redis
       - postgres
