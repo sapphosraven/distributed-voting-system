@@ -1,8 +1,8 @@
-# Step-by-Step Guide to Complete the Secure Distributed Voting System Demo
+# Step-by-Step Guide to Complete the Secure Distributed Voting System Demo (Updated)
 
 1. Database Schema & Sequelize Setup
    - Define User, Election, and Vote models with correct fields and associations.
-   - User hasMany Vote, Election hasMany Vote, Vote belongsTo User and Election.
+   - User.hasMany(Vote), Election.hasMany(Vote), Vote.belongsTo(User), Vote.belongsTo(Election).
    - Remove any redundant model definitions from route files.
 
 2. Sequelize Sync (Dev Mode)
@@ -10,27 +10,32 @@
    - On backend start, Sequelize will create tables if they don’t exist.
 
 3. Docker Swarm: Service Connectivity
-   - Use service names (postgres, redis) in backend configs for hostnames.
+   - Use service names (voting_postgres, voting_redis) in backend configs for hostnames.
    - Ensure .env or config files use these hostnames.
 
 4. Running the Database
-   - Start Docker Swarm stack: docker stack deploy -c swarm-stack.yaml voting
-   - If needed, connect to the Postgres container and create the DB manually.
+   - Start Docker Swarm stack: docker stack deploy -c backend/swarm-stack.yaml voting
+   - Confirm all services (backend, postgres, redis) show 1/1 replicas.
+   - Check backend logs for 'Database synced' and 'Backend listening on port ...'.
 
 5. Redis Connection
-   - Use host 'redis' and port 6379 in Redis client config.
+   - Use host 'voting_redis' or 'redis' in Redis client config.
    - Test connection on backend boot with console logs.
 
 6. Implementation Checklist
    - Implement controller logic in authController.js, electionController.js, voteController.js.
-   - Complete OTP logic in otp.js using Redis.
+   - Complete OTP logic in otp.js using Redis and mock email sender.
    - Apply middleware: jwtAuth.js, otpLimiter.js, sigVerifier.js to correct routes.
-   - Add console logging at function entry, key variable values, decision points, and errors.
-   - Add simple inline test/debug functions in each controller to exercise:
-     - Auth flow (register → login → OTP)
-     - Election creation and retrieval
-     - Vote casting (with encryption + signature)
-     - Signature and JWT failure paths
+   - Add distributed system logic: leader election, consensus protocol, mutex/lock for vote recording.
+   - Prevent double voting and data conflicts across nodes.
+   - Add console logging at function entry, DB writes, consensus steps, and locks.
+   - Add simple inline test/debug functions or dummy endpoints to exercise:
+     - Full user login + OTP
+     - Election creation
+     - Secure vote casting
+     - Signature rejection
+     - Lock failure or retry
+     - Leader failover (mocked)
 
 7. Frontend Integration
    - All backend routes are prefixed with /api.
@@ -42,6 +47,9 @@
 
 9. (Optional) Add Console-Style Debug Tests
    - At the bottom of each controller, add test functions and call them conditionally (e.g., if process.env.DEBUG).
+
+10. (Optional) Persistent Volumes
+   - Set up persistent volumes for Postgres and Redis if needed for data durability.
 
 ---
 

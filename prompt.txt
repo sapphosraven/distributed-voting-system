@@ -1,129 +1,120 @@
+We are building a secure, distributed, and end-to-end encrypted online voting system for a demo using Node.js, PostgreSQL, Redis, Docker Swarm, and RSA-based cryptography.
+
 💡 Project Goals:
 Allow users to register and log in via email and password.
 
-Email-based OTP is used to verify identities (not phone-based).
+Email-based OTP is used to verify identities (no SMS).
 
 Authenticated users can view and vote in elections.
 
 All vote data is end-to-end encrypted and digitally signed with RSA.
 
-Election creation and result viewing are protected by JWT-based access control.
+Elections and results are protected by JWT-based access control.
 
-The entire backend is containerized and deployable via Docker Swarm.
+The backend is deployed via Docker Swarm.
+
+No frontend code changes required beyond routing; frontend connects via /api/...
 
 🧱 Architecture Overview:
 Backend: Node.js + Express
 
-ORM: Sequelize (Postgres as DB)
+DB: PostgreSQL (via Sequelize ORM)
 
-Caching + OTP store: Redis
+Cache/OTP store: Redis
 
-Auth: JWT
+Security stack:
 
-Email OTP: SendGrid (mockable)
+JWT auth
 
-Security:
+RSA keypair (via Docker secrets) for E2EE and signing
 
-RSA encryption of vote payloads (rsa.js)
+Signature middleware verifies integrity of submitted votes
 
-Digital signatures (signer.js)
+Docker Swarm Deployment: Backend, Redis, and Postgres deployed as services with secrets mounted
 
-sigVerifier.js middleware ensures votes are signed
+🧠 Distributed Systems Features Required:
+Implement a lightweight consensus protocol (Raft-like or basic Paxos) to agree on vote recording between nodes
 
-JWT protects private routes
+Include leader election logic (via Redis, gossip, or Swarm service priorities)
 
-OTP limiter via express-rate-limit
+Ensure time synchronization across nodes (even if mocked or simulated)
 
-Docker Swarm used for deployment orchestration
+Implement a mutex/lock (e.g., Redis-based or internal) to prevent race conditions during concurrent vote recording
 
-Backend, Redis, Postgres are deployed as services
+Abstract this logic into a utility or middleware layer to wrap castVote safely
 
-RSA keys mounted via Docker secrets
+✅ Already Scaffolded:
+Route structure: auth.js, elections.js, vote.js
 
-✅ Already Done:
-Route structure scaffolded (auth.js, elections.js, vote.js)
+Controllers stubbed with named exports
 
-Controllers stubbed
+Middleware scaffolded: jwtAuth.js, otpLimiter.js, sigVerifier.js
 
-Middleware scaffolded:
-
-jwtAuth.js, otpLimiter.js, sigVerifier.js
-
-Utility modules scaffolded:
-
-rsa.js, signer.js, otp.js, db.js
+Utility modules: rsa.js, signer.js, otp.js, db.js
 
 Models:
 
 User: email, passwordHash
 
-Election: title, time bounds, visibility
+Election: title, startTime, endTime, isResultsVisible
 
-Vote: candidate, encryptedPayload, signature; with User and Election relations
+Vote: candidate, encryptedPayload, signature; with correct relations
 
-Docker Swarm config (swarm-stack.yml)
+Docker Swarm config in swarm-stack.yml
 
-.env file set up to use secrets and service hostnames
-
-secrets/ contains private.pem, public.pem
+.env uses paths like /run/secrets/rsa_private
 
 🚀 Your Tasks:
-Implement controller logic in authController.js, electionController.js, and voteController.js.
+Implement controller logic in authController.js, electionController.js, voteController.js
 
-Complete Sequelize models and associations (User → Vote, Election → Vote).
+Complete DB model associations and Redis connection logic
 
-Implement OTP logic in otp.js using Redis.
+Add OTP send/verify in otp.js, using Redis and mock email sender
 
-Apply middleware correctly:
+Add distributed system logic (leader election, consensus protocol, mutex)
 
-jwtAuth.js → /api/elections/*, /api/vote/*
+Prevent double voting and data conflicts across nodes
 
-otpLimiter.js → /api/auth/request-otp
+Lock voting using Redis locks or Swarm API if needed
 
-sigVerifier.js → POST /api/vote/cast
+Add console logging at key steps (auth, DB writes, consensus steps, locks)
 
-Ensure modular structure:
+Write inline test hooks or dummy endpoints that test:
 
-Keep each controller, middleware, and util in its file.
+Full user login + OTP
 
-Don't rewrite routing or Docker setup.
+Election creation
 
-Add simple test functions or console-style debug tests that exercise:
+Secure vote casting
 
-Auth flow (register → login → OTP)
+Signature rejection
 
-Election creation and retrieval
+Lock failure or retry
 
-Vote casting (with encryption + signature)
+Leader failover (mocked)
 
-Signature and JWT failure paths
+Database is not yet set up
 
-Add console logging at each major logic branch:
+Guide us through:
 
-Function entry, key variable values, decision points
+Sequelize sync() or migration setup
 
-Catch blocks and response statuses
+Redis and Postgres connection via Swarm
 
-IMPORTANT: We have not set up the PostgreSQL DB yet.
+Persistent volumes (optional)
 
-Please guide us through:
-
-Creating the database schema
-
-Running Sequelize migrations (or syncing on boot for dev)
-
-Ensuring Redis and Postgres connect correctly via Docker Swarm service names
-
-🔗 Frontend Integration:
-All routes are mounted with /api prefix
+🌍 Frontend Integration:
+All routes are behind /api
 
 CORS is enabled for all origins
 
-Frontend only needs to change base URL to /api
+Frontend only needs to update the base URL to /api
 
-Scope Notes:
-This is a demo — don’t add production-grade error handling
+Rules:
+Keep each utility/controller/middleware modular
 
-No need for test frameworks like Jest; inline test/debug calls are fine
+Do not change Dockerfiles or Swarm YAML
 
-Focus on getting the full happy path working first
+Use console logs for tracing, not production-grade logging
+
+Only inline test logic (no Jest, etc.)
