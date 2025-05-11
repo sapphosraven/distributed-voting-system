@@ -7,15 +7,15 @@
 | 3. Docker Swarm Connectivity                              | ✅ Done     | Stack up, services use correct hostnames                                               |
 | 4. Running the Database                                   | ✅ Done     | All services 1/1, backend logs show successful startup                                 |
 | 5. Redis Connection                                       | ✅ Done     | Redis connection is working and confirmed in logs                                      |
-| 6. Controller Logic (auth, election, vote, password)      | ⚠️ Partial  | Auth, OTP, election create/list, eligibility, rate limit all tested and working        |
+| 6. Controller Logic (auth, election, vote, password)      | ⚠️ Partial  | Auth, OTP, election create/list, eligibility, rate limit, voting logic all tested      |
 | 7. OTP Logic (otp.js, Redis, email, resend/limit)         | ✅ Done     | Per-account rate limit, resend, and email OTP tested                                   |
 | 8. Middleware Logic (jwtAuth, otpLimiter, sigVerifier)    | ⚠️ Partial  | JWT/OTP/eligibility enforced for tested flows                                          |
 | 9. Distributed System Logic (consensus, leader, mutex)    | ❌ Not done | No leader election, consensus, or mutex/lock logic implemented                        |
-| 10. Double Voting/Data Conflict Prevention                | ❌ Not done | Not implemented                                                                       |
+| 10. Double Voting/Data Conflict Prevention                | ⚠️ Partial  | Double voting prevention tested and working; atomicity in distributed not done         |
 | 11. Console Logging at Key Steps                          | ⚠️ Partial  | Good coverage for tested flows                                                         |
 | 12. Inline Test/Dummy Endpoints                           | ❌ Not done | Not implemented                                                                       |
 | 13. Frontend Integration                                 | ⚠️ Partial  | API prefix and CORS set; eligibility reflected in UI                                   |
-| 14. Test the Full Happy Path                              | ⚠️ Partial  | Auth, OTP, election create/list, eligibility tested; voting/results not yet            |
+| 14. Test the Full Happy Path                              | ⚠️ Partial  | Auth, OTP, election create/list, eligibility, voting tested; results not yet           |
 | 15. Console-Style Debug Tests                             | ❌ Not done | Not implemented                                                                       |
 | 16. Persistent Volumes (optional)                         | ❌ Not done | Not set up (optional for demo)                                                        |
 
@@ -27,14 +27,14 @@
 **Change Log:**
 - [2025-05-11] Steps 1, 2, 6, 7 updated to reflect working eligibility, OTP, and rate limiting.
 - [2025-05-11] Per-account OTP rate limiting tested and confirmed.
+- [2025-05-11 30min later] Voting logic fully tested: eligible voter can vote, double voting prevented, ineligible voter blocked.
 
 ---
 
-# Updated Timeline (from controllers to now: 2 hours spent)
+# Updated Timeline (from controllers to now: 2.5 hours spent)
 
 | Task                                                      | Est. Time (hrs) | Notes                                                                                  |
 |-----------------------------------------------------------|-----------------|----------------------------------------------------------------------------------------|
-| Voting Controller Logic (cast vote, eligibility, anon)    | 1               | Enforce eligibility, prevent double voting, anonymize votes                            |
 | Results Controller Logic (view results, restrictions)     | 1               | Only after voting, respect live/ended visibility                                       |
 | Password Change (with OTP)                                | 0.5             | Endpoint, OTP verification, update password                                            |
 | Search Endpoints (elections/results)                      | 0.5             | By title, creator, etc.                                                                |
@@ -42,12 +42,12 @@
 | Console Logging/Debug Hooks                              | 0.25            | Add for new flows                                                                      |
 | Test All New Flows (manual & inline)                      | 1               | End-to-end, edge cases                                                                 |
 | Distributed System Logic (consensus, leader, mutex)       | 3–5             | Advanced: leader election, consensus, mutex/lock for voting                            |
-| Double Voting/Data Conflict Prevention                    | 0.5             | Prevent double voting, ensure atomicity                                                |
+| Double Voting/Data Conflict Prevention                    | 0.5             | Atomicity in distributed setup (core logic done)                                       |
 | Persistent Volumes (optional)                             | 0.5             | For data durability                                                                   |
 
-**Total Remaining (core features):** ~4–5 hours
-**With distributed/consensus:** ~7–10 hours
+**Total Remaining (core features):** ~3.25–3.75 hours
+**With distributed/consensus:** ~6.25–8.75 hours
 
 ---
 
-Focus next: voting/results logic, password change, search, then distributed features if required.
+Focus next: results logic, password change, search, middleware finalization, then distributed features if required.

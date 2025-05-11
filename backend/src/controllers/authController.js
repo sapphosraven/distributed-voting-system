@@ -8,6 +8,8 @@ const {
   verifyOtp,
 } = require("../utils/otp");
 
+const OTP_DISABLED = process.env.OTP_DISABLED === "true";
+
 exports.register = async (req, res) => {
   try {
     console.log("Register endpoint hit", req.body);
@@ -49,6 +51,10 @@ exports.login = async (req, res) => {
 };
 
 exports.requestOtp = async (req, res) => {
+  if (OTP_DISABLED) {
+    console.log("OTP temporarily disabled (requestOtp)");
+    return res.json({ message: "OTP is temporarily disabled for testing." });
+  }
   try {
     console.log("Request OTP endpoint hit", req.body);
     const { email } = req.body;
@@ -65,6 +71,10 @@ exports.requestOtp = async (req, res) => {
 };
 
 exports.verifyOtp = async (req, res) => {
+  if (OTP_DISABLED) {
+    console.log("OTP temporarily disabled (verifyOtp)");
+    return res.json({ message: "OTP is temporarily disabled for testing." });
+  }
   try {
     console.log("Verify OTP endpoint hit", req.body);
     const { email, otp } = req.body;
