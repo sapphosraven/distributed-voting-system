@@ -7,15 +7,15 @@
 | 3. Docker Swarm Connectivity                              | ✅ Done     | Stack up, services use correct hostnames                                               |
 | 4. Running the Database                                   | ✅ Done     | All services 1/1, backend logs show successful startup                                 |
 | 5. Redis Connection                                       | ✅ Done     | Redis connection is working and confirmed in logs                                      |
-| 6. Controller Logic (auth, election, vote)                | ❌ Not done | Controllers are stubs, no real logic or responses                                      |
-| 7. OTP Logic (otp.js, Redis, mock email)                  | ❌ Not done | Not implemented                                                                       |
-| 8. Middleware Logic (jwtAuth, otpLimiter, sigVerifier)    | ⚠️ Partial  | Middleware files exist, logic not verified                                             |
+| 6. Controller Logic (auth, election, vote)                | ⚠️ Partial  | Auth controller (register, login) fully implemented and tested; election/vote pending   |
+| 7. OTP Logic (otp.js, Redis, mock email/SendGrid)         | ✅ Done     | OTP flow (request, email, verify) implemented and tested with SendGrid                 |
+| 8. Middleware Logic (jwtAuth, otpLimiter, sigVerifier)    | ⚠️ Partial  | Middleware files exist, logic not fully verified/tested                                |
 | 9. Distributed System Logic (consensus, leader, mutex)    | ❌ Not done | No leader election, consensus, or mutex/lock logic implemented                        |
 | 10. Double Voting/Data Conflict Prevention                | ❌ Not done | Not implemented                                                                       |
-| 11. Console Logging at Key Steps                          | ❌ Not done | Not implemented                                                                       |
+| 11. Console Logging at Key Steps                          | ⚠️ Partial  | Added for auth/OTP, not for all controllers/features                                   |
 | 12. Inline Test/Dummy Endpoints                           | ❌ Not done | Not implemented                                                                       |
 | 13. Frontend Integration                                 | ✅ Done     | API prefix and CORS set                                                                |
-| 14. Test the Full Happy Path                              | ❌ Not done | Blocked by missing controller and business logic                                       |
+| 14. Test the Full Happy Path                              | ⚠️ Partial  | Auth + OTP path tested; election/vote path pending                                     |
 | 15. Console-Style Debug Tests                             | ❌ Not done | Not implemented                                                                       |
 | 16. Persistent Volumes (optional)                         | ❌ Not done | Not set up (optional for demo)                                                        |
 
@@ -25,9 +25,10 @@
 ✅ = Complete  ⚠️ = Partially/Assumed  ❌ = Not done
 
 **Change Log:**
-- [2025-05-11] Step 5 (Redis Connection) marked as ✅ Done. Verified by 'Redis connected' in backend logs after stack restart.
-- [2025-05-11] Steps 1–4, 13 marked as ✅ Done based on infrastructure and logs.
-- [2025-05-11] Remaining steps pending implementation.
+- [2025-05-11] Step 7 (OTP Logic) marked as ✅ Done. OTP flow tested and working with SendGrid.
+- [2025-05-11] Step 6 (Controller Logic) updated to ⚠️ Partial. Auth controller implemented and tested.
+- [2025-05-11] Step 11 (Console Logging) updated to ⚠️ Partial. Logging added for auth/OTP.
+- [2025-05-11] Step 14 (Test Happy Path) updated to ⚠️ Partial. Auth + OTP tested.
 
 ---
 
