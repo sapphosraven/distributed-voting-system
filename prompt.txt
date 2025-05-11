@@ -118,3 +118,20 @@ Do not change Dockerfiles or Swarm YAML
 Use console logs for tracing, not production-grade logging
 
 Only inline test logic (no Jest, etc.)
+
+# User Flow and Requirements (Updated)
+
+- User can sign up or log in; user info is stored in PostgreSQL.
+- After signup/login, user receives an OTP via email (should use SendGrid, not Twilio/SMS).
+- OTP must be entered to complete login or sensitive actions (signup, password change). OTP resend allowed after 60s, max 3 per hour.
+- After login, user sees a list of elections they are eligible to vote in (eligibility is set by election creator via allowed domains or email list).
+- User can view and vote in eligible elections; presented with candidates.
+- After voting, user is redirected to results page, where they can see results for elections they have voted in (live/completed), but only after voting in that election.
+- User can change their password, which also requires OTP verification.
+- Anyone can create an election, providing all required details (see CreateElection.tsx), including at least 2 candidates, allowed domains/emails, and time constraints (10 min–7 days, down to the minute).
+- Election creator's email is visible on the election card for transparency, but votes are anonymous.
+- Election creator cannot delete elections and is always eligible to vote in their own election (cannot remove themselves from eligibility).
+- Users can search elections/results.
+- Users only see elections they are eligible for (by domain or email).
+- The creator of an election is automatically added to the eligibility list and cannot remove themselves.
+- All routes are protected as appropriate (JWT, OTP, etc.).
