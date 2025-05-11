@@ -4,6 +4,13 @@ const { encrypt } = require("../utils/rsa");
 
 // Helper: check if user is eligible for an election
 function isUserEligible(election, userEmail) {
+  // If both allowedDomains and allowedEmails are empty, election is open to all
+  if (
+    (!election.allowedDomains || election.allowedDomains.length === 0) &&
+    (!election.allowedEmails || election.allowedEmails.length === 0)
+  ) {
+    return true;
+  }
   const domain = userEmail.split("@")[1];
   return (
     election.allowedEmails.includes(userEmail) ||
@@ -58,5 +65,54 @@ exports.castVote = async (req, res) => {
 };
 
 exports.getVoteResults = async (req, res) => {
-  // stub: read tallies from Redis and/or Postgres
+  try {
+    const userId = req.user.id;
+    const userEmail = req.user.email;
+    const electionId = req.params.electionId;
+    const election = await Election.findByPk(electionId);
+    if (!election) return res.status(404).json({ error: "Election not found" });
+    if (!isUserEligible(election, userEmail)) {
+      return res.status(403).json({ error: "Not eligible for this election" });
+    }
+    const now = new Date();
+    const electionEnd = new Date(election.endTime);
+    if (now >= electionEnd) {
+      // Election ended: any eligible user can view results
+      // ...proceed to tally...
+    } else if (election.isResultsVisible) {
+      // Election live, results visible: only users who have voted can view
+      const vote = await Vote.findOne({ where: { userId, electionId } });
+      if (!vote) {
+        return res
+          .status(403)
+          .json({ error: "You must vote before viewing results" });
+      }
+      // ...proceed to tally...
+    } else {
+      // Election live, results not visible
+      return res
+        .status(403)
+        .json({ error: "Results not visible until election ends" });
+    }
+    // Tally votes (anonymized)
+    const votes = await Vote.findAll({ where: { electionId } });
+    const tally = {};
+    for (const candidate of election.candidates) {
+      tally[candidate] = 0;
+    }
+    for (const v of votes) {
+      if (tally[v.candidate] !== undefined) tally[v.candidate]++;
+    }
+    res.json({
+      electionId,
+      title: election.title,
+      candidates: election.candidates,
+      tally,
+      totalVotes: votes.length,
+      endTime: election.endTime,
+    });
+  } catch (err) {
+    console.error("GetVoteResults error:", err);
+    res.status(500).json({ error: "Failed to fetch results" });
+  }
 };

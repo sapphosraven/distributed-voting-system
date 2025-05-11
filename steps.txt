@@ -50,4 +50,31 @@
 
 ---
 
+# TODOs (as of 2025-05-12)
+
+- [ ] Prevent election creation with a start time in the past (validate startTime >= now)
+- [ ] (Optional) Decide/fix: Should empty allowedDomains/allowedEmails mean 'open to all'? (Currently not working as intended)
+- [ ] Implement digital signatures and end-to-end encryption (E2EE) after distributed part is complete
+- [ ] Add clock/time synchronization across distributed nodes (for election timing, result visibility, etc.)
+
+# Distributed System Team Guidance
+- You can proceed with distributed system logic (consensus, leader election, mutex/lock, atomic voting) **without** these TODOs being fixed.
+- These are backend validation/eligibility issues and do not block distributed system implementation.
+- **You do NOT need Insomnia, Postman, curl, or any external tool to test the distributed system.**
+- You can use inline test hooks, dummy endpoints, console logs, or simple scripts for validation.
+- The distributed part can be developed and tested independently of these validation fixes.
+- **Clock/time synchronization must be implemented as part of the distributed system to ensure correct election timing and result visibility.**
+
+# Achievements (as of 2025-05-12)
+
+- Password change with OTP: **working**
+- OTP enforcement after login: **working**
+- Time-based result display: **working**
+- Voting, double-voting prevention, eligibility (except 'open to all' edge case): **working**
+- Results visibility logic (live/ended, voted/not): **working**
+- Search, election creation, and listing: **working**
+- All major flows tested with multiple users
+
+# See below for previous progress log...
+
 Focus next: results logic, password change, search, middleware finalization, **distributed system logic (mandatory)**, then persistent volumes.

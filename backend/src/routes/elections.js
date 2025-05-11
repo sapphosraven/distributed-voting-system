@@ -1,11 +1,14 @@
-const router = require('express').Router();
-const jwtAuth = require('../middleware/jwtAuth');
+const router = require("express").Router();
+const jwtAuth = require("../middleware/jwtAuth");
+const otpEnforced = require("../middleware/otpEnforced");
 const {
   createElection,
-  getElections
-} = require('../controllers/electionController');
+  getElections,
+  searchElections,
+} = require("../controllers/electionController");
 
-router.post('/', jwtAuth, createElection);
-router.get('/', jwtAuth, getElections);
+router.post("/", jwtAuth, otpEnforced, createElection);
+router.get("/", jwtAuth, otpEnforced, getElections);
+router.get("/search", jwtAuth, otpEnforced, searchElections);
 
 module.exports = router;

@@ -3,6 +3,13 @@ const { Op } = require("sequelize");
 
 // Helper: check if user is eligible for an election
 function isUserEligible(election, userEmail) {
+  // If both allowedDomains and allowedEmails are empty, election is open to all
+  if (
+    (!election.allowedDomains || election.allowedDomains.length === 0) &&
+    (!election.allowedEmails || election.allowedEmails.length === 0)
+  ) {
+    return true;
+  }
   const domain = userEmail.split("@")[1];
   return (
     election.allowedEmails.includes(userEmail) ||
@@ -32,12 +39,10 @@ exports.createElection = async (req, res) => {
       !candidates ||
       candidates.length < 2
     ) {
-      return res
-        .status(400)
-        .json({
-          error:
-            "title, startTime, endTime, and at least 2 candidates are required",
-        });
+      return res.status(400).json({
+        error:
+          "title, startTime, endTime, and at least 2 candidates are required",
+      });
     }
     // Validate time constraints
     const start = new Date(startTime);
@@ -86,5 +91,29 @@ exports.getElections = async (req, res) => {
   } catch (err) {
     console.error("GetElections error:", err);
     res.status(500).json({ error: "Failed to fetch elections" });
+  }
+};
+
+exports.searchElections = async (req, res) => {
+  try {
+    const userEmail = req.user.email;
+    const { q, creator } = req.query;
+    let where = {};
+    if (q) {
+      where.title = { [Op.iLike]: `%${q}%` };
+    }
+    if (creator) {
+      where.creatorEmail = creator;
+    }
+    const elections = await Election.findAll({
+      where,
+      order: [["startTime", "DESC"]],
+    });
+    // Filter by eligibility
+    const eligible = elections.filter((e) => isUserEligible(e, userEmail));
+    res.json({ elections: eligible });
+  } catch (err) {
+    console.error("SearchElections error:", err);
+    res.status(500).json({ error: "Failed to search elections" });
   }
 };

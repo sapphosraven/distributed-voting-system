@@ -43,6 +43,12 @@ Implement a mutex/lock (e.g., Redis-based or internal) to prevent race condition
 
 Abstract this logic into a utility or middleware layer to wrap castVote safely
 
+**Testing Guidance for Distributed System:**
+- You do NOT need Insomnia, Postman, curl, or any external tool to test the distributed system.
+- You can use inline test hooks, dummy endpoints, console logs, or simple scripts for validation.
+- The distributed part can be developed and tested independently of backend validation/eligibility fixes.
+- Clock/time synchronization must be implemented as part of the distributed system to ensure correct election timing and result visibility.
+
 ✅ Already Scaffolded:
 Route structure: auth.js, elections.js, vote.js
 
