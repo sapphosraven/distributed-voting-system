@@ -4,17 +4,15 @@ We now need you to build the complete frontend from scratch using:
 
 React + Vite
 
-HeroUI (formerly NextUI) — use the official HeroUI component gallery as visual inspiration
-
 React Router for routing
 
 Modular architecture: pages/, components/, hooks/, utils/, etc.
 
 🔧 Frontend Responsibilities:
 
-Build beautiful, modern, mobile-friendly UI using HeroUI. It should match or exceed the quality of dashboards like Linear, Vercel, or HeroUI's own demo site.
+Build beautiful, modern. It should match or exceed the quality of dashboards like Linear, Vercel's own demo site.
 
-color theme needs to be dark gray, purple and orange, use as many hero ui things as possible
+color theme needs to be dark gray, purple and orange, use as many ui things as possible
 dynamic background (e.g., animated gradient, particles, etc.)
 
 Use /api/* endpoints to:
@@ -75,13 +73,13 @@ Frontend just calls APIs and shows feedback (e.g., "vote being confirmed", "lock
 
 Wipe existing frontend code completely — this should be a fresh start
 
-Use React + Vite + HeroUI
+Use React + Vite
 
 Fully modular: components/hooks/utils/pages separation
 
 Console logging and inline debug/test flows allowed
 
-Use HeroUI components like Cards, Buttons, Input Forms, Tables, etc., for elections, vote UIs, results
+Use components like Cards, Buttons, Input Forms, Tables, etc., for elections, vote UIs, results
 
 Assume base URL /api for all API calls
 
