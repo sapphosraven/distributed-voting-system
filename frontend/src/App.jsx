@@ -2,6 +2,7 @@ import { useState } from "react";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 import "./App.css";
+import { Global, css } from "@emotion/react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -20,7 +21,18 @@ import DynamicBackground from "./components/DynamicBackground";
 function App() {
   return (
     <>
-      <DynamicBackground />
+          <DynamicBackground />
+      <Global
+        styles={css`
+          body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(120deg, #1a1333 0%, #23234a 100%);
+            min-height: 100vh;
+            font-family: "Inter", sans-serif;
+          }
+        `}
+      />
       <Router>
         <Routes>
           <Route path="/login" element={<Login />} />

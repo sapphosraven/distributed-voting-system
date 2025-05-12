@@ -21,25 +21,25 @@ export default function DynamicBackground() {
     container.innerHTML = "";
 
     // Create particles
-    const particleCount = 15;
+    const particleCount = 18;
     const colors = [
-      "rgba(128, 82, 176, 0.15)", // Purple
-      "rgba(230, 126, 34, 0.12)", // Orange
-      "rgba(100, 64, 138, 0.08)", // Dark purple
-      "rgba(200, 109, 30, 0.07)", // Dark orange
+      "rgba(128, 82, 176, 0.10)", // Purple
+      "rgba(230, 126, 34, 0.08)", // Orange
+      "rgba(100, 64, 138, 0.06)", // Dark purple
+      "rgba(200, 109, 30, 0.05)", // Dark orange
     ];
 
     for (let i = 0; i < particleCount; i++) {
       const particle = document.createElement("div");
 
       // Random attributes
-      const size = Math.random() * 140 + 40;
+      const size = Math.random() * 40 + 24; // 24px to 64px
       const posX = Math.random() * 100;
       const posY = Math.random() * 100;
       const color = colors[Math.floor(Math.random() * colors.length)];
-      const opacity = Math.random() * 0.12 + 0.03;
-      const blur = Math.random() * 50 + 30;
-      const animDuration = Math.random() * 90 + 30;
+      const opacity = Math.random() * 0.08 + 0.02;
+      const blur = Math.random() * 18 + 10; // 10px to 28px
+      const animDuration = Math.random() * 60 + 30;
       const animDelay = Math.random() * -30;
 
       // Apply styles
@@ -64,7 +64,7 @@ export default function DynamicBackground() {
     style.textContent = `
       @keyframes float {
         0%, 100% { transform: translate(-50%, -50%) translateY(0) scale(1); }
-        50% { transform: translate(-50%, -50%) translateY(-20px) scale(1.05); }
+        50% { transform: translate(-50%, -50%) translateY(-12px) scale(1.04); }
       }
     `;
     document.head.appendChild(style);
