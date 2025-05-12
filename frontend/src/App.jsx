@@ -15,11 +15,12 @@ import Elections from "./pages/Elections";
 import Vote from "./pages/Vote";
 import Results from "./pages/Results";
 import Dashboard from "./pages/Dashboard";
+import DynamicBackground from "./components/DynamicBackground";
 
 function App() {
   return (
     <>
-      <div id="dynamic-bg"></div>
+      <DynamicBackground />
       <Router>
         <Routes>
           <Route path="/login" element={<Login />} />
