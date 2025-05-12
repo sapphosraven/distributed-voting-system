@@ -17,6 +17,7 @@ export const Login = () => {
     email: "",
     password: "",
   });
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSignin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -31,8 +32,8 @@ export const Login = () => {
       console.log("Login response:", response);
       // Store the token as a JSON string
       localStorage.setItem("token", JSON.stringify(response)); // adjust as needed
-      // If you need OTP verification, navigate to that page, else go to elections
-      navigate("/otp-verification"); // Or navigate('/elections') if not using OTP
+      // Directly go to elections page (skip OTP)
+      navigate("/elections");
     } catch (error) {
       setError("Authentication failed. Please check your credentials.");
       setLoading(false); // Stop loading here on error
@@ -111,17 +112,29 @@ export const Login = () => {
             >
               Password
             </label>
-            <input
-              id="password"
-              name="password"
-              value={creds.password}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                setCreds({ ...creds, password: e.target.value });
-              }}
-              type="password"
-              className="w-full h-10 bg-[rgb(167,157,176)] hover:bg-[rgb(155,145,163)] p-2 rounded focus:outline-none text-[rgb(109,32,97)]"
-              style={{ caretColor: "rgb(21,21,21)" }}
-            />
+            <div className="relative">
+              <input
+                id="password"
+                name="password"
+                value={creds.password}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  setCreds({ ...creds, password: e.target.value });
+                }}
+                className="p-2 rounded border w-full pr-20" // increased pr for text button
+                type={showPassword ? "text" : "password"}
+                required
+              />
+              <button
+                type="button"
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 text-sm text-gray-700 font-semibold px-2 py-1 bg-white bg-opacity-70 rounded focus:outline-none border border-gray-300 hover:bg-opacity-100 transition"
+                tabIndex={-1}
+                onClick={() => setShowPassword((v) => !v)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                style={{ minWidth: '48px' }}
+              >
+                {showPassword ? "Hide" : "Show"}
+              </button>
+            </div>
           </div>
           <button
             type="submit"
@@ -135,6 +148,9 @@ export const Login = () => {
           >
             {loading ? "Signing In..." : "Sign in"}
           </button>
+          <div className="mt-2 text-sm">
+            Don't have an account? <button type="button" className="text-purple-900 underline" onClick={() => navigate("/register")}>Register</button>
+          </div>
         </form>
       </div>
     </Layout>

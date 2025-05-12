@@ -1,13 +1,11 @@
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { Login } from "./pages/Login";
-import { Voting } from "./pages/Voting";
-import { Result } from "./pages/Result";
 import ElectionsList from "./pages/ElectionsList";
 import ResultsList from "./pages/ResultsList";
 import CreateElection from "./pages/CreateElection";
 import ProtectedRoute from "./components/ProtectedRoute";
-import OtpVerification from "./pages/OTP";
+import { Register } from "./pages/Register";
 
 function App() {
   const navigate = useNavigate();
@@ -26,23 +24,15 @@ function App() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
-
-      <Route path="/otp-verification" element={<OtpVerification />} />
-
-      <Route path="/" element={<Navigate to="/elections" replace />} />
+      <Route path="/register" element={<Register />} />
+      {/* Remove or comment out OTP route for demo */}
+      {/* <Route path="/otp-verification" element={<OtpVerification />} /> */}
+      <Route path="/" element={<Navigate to="/login" replace />} />
       <Route
         path="/elections"
         element={
           <ProtectedRoute>
             <ElectionsList />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/voting/:electionId"
-        element={
-          <ProtectedRoute>
-            <Voting />
           </ProtectedRoute>
         }
       />
@@ -55,14 +45,6 @@ function App() {
         }
       />
       <Route
-        path="/results/:electionId"
-        element={
-          <ProtectedRoute>
-            <Result />
-          </ProtectedRoute>
-        }
-      />
-      <Route
         path="/create-election"
         element={
           <ProtectedRoute>
@@ -70,7 +52,7 @@ function App() {
           </ProtectedRoute>
         }
       />
-      <Route path="*" element={<Navigate to="/elections" replace />} />
+      <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
 }

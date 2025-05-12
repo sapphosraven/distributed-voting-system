@@ -34,7 +34,7 @@ export const submitVote = async (candidateId: string): Promise<VoteResponse> => 
 };
 
 export const fetchCandidates = async (): Promise<Candidate[]> => {
-  const response = await fetch(API_ENDPOINTS.candidates);
+  const response = await fetch(API_ENDPOINTS.results);
   
   if (!response.ok) {
     throw new Error('Failed to fetch candidates');

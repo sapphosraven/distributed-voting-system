@@ -1,31 +1,34 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import Layout from "../components/Layout";
 import { ElectionListItem } from "../types/election";
 import { getEligibleElections } from "../services/elections";
-import { mockElections } from "../mocks/electionMocks"; // Remove in production
 import Modal from "../components/common/Modal";
 
 export const ElectionsList = () => {
   const [elections, setElections] = useState<ElectionListItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'active' | 'past'>('active');
   const [showModal, setShowModal] = useState(false);
   const [modalMessage, setModalMessage] = useState({ title: "", description: "" });
+  const [activeTab, setActiveTab] = useState<'active' | 'past'>('active');
   
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    // Set activeTab based on query param
+    const params = new URLSearchParams(location.search);
+    const tab = params.get('tab');
+    if (tab === 'past') setActiveTab('past');
+    else setActiveTab('active');
+  }, [location.search]);
 
   useEffect(() => {
     const fetchElections = async () => {
       try {
-        // Comment this and uncomment the API call when backend is ready
-        setElections(mockElections);
+        const data = await getEligibleElections();
+        setElections(data as ElectionListItem[]);
         setLoading(false);
-        
-        // Uncomment when backend is ready
-        // const data = await getEligibleElections();
-        // setElections(data);
       } catch (err) {
         console.error("Failed to fetch elections:", err);
         setModalMessage({
@@ -36,7 +39,6 @@ export const ElectionsList = () => {
         setLoading(false);
       }
     };
-
     fetchElections();
   }, []);
 
@@ -47,19 +49,30 @@ export const ElectionsList = () => {
     return election.status === 'completed';
   });
 
-  const handleElectionClick = (electionId: string, hasVoted: boolean) => {
-    if (hasVoted) {
-      navigate(`/results/${electionId}`);
-    } else {
-      navigate(`/voting/${electionId}`);
-    }
-  };
+  if (loading) {
+    return (
+      <Layout>
+        <div className="flex justify-center my-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-900"></div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (elections.length === 0) {
+    return (
+      <Layout>
+        <div className="bg-gray-100 p-8 rounded-md text-center">
+          No elections available. Create a new election to get started.
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
       <div className="p-6 max-w-6xl mx-auto">
         <h1 className="text-3xl font-bold mb-6 text-purple-800">Available Elections</h1>
-        
         <div className="flex space-x-4 mb-6">
           <button 
             className={`px-4 py-2 rounded-md ${activeTab === 'active' 
@@ -78,14 +91,13 @@ export const ElectionsList = () => {
             Past Elections
           </button>
         </div>
-
         {loading ? (
           <div className="flex justify-center my-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-900"></div>
           </div>
-        ) : error ? (
+        ) : showModal ? (
           <div className="bg-red-100 p-4 rounded-md text-red-700">
-            {error}
+            {modalMessage.description}
           </div>
         ) : filteredElections.length === 0 ? (
           <div className="bg-gray-100 p-8 rounded-md text-center">
@@ -97,7 +109,6 @@ export const ElectionsList = () => {
               <div 
                 key={election.id}
                 className="border border-gray-200 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
-                onClick={() => handleElectionClick(election.id, election.hasVoted)}
               >
                 <div className="bg-purple-100 px-4 py-2 border-b border-gray-200">
                   <div className="flex justify-between items-center">
@@ -129,7 +140,6 @@ export const ElectionsList = () => {
             ))}
           </div>
         )}
-
         <div className="mt-8">
           <button 
             className="bg-purple-900 hover:bg-purple-800 text-white px-6 py-3 rounded-md font-medium flex items-center"
@@ -142,7 +152,6 @@ export const ElectionsList = () => {
           </button>
         </div>
       </div>
-      
       {showModal && (
         <Modal
           title={modalMessage.title}

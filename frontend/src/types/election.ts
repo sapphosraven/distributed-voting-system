@@ -8,7 +8,7 @@ export interface Election {
     eligible_voters: string[]; // emails or domains
     candidates: Candidate[];
     status: 'active' | 'completed' | 'upcoming';
-}
+    }
 
 export interface ElectionListItem {
     id: string;
