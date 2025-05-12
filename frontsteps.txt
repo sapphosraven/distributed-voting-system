@@ -1,0 +1,33 @@
+# Step-by-Step Guide to Complete the Secure Distributed Voting System Frontend (as of 2025-05-12)
+
+| Step                                                      | Status      | Notes                                                                                  |
+|-----------------------------------------------------------|-------------|----------------------------------------------------------------------------------------|
+| 1. Project Scaffolding (Vite, HeroUI, Routing, Structure) | ✅ Done     | Modular folders, HeroUI, React Router, color theme, font, dynamic bg                   |
+| 2. Login Page (UI, API, Logging, Theme)                   | ⚠️ Partial  | Modern UI, HeroUI, color theme, dynamic bg, API, error handling, logging               |
+| 3. Register Page (UI, API, Logging, Theme)                | ❌ Not done | Same quality as login, HeroUI, color theme, API, error handling, logging               |
+| 4. OTP Verification Page                                 | ❌ Not done | UI, API, error handling, logging                                                       |
+| 5. Elections List Page                                   | ❌ Not done | List eligible elections, HeroUI Cards/Table, API, loading/error states                 |
+| 6. Voting Page                                           | ❌ Not done | Show election, candidates, voting UI, API, error handling, logging                     |
+| 7. Results Page                                          | ❌ Not done | Show results, consensus status, HeroUI, API, error handling, logging                   |
+| 8. Password Change Flow                                  | ❌ Not done | UI, API, OTP, error handling, logging                                                  |
+| 9. Dev/Admin Test Console (optional)                     | ❌ Not done | Inline test hooks, debug buttons, logs                                                 |
+| 10. End-to-End Testing                                   | ❌ Not done | Manual and inline test hooks for all flows                                             |
+| 11. UX Polish & Mobile Responsiveness                    | ❌ Not done | Final polish, mobile, accessibility, unique touches                                    |
+
+---
+
+**Legend:**
+✅ = Complete  ⚠️ = Partially/Assumed  ❌ = Not done  ❌ Skipped = Not required for demo
+
+**Change Log:**
+- [2025-05-12] Project scaffolding, color theme, font, and dynamic background set up.
+- [2025-05-12] Login page UI, API, error handling, and logging implemented (pending full test).
+
+---
+
+# Next Steps
+- [ ] Finish and test Login page (API, error, OTP redirect)
+- [ ] Build Register page (UI, API, logging)
+- [ ] Build OTP Verification page
+- [ ] Build Elections, Voting, Results pages
+- [ ] Add password change, dev console, polish

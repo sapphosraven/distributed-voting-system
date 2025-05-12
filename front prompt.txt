@@ -14,6 +14,9 @@ Modular architecture: pages/, components/, hooks/, utils/, etc.
 
 Build beautiful, modern, mobile-friendly UI using HeroUI. It should match or exceed the quality of dashboards like Linear, Vercel, or HeroUI's own demo site.
 
+color theme needs to be dark gray, purple and orange, use as many hero ui things as possible
+dynamic background (e.g., animated gradient, particles, etc.)
+
 Use /api/* endpoints to:
 
 Sign up and log in with email and password
