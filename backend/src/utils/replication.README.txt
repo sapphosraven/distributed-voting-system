@@ -1,0 +1,20 @@
+Simple Replication for Voting System
+====================================
+
+How it works:
+- When a vote is cast, if the node is the leader, it publishes the vote event to the Redis channel `votes:replicate`.
+- All nodes (including the leader) subscribe to this channel at startup.
+- When a vote event is received, it is logged (and can be further processed for real replication).
+
+Key files:
+- `utils/replication.js`: Handles Redis pub/sub for vote replication.
+- `controllers/voteController.js`: Publishes vote events after storing a vote.
+- `index.js`: Initializes replication on server startup.
+
+Test plan:
+1. Start the Swarm with all backend nodes.
+2. Cast a vote via the leader node (check `/api/status` for leader).
+3. Observe logs on all nodes: all should log the replicated vote event.
+4. Kill the leader, wait for a new leader, cast another vote, and repeat.
+
+You can extend the handler in `replication.js` to perform real DB replication or consistency checks as needed.

@@ -7,6 +7,7 @@ const voteRoutes = require("./routes/vote");
 const authRoutes = require("./routes/auth");
 const raft = require("./utils/raft");
 const statusRoutes = require("./routes/status");
+const { initReplication } = require("./utils/replication");
 
 const app = express();
 app.use(cors());
@@ -18,9 +19,11 @@ app.use("/api/vote", voteRoutes);
 app.use("/api/status", statusRoutes);
 
 initDb()
-  .then(() => {
+  .then(async () => {
     // Start leader election loop
     raft.tryBecomeLeader();
+    // Start replication (subscribe to vote events)
+    await initReplication();
     app.listen(process.env.PORT, () => {
       console.log(`Backend listening on port ${process.env.PORT}`);
     });

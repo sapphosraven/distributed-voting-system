@@ -23,6 +23,12 @@ services:
     depends_on:
       - redis
       - postgres
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
   backend2:
     image: zik44/voting-backend:latest
     environment:
@@ -39,6 +45,12 @@ services:
     depends_on:
       - redis
       - postgres
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
   backend3:
     image: zik44/voting-backend:latest
     environment:
@@ -55,6 +67,12 @@ services:
     depends_on:
       - redis
       - postgres
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
   backend4:
     image: zik44/voting-backend:latest
     environment:
@@ -71,6 +89,12 @@ services:
     depends_on:
       - redis
       - postgres
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
   redis:
     image: redis:alpine
     ports:

@@ -1,6 +1,8 @@
 const Vote = require("../models/Vote");
 const Election = require("../models/Election");
 const { encrypt } = require("../utils/rsa");
+const { publishVoteReplication } = require("../utils/replication");
+const { amILeader, getLeader } = require("../utils/raft");
 
 // Helper: check if user is eligible for an election
 function isUserEligible(election, userEmail) {
@@ -21,6 +23,14 @@ function isUserEligible(election, userEmail) {
 
 exports.castVote = async (req, res) => {
   try {
+    // Only leader can accept votes
+    if (!amILeader()) {
+      return res.status(503).json({
+        error:
+          "This node is not the leader. Please send your vote to the leader node.",
+        leaderId: getLeader(),
+      });
+    }
     const userId = req.user.id;
     const userEmail = req.user.email;
     const { electionId, candidate, signature } = req.body;
@@ -55,6 +65,16 @@ exports.castVote = async (req, res) => {
       signature,
       userId,
       electionId,
+    });
+    // Publish vote event for replication (leader only)
+    await publishVoteReplication({
+      userId,
+      electionId,
+      candidate,
+      encryptedPayload,
+      signature,
+      timestamp: Date.now(),
+      nodeId: process.env.NODE_ID,
     });
     console.log("Vote cast:", { userId, electionId, candidate });
     res.json({ message: "Vote cast successfully" });
