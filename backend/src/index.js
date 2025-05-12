@@ -8,6 +8,7 @@ const authRoutes = require("./routes/auth");
 const raft = require("./utils/raft");
 const statusRoutes = require("./routes/status");
 const { initReplication } = require("./utils/replication");
+const { initTallyConsensus } = require("./utils/tallyConsensus");
 
 const app = express();
 app.use(cors());
@@ -24,6 +25,8 @@ initDb()
     raft.tryBecomeLeader();
     // Start replication (subscribe to vote events)
     await initReplication();
+    // Start tally consensus (subscribe to tally requests)
+    await initTallyConsensus();
     app.listen(process.env.PORT, () => {
       console.log(`Backend listening on port ${process.env.PORT}`);
     });

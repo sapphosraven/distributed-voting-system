@@ -13,11 +13,8 @@
 | 9. Distributed System Logic (consensus, leader, mutex)    | ✅ Done     | Leader election, consensus, mutex/lock for voting, time sync, replication all tested   |
 | 10. Double Voting/Data Conflict Prevention                | ✅ Done     | Double voting prevention tested and working; atomicity in distributed setup confirmed  |
 | 11. Console Logging at Key Steps                          | ✅ Done     | Good coverage for tested flows                                                         |
-| 12. Inline Test/Dummy Endpoints                           | ❌ Not done | Not implemented                                                                       |
-| 13. Frontend Integration                                 | ⚠️ Partial  | API prefix and CORS set; eligibility reflected in UI                                   |
-| 14. Test the Full Happy Path                              | ✅ Done     | Auth, OTP, election create/list, eligibility, voting, results, failover tested         |
-| 15. Console-Style Debug Tests                             | ❌ Not done | Not implemented                                                                       |
-| 16. Persistent Volumes (optional)                         | ❌ Skipped  | Not required for demo                                                                 |
+| 12. Frontend Integration                                 | ⚠️ Partial  | API prefix and CORS set; eligibility reflected in UI                                   |
+| 13. Test the Full Happy Path                              | ✅ Done     | Auth, OTP, election create/list, eligibility, voting, results, failover tested         |
 
 ---
 
@@ -39,12 +36,11 @@
 
 | Task                                                      | Est. Time (hrs) | Notes                                                                                  |
 |-----------------------------------------------------------|-----------------|----------------------------------------------------------------------------------------|
-| Consensus for Vote Tallying (distributed agreement)       | 1               | Last distributed system increment for demo                                             |
 | Backend-Frontend Integration (API, CORS, UI)              | 1               | Connect backend to frontend, test end-to-end flows                                     |
 | Console Logging/Debug Hooks                              | 0.25            | Add for new flows if needed                                                            |
 | Test All New Flows (manual & inline)                      | 0.5             | End-to-end, edge cases                                                                 |
 
-**Total Remaining (core features for today):** ~2.75 hours
+**Total Remaining (core features for today):** ~1.75 hours
 
 ---
 
@@ -59,19 +55,15 @@
 ---
 
 # Next Increment
-- Consensus for vote tallying (distributed agreement on results) [RECOMMENDED NEXT]
 - Backend-frontend integration (API, CORS, UI)
 
 # Deferred (for later, not required for demo)
 - Implement digital signatures and end-to-end encryption for votes (sign/verify on client and backend)
 - Enhance consensus: stricter Raft (terms, voting, fencing) for leader election
-- Add persistent volumes for Postgres/Redis for data durability
-- Add inline test/dummy endpoints for easier distributed testing
 - Improve frontend integration and UX for distributed status/errors
-- Add console-style debug/test endpoints for cluster health
 
 # Suggestion
-Focus next on consensus for vote tallying (distributed agreement on results), then backend-frontend integration. Digital signatures/E2EE and other enhancements can be done after the demo as needed.
+Focus next on backend-frontend integration. Digital signatures/E2EE and other enhancements can be done after the demo as needed.
 
 # TODOs (as of 2025-05-12)
 
@@ -83,7 +75,7 @@ Focus next on consensus for vote tallying (distributed agreement on results), th
 - You can proceed with distributed system logic (consensus, leader election, mutex/lock, atomic voting) **without** these TODOs being fixed.
 - These are backend validation/eligibility issues and do not block distributed system implementation.
 - **You do NOT need Insomnia, Postman, curl, or any external tool to test the distributed system.**
-- You can use inline test hooks, dummy endpoints, console logs, or simple scripts for validation.
+- You can use inline test hooks, console logs, or simple scripts for validation.
 - The distributed part can be developed and tested independently of these validation fixes.
 - **Clock/time synchronization must be implemented as part of the distributed system to ensure correct election timing and result visibility.**
 
@@ -97,6 +89,44 @@ Focus next on consensus for vote tallying (distributed agreement on results), th
 - Search, election creation, and listing: **working**
 - All major flows tested with multiple users
 
+# TIP FOR TESTING
+- When creating a test election for consensus/result testing, always set:
+  "isResultsVisible": true
+  in your JSON body. This allows you to view results before the election ends and test consensus tallying easily.
+
 # See below for previous progress log...
 
-Focus next: results logic, password change, search, middleware finalization, **distributed system logic (mandatory)**, then persistent volumes.
+Focus next: results logic, password change, search, middleware finalization, **distributed system logic (mandatory)**.
+
+# Project Steps & Status
+
+## Distributed System Phase (COMPLETE)
+- [x] Docker Swarm with 4 backend nodes, Redis, Postgres
+- [x] Leader election (Raft, Redis TTL key)
+- [x] Distributed lock for voting (Redis)
+- [x] Redis server time for all time-sensitive ops
+- [x] Vote replication via Redis pub/sub
+- [x] Consensus-based vote tallying (majority agreement, Redis pub/sub)
+- [x] Consensus logs: leader publishes request, all nodes respond, leader aggregates
+- [x] Verified: All nodes participate in consensus, correct logs seen, API returns all consensus nodes
+- [x] Test: Short election, all nodes respond, logs confirm distributed agreement
+
+**Distributed system phase is complete and fully tested.**
+
+## Next Steps
+- [ ] Backend-frontend integration (connect API to frontend, test end-to-end)
+- [ ] Security enhancements (digital signatures, E2EE, stricter Raft, etc.)
+- [ ] UX improvements (deferred)
+
+## Notes
+- Consensus is only triggered after election end time (for security/fairness)
+- Logs to look for:
+  - `[CONSENSUS] Leader published tally request ...`
+  - `[CONSENSUS] Node ... received tally request ...`
+  - `[CONSENSUS] Node ... published tally response ...`
+  - `[CONSENSUS] Leader received tally response from node ...`
+- API response includes all consensus nodes
+
+---
+
+# (Older steps and test checklist remain below)

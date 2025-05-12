@@ -5,6 +5,8 @@ const { publishVoteReplication } = require("../utils/replication");
 const { amILeader, getLeader } = require("../utils/raft");
 const { getRedisTime } = require("../utils/time");
 const { acquireLock, releaseLock } = require("../utils/lock");
+const { requestConsensusTally } = require("../utils/tallyConsensus");
+const os = require("os");
 
 // Helper: check if user is eligible for an election
 function isUserEligible(election, userEmail) {
@@ -127,7 +129,57 @@ exports.getVoteResults = async (req, res) => {
     const electionEnd = new Date(election.endTime).getTime();
     if (now >= electionEnd) {
       // Election ended: any eligible user can view results
-      // ...proceed to tally...
+      // Consensus tallying
+      if (!amILeader()) {
+        // Only leader coordinates consensus
+        return res
+          .status(503)
+          .json({
+            error:
+              "Only leader can provide results. Please query the leader node.",
+          });
+      }
+      // Number of backend nodes (hardcoded for demo, or count from env)
+      const nodeCount = 4;
+      const responses = await requestConsensusTally(
+        electionId,
+        nodeCount,
+        2000
+      );
+      // Tally responses by JSON string
+      const tallyMap = {};
+      for (const resp of responses) {
+        const key = JSON.stringify(resp.tally);
+        if (!tallyMap[key]) tallyMap[key] = [];
+        tallyMap[key].push(resp.nodeId);
+      }
+      // Find majority tally
+      let majorityTally = null;
+      let maxCount = 0;
+      for (const [tallyStr, nodes] of Object.entries(tallyMap)) {
+        if (nodes.length > maxCount) {
+          maxCount = nodes.length;
+          majorityTally = JSON.parse(tallyStr);
+        }
+      }
+      // Log mismatches if any
+      if (Object.keys(tallyMap).length > 1) {
+        console.warn("[CONSENSUS] Tally mismatch detected:", tallyMap);
+      }
+      if (!majorityTally) {
+        return res.status(500).json({ error: "Consensus tally failed" });
+      }
+      // Return majority tally
+      res.json({
+        electionId,
+        title: election.title,
+        candidates: election.candidates,
+        tally: majorityTally,
+        totalVotes: Object.values(majorityTally).reduce((a, b) => a + b, 0),
+        endTime: election.endTime,
+        consensusNodes: responses.map((r) => r.nodeId),
+      });
+      return;
     } else if (election.isResultsVisible) {
       // Election live, results visible: only users who have voted can view
       const vote = await Vote.findOne({ where: { userId, electionId } });
@@ -136,30 +188,31 @@ exports.getVoteResults = async (req, res) => {
           .status(403)
           .json({ error: "You must vote before viewing results" });
       }
-      // ...proceed to tally...
+      // ...proceed to tally (can use local for live)...
+      const votes = await Vote.findAll({ where: { electionId } });
+      const tally = {};
+      for (const candidate of election.candidates) {
+        tally[candidate] = 0;
+      }
+      for (const v of votes) {
+        if (tally[v.candidate] !== undefined) tally[v.candidate]++;
+      }
+      res.json({
+        electionId,
+        title: election.title,
+        candidates: election.candidates,
+        tally,
+        totalVotes: votes.length,
+        endTime: election.endTime,
+        consensusNodes: [process.env.NODE_ID],
+      });
+      return;
     } else {
       // Election live, results not visible
       return res
         .status(403)
         .json({ error: "Results not visible until election ends" });
     }
-    // Tally votes (anonymized)
-    const votes = await Vote.findAll({ where: { electionId } });
-    const tally = {};
-    for (const candidate of election.candidates) {
-      tally[candidate] = 0;
-    }
-    for (const v of votes) {
-      if (tally[v.candidate] !== undefined) tally[v.candidate]++;
-    }
-    res.json({
-      electionId,
-      title: election.title,
-      candidates: election.candidates,
-      tally,
-      totalVotes: votes.length,
-      endTime: election.endTime,
-    });
   } catch (err) {
     console.error("GetVoteResults error:", err);
     res.status(500).json({ error: "Failed to fetch results" });

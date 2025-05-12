@@ -6,6 +6,8 @@ let isLeader = false;
 let leaderId = null;
 let nodeId = process.env.NODE_ID || Math.random().toString(36).substring(2, 10);
 let lastPrintedLeader = null;
+let lastRefreshedLogTime = 0;
+const REFRESHED_LOG_INTERVAL = 30000; // 30 seconds
 
 // Try to become leader by setting a Redis key with TTL
 async function tryBecomeLeader() {
@@ -17,9 +19,14 @@ async function tryBecomeLeader() {
       await redis.set("voting-leader", nodeId, { XX: true, EX: 10 });
       isLeader = true;
       leaderId = nodeId;
+      const now = Date.now();
       if (lastPrintedLeader !== nodeId) {
         console.log(`[RAFT] This node (${nodeId}) is now the leader.`);
         lastPrintedLeader = nodeId;
+        lastRefreshedLogTime = now;
+      } else if (now - lastRefreshedLogTime > REFRESHED_LOG_INTERVAL) {
+        console.log(`[RAFT] Refreshed leadership for node (${nodeId})`);
+        lastRefreshedLogTime = now;
       }
     } else if (!currentLeader) {
       // No leader, try to become leader
@@ -33,6 +40,7 @@ async function tryBecomeLeader() {
         if (lastPrintedLeader !== nodeId) {
           console.log(`[RAFT] This node (${nodeId}) is now the leader.`);
           lastPrintedLeader = nodeId;
+          lastRefreshedLogTime = Date.now();
         }
       } else {
         isLeader = false;
