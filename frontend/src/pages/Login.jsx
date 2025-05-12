@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import { motion } from "framer-motion";
+import DynamicBackground from "../components/DynamicBackground";
 
 const Card = styled(motion.div)`
   background: rgba(24, 24, 42, 0.7);
@@ -130,66 +131,69 @@ export default function Login() {
   };
 
   return (
-    <Card
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.7, ease: "easeOut" }}
-    >
-      <Title>Sign In</Title>
-      <form onSubmit={handleLogin}>
-        <Input
-          type="email"
-          placeholder="Email"
-          value={email}
-          autoComplete="username"
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <Input
-          type="password"
-          placeholder="Password"
-          value={password}
-          autoComplete="current-password"
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        {error && <ErrorMsg>{error}</ErrorMsg>}
-        {success && <SuccessMsg>{success}</SuccessMsg>}
-        <Button type="submit" disabled={loading}>
-          {loading ? "Logging in..." : "Login"}
-        </Button>
-      </form>
-      <OtpButton
-        type="button"
-        onClick={handleSendOtp}
-        disabled={loading || !email}
+    <>
+      <DynamicBackground />
+      <Card
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7, ease: "easeOut" }}
       >
-        {loading ? "Sending OTP..." : "Send OTP to Email"}
-      </OtpButton>
-      <div
-        css={css`
-          text-align: center;
-          margin-top: 1.5rem;
-          font-size: 0.9rem;
-          opacity: 0.9;
-        `}
-      >
-        <span>Don't have an account? </span>
-        <a
-          href="/register"
+        <Title>Sign In</Title>
+        <form onSubmit={handleLogin}>
+          <Input
+            type="email"
+            placeholder="Email"
+            value={email}
+            autoComplete="username"
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <Input
+            type="password"
+            placeholder="Password"
+            value={password}
+            autoComplete="current-password"
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          {error && <ErrorMsg>{error}</ErrorMsg>}
+          {success && <SuccessMsg>{success}</SuccessMsg>}
+          <Button type="submit" disabled={loading}>
+            {loading ? "Logging in..." : "Login"}
+          </Button>
+        </form>
+        <OtpButton
+          type="button"
+          onClick={handleSendOtp}
+          disabled={loading || !email}
+        >
+          {loading ? "Sending OTP..." : "Send OTP to Email"}
+        </OtpButton>
+        <div
           css={css`
-            color: var(--color-orange);
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.2s;
-            &:hover {
-              color: var(--color-purple);
-            }
+            text-align: center;
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+            opacity: 0.9;
           `}
         >
-          Register
-        </a>
-      </div>
-    </Card>
+          <span>Don't have an account? </span>
+          <a
+            href="/register"
+            css={css`
+              color: var(--color-orange);
+              text-decoration: none;
+              font-weight: 500;
+              transition: color 0.2s;
+              &:hover {
+                color: var(--color-purple);
+              }
+            `}
+          >
+            Register
+          </a>
+        </div>
+      </Card>
+    </>
   );
 }
