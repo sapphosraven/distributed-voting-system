@@ -134,10 +134,12 @@ Only inline test logic (no Jest, etc.)
 - User can view and vote in eligible elections; presented with candidates.
 - After voting, user is redirected to results page, where they can see results for elections they have voted in (live/completed), but only after voting in that election.
 - User can change their password, which also requires OTP verification.
-- Anyone can create an election, providing all required details (see CreateElection.tsx), including at least 2 candidates, allowed domains/emails, and time constraints (10 min–7 days, down to the minute).
+- Anyone can create an election, providing all required details, including at least 2 candidates, allowed domains/emails, and time constraints (10 min–7 days, down to the minute), a title, a description, each candidates' information (name and description).
 - Election creator's email is visible on the election card for transparency, but votes are anonymous.
+- Election creator can choose whether the election results can be viewed while it is live or only when it is completed
 - Election creator cannot delete elections and is always eligible to vote in their own election (cannot remove themselves from eligibility).
 - Users can search elections/results.
-- Users only see elections they are eligible for (by domain or email).
+- Users only see elections they are eligible for (by domain or email) and have been set as visible by the creator before completion.
+- after an election ends, any eligible viewer can see the elections.
 - The creator of an election is automatically added to the eligibility list and cannot remove themselves.
 - All routes are protected as appropriate (JWT, OTP, etc.).
