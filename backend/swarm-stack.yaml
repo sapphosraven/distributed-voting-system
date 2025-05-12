@@ -51,50 +51,6 @@ services:
         delay: 5s
         max_attempts: 3
         window: 120s
-  backend3:
-    image: zik44/voting-backend:latest
-    environment:
-      - NODE_ID=node3
-      - PORT=5003
-    ports:
-      - "5003:5003"
-    env_file: .env
-    secrets:
-      - source: rsa_private
-        target: /secrets/private.pem
-      - source: rsa_public
-        target: /secrets/public.pem
-    depends_on:
-      - redis
-      - postgres
-    deploy:
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-        window: 120s
-  backend4:
-    image: zik44/voting-backend:latest
-    environment:
-      - NODE_ID=node4
-      - PORT=5004
-    ports:
-      - "5004:5004"
-    env_file: .env
-    secrets:
-      - source: rsa_private
-        target: /secrets/private.pem
-      - source: rsa_public
-        target: /secrets/public.pem
-    depends_on:
-      - redis
-      - postgres
-    deploy:
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-        window: 120s
   redis:
     image: redis:alpine
     ports:
