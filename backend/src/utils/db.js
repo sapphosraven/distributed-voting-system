@@ -5,9 +5,9 @@ const { Sequelize } = require("sequelize");
 const { createClient } = require("redis");
 
 const sequelize = new Sequelize(
-  process.env.POSTGRES_DB || "voting",
+  process.env.POSTGRES_DB || "voting_db",
   process.env.POSTGRES_USER || "user",
-  process.env.POSTGRES_PASSWORD || "pass",
+  process.env.POSTGRES_PASSWORD || "password",
   {
     host: process.env.POSTGRES_HOST || "voting_postgres",
     dialect: "postgres",

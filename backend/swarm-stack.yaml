@@ -58,8 +58,8 @@ services:
   postgres:
     image: postgres:14
     environment:
-      POSTGRES_DB: voting
+      POSTGRES_DB: voting_db
       POSTGRES_USER: user
-      POSTGRES_PASSWORD: pass
+      POSTGRES_PASSWORD: password
     ports:
       - "5432:5432"

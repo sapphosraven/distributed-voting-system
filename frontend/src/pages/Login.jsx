@@ -1,9 +1,11 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import { motion } from "framer-motion";
+
+const BASE_URL = import.meta.env.VITE_NORMAL_API_BASE_URL;
 
 const Card = styled(motion.div)`
   background: rgba(24, 24, 42, 0.7);
@@ -85,6 +87,10 @@ export default function Login() {
   const [success, setSuccess] = useState("");
   const navigate = useNavigate();
 
+  useEffect(() => {
+    console.log(BASE_URL);
+  }, []);
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
@@ -93,7 +99,7 @@ export default function Login() {
     console.log("[Login] Attempting login", { email });
     try {
       const res = await axios.post(
-        "/api/auth/login",
+        `${BASE_URL}/api/auth/login`,
         { email, password },
         { withCredentials: true }
       );

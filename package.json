@@ -1,17 +1,19 @@
 {
-    "name": "distributed-voting-system",
-    "private": true,
-    "devDependencies": {
-        "concurrently": "^8.2.2"
-    },
-    "scripts": {
-        "frontend": "cd frontend && npm run dev",
-        "backend": "docker-compose up -d",
-        "start": "concurrently \"npm run backend\" \"npm run frontend\""
-    },
-    "dependencies": {
-        "express-rate-limit": "^7.5.0",
-        "pg": "^8.15.6",
-        "sequelize": "^6.37.7"
-    }
+  "name": "distributed-voting-system",
+  "private": true,
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "scripts": {
+    "frontend": "cd frontend && npm install && npm run dev",
+    "backend": "docker-compose up --build -d",
+    "backend-local": "docker-compose up -d && cd backend && npm install && npm run dev",
+    "start": "concurrently \"npm run backend\" \"npm run frontend\"",
+    "local": "concurrently \"npm run backend-local\" \"npm run frontend\""
+  },
+  "dependencies": {
+    "express-rate-limit": "^7.5.0",
+    "pg": "^8.15.6",
+    "sequelize": "^6.37.7"
+  }
 }
