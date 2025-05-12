@@ -7,12 +7,13 @@ secrets:
     file: ./secrets/public.pem
 
 services:
-  backend:
+  backend1:
     image: zik44/voting-backend:latest
-    deploy:
-      replicas: 1
+    environment:
+      - NODE_ID=node1
+      - PORT=5001
     ports:
-      - "5000:5000"
+      - "5001:5001"
     env_file: .env
     secrets:
       - source: rsa_private
@@ -22,12 +23,58 @@ services:
     depends_on:
       - redis
       - postgres
-
+  backend2:
+    image: zik44/voting-backend:latest
+    environment:
+      - NODE_ID=node2
+      - PORT=5002
+    ports:
+      - "5002:5002"
+    env_file: .env
+    secrets:
+      - source: rsa_private
+        target: /secrets/private.pem
+      - source: rsa_public
+        target: /secrets/public.pem
+    depends_on:
+      - redis
+      - postgres
+  backend3:
+    image: zik44/voting-backend:latest
+    environment:
+      - NODE_ID=node3
+      - PORT=5003
+    ports:
+      - "5003:5003"
+    env_file: .env
+    secrets:
+      - source: rsa_private
+        target: /secrets/private.pem
+      - source: rsa_public
+        target: /secrets/public.pem
+    depends_on:
+      - redis
+      - postgres
+  backend4:
+    image: zik44/voting-backend:latest
+    environment:
+      - NODE_ID=node4
+      - PORT=5004
+    ports:
+      - "5004:5004"
+    env_file: .env
+    secrets:
+      - source: rsa_private
+        target: /secrets/private.pem
+      - source: rsa_public
+        target: /secrets/public.pem
+    depends_on:
+      - redis
+      - postgres
   redis:
     image: redis:alpine
     ports:
       - "6379:6379"
-
   postgres:
     image: postgres:14
     environment:
