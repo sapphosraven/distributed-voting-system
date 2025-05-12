@@ -23,3 +23,11 @@ export async function apiFetch(path, options = {}) {
     throw err;
   }
 }
+import axios from 'axios';
+
+const api = axios.create({
+  baseURL: '/api',  // Remove the environment variable check
+  withCredentials: true,
+});
+
+export default api;
