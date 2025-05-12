@@ -2,10 +2,7 @@
     "name": "distributed-voting-system",
     "private": true,
     "devDependencies": {
-        "autoprefixer": "^10.4.21",
-        "concurrently": "^8.2.2",
-        "postcss": "^8.5.3",
-        "tailwindcss": "^4.1.6"
+        "concurrently": "^8.2.2"
     },
     "scripts": {
         "frontend": "cd frontend && npm run dev",

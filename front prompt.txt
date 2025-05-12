@@ -6,9 +6,6 @@ React + Vite
 
 HeroUI (formerly NextUI) — use the official HeroUI component gallery as visual inspiration
 
-color theme needs to be dark gray, purple and orange, use as many hero ui things as possible
-dynamic background (e.g., animated gradient, particles, etc.)
-
 React Router for routing
 
 Modular architecture: pages/, components/, hooks/, utils/, etc.
