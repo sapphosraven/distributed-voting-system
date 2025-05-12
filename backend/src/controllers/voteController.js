@@ -3,6 +3,8 @@ const Election = require("../models/Election");
 const { encrypt } = require("../utils/rsa");
 const { publishVoteReplication } = require("../utils/replication");
 const { amILeader, getLeader } = require("../utils/raft");
+const { getRedisTime } = require("../utils/time");
+const { acquireLock, releaseLock } = require("../utils/lock");
 
 // Helper: check if user is eligible for an election
 function isUserEligible(election, userEmail) {
@@ -22,6 +24,7 @@ function isUserEligible(election, userEmail) {
 }
 
 exports.castVote = async (req, res) => {
+  let lockKey;
   try {
     // Only leader can accept votes
     if (!amILeader()) {
@@ -39,25 +42,42 @@ exports.castVote = async (req, res) => {
         .status(400)
         .json({ error: "electionId, candidate, and signature are required" });
     }
+    // Acquire distributed lock for this user/election
+    lockKey = `vote:${electionId}:${userId}`;
+    const gotLock = await acquireLock(lockKey, 5000);
+    if (!gotLock) {
+      return res
+        .status(429)
+        .json({ error: "Voting in progress, please retry." });
+    }
     const election = await Election.findByPk(electionId);
-    if (!election) return res.status(404).json({ error: "Election not found" });
+    if (!election) {
+      await releaseLock(lockKey);
+      return res.status(404).json({ error: "Election not found" });
+    }
     if (!isUserEligible(election, userEmail)) {
+      await releaseLock(lockKey);
       return res
         .status(403)
         .json({ error: "You are not eligible to vote in this election" });
     }
     // Check if user already voted
     const existing = await Vote.findOne({ where: { userId, electionId } });
-    if (existing)
+    if (existing) {
+      await releaseLock(lockKey);
       return res
         .status(409)
         .json({ error: "You have already voted in this election" });
+    }
     // Check candidate is valid
     if (!election.candidates.includes(candidate)) {
+      await releaseLock(lockKey);
       return res.status(400).json({ error: "Invalid candidate" });
     }
     // Encrypt the vote (for demo, just encrypt candidate)
     const encryptedPayload = encrypt(candidate);
+    // Use Redis time for timestamp
+    const redisTimestamp = await getRedisTime();
     // Store the vote (anonymity: do not expose candidate in response)
     const vote = await Vote.create({
       candidate, // for demo, but in real system, only store encryptedPayload
@@ -65,6 +85,7 @@ exports.castVote = async (req, res) => {
       signature,
       userId,
       electionId,
+      createdAt: new Date(redisTimestamp),
     });
     // Publish vote event for replication (leader only)
     await publishVoteReplication({
@@ -73,12 +94,19 @@ exports.castVote = async (req, res) => {
       candidate,
       encryptedPayload,
       signature,
-      timestamp: Date.now(),
+      timestamp: redisTimestamp,
       nodeId: process.env.NODE_ID,
     });
-    console.log("Vote cast:", { userId, electionId, candidate });
+    console.log("Vote cast:", {
+      userId,
+      electionId,
+      candidate,
+      redisTimestamp,
+    });
+    await releaseLock(lockKey);
     res.json({ message: "Vote cast successfully" });
   } catch (err) {
+    if (lockKey) await releaseLock(lockKey);
     console.error("CastVote error:", err);
     res.status(500).json({ error: "Failed to cast vote" });
   }
@@ -94,8 +122,9 @@ exports.getVoteResults = async (req, res) => {
     if (!isUserEligible(election, userEmail)) {
       return res.status(403).json({ error: "Not eligible for this election" });
     }
-    const now = new Date();
-    const electionEnd = new Date(election.endTime);
+    // Use Redis time for now/end checks
+    const now = await getRedisTime();
+    const electionEnd = new Date(election.endTime).getTime();
     if (now >= electionEnd) {
       // Election ended: any eligible user can view results
       // ...proceed to tally...

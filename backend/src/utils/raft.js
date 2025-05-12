@@ -5,6 +5,7 @@ const { redis } = require("./db");
 let isLeader = false;
 let leaderId = null;
 let nodeId = process.env.NODE_ID || Math.random().toString(36).substring(2, 10);
+let lastPrintedLeader = null;
 
 // Try to become leader by setting a Redis key with TTL
 async function tryBecomeLeader() {
@@ -16,7 +17,10 @@ async function tryBecomeLeader() {
       await redis.set("voting-leader", nodeId, { XX: true, EX: 10 });
       isLeader = true;
       leaderId = nodeId;
-      console.log(`[RAFT] Refreshed leadership for node (${nodeId})`);
+      if (lastPrintedLeader !== nodeId) {
+        console.log(`[RAFT] This node (${nodeId}) is now the leader.`);
+        lastPrintedLeader = nodeId;
+      }
     } else if (!currentLeader) {
       // No leader, try to become leader
       const result = await redis.set("voting-leader", nodeId, {
@@ -26,19 +30,26 @@ async function tryBecomeLeader() {
       if (result) {
         isLeader = true;
         leaderId = nodeId;
-        console.log(`[RAFT] This node (${nodeId}) is now the leader.`);
+        if (lastPrintedLeader !== nodeId) {
+          console.log(`[RAFT] This node (${nodeId}) is now the leader.`);
+          lastPrintedLeader = nodeId;
+        }
       } else {
         isLeader = false;
         leaderId = await redis.get("voting-leader");
-        console.log(
-          `[RAFT] Failed to become leader. Current leader: ${leaderId}`
-        );
+        if (lastPrintedLeader !== leaderId) {
+          console.log(`[RAFT] Current leader is ${leaderId}`);
+          lastPrintedLeader = leaderId;
+        }
       }
     } else {
       // Another node is leader
       isLeader = false;
       leaderId = currentLeader;
-      console.log(`[RAFT] Current leader is ${leaderId}`);
+      if (lastPrintedLeader !== currentLeader) {
+        console.log(`[RAFT] Current leader is ${currentLeader}`);
+        lastPrintedLeader = currentLeader;
+      }
     }
   } catch (err) {
     console.error(`[RAFT] Error in leader election:`, err);

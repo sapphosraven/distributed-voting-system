@@ -17,14 +17,15 @@
 | 13. Frontend Integration                                 | ⚠️ Partial  | API prefix and CORS set; eligibility reflected in UI                                   |
 | 14. Test the Full Happy Path                              | ✅ Done     | Auth, OTP, election create/list, eligibility, voting, results, failover tested         |
 | 15. Console-Style Debug Tests                             | ❌ Not done | Not implemented                                                                       |
-| 16. Persistent Volumes (optional)                         | ❌ Not done | Not set up (optional for demo)                                                        |
+| 16. Persistent Volumes (optional)                         | ❌ Skipped  | Not required for demo                                                                 |
 
 ---
 
 **Legend:**
-✅ = Complete  ⚠️ = Partially/Assumed  ❌ = Not done
+✅ = Complete  ⚠️ = Partially/Assumed  ❌ = Not done  ❌ Skipped = Not required for demo
 
 **Change Log:**
+- [2025-05-12] Improved leader election logging: now only logs when the leader actually changes, reducing log spam and making logs easier to follow during failover and normal operation.
 - [2025-05-12] Distributed system logic (leader election, failover, replication) fully implemented and tested. Voting only accepted by leader, replication confirmed, failover tested.
 - [2025-05-12] All core backend flows (auth, OTP, election, voting, results) tested and confirmed.
 - [2025-05-11] Steps 1, 2, 6, 7 updated to reflect working eligibility, OTP, and rate limiting.
@@ -38,17 +39,12 @@
 
 | Task                                                      | Est. Time (hrs) | Notes                                                                                  |
 |-----------------------------------------------------------|-----------------|----------------------------------------------------------------------------------------|
-| Results Controller Logic (view results, restrictions)     | 1               | Only after voting, respect live/ended visibility                                       |
-| Password Change (with OTP)                                | 0.5             | Endpoint, OTP verification, update password                                            |
-| Search Endpoints (elections/results)                      | 0.5             | By title, creator, etc.                                                                |
-| Middleware/Access Control Finalization                    | 0.5             | Ensure all routes are protected as required                                            |
-| Console Logging/Debug Hooks                              | 0.25            | Add for new flows                                                                      |
-| Test All New Flows (manual & inline)                      | 1               | End-to-end, edge cases                                                                 |
-| Distributed System Logic (consensus, leader, mutex)       | ✅ Done         | Leader election, consensus, mutex/lock for voting, time sync, replication              |
-| Double Voting/Data Conflict Prevention                    | ✅ Done         | Atomicity in distributed setup (core logic done)                                       |
-| Persistent Volumes (optional)                             | 0.5             | For data durability                                                                   |
+| Consensus for Vote Tallying (distributed agreement)       | 1               | Last distributed system increment for demo                                             |
+| Backend-Frontend Integration (API, CORS, UI)              | 1               | Connect backend to frontend, test end-to-end flows                                     |
+| Console Logging/Debug Hooks                              | 0.25            | Add for new flows if needed                                                            |
+| Test All New Flows (manual & inline)                      | 0.5             | End-to-end, edge cases                                                                 |
 
-**Total Remaining (core features):** ~2.25–2.75 hours
+**Total Remaining (core features for today):** ~2.75 hours
 
 ---
 
@@ -58,27 +54,30 @@
 - [x] Replication: All nodes log [REPLICATION] messages for each vote
 - [x] Failover: When leader is stopped, a new leader is elected and voting continues
 - [x] No rogue/random node IDs in cluster (all nodes have NODE_ID)
+- [x] Leader election logs only on leader change (log spam fixed)
 
 ---
 
 # Next Increment
-- (Optional, for extra credit/security):
-  - Implement digital signatures and end-to-end encryption for votes (sign/verify on client and backend)
-  - Enhance consensus: stricter Raft (terms, voting, fencing) for leader election
-  - Add persistent volumes for Postgres/Redis for data durability
-  - Add inline test/dummy endpoints for easier distributed testing
-  - Improve frontend integration and UX for distributed status/errors
-  - Add console-style debug/test endpoints for cluster health
+- Consensus for vote tallying (distributed agreement on results) [RECOMMENDED NEXT]
+- Backend-frontend integration (API, CORS, UI)
+
+# Deferred (for later, not required for demo)
+- Implement digital signatures and end-to-end encryption for votes (sign/verify on client and backend)
+- Enhance consensus: stricter Raft (terms, voting, fencing) for leader election
+- Add persistent volumes for Postgres/Redis for data durability
+- Add inline test/dummy endpoints for easier distributed testing
+- Improve frontend integration and UX for distributed status/errors
+- Add console-style debug/test endpoints for cluster health
 
 # Suggestion
-Focus next on digital signatures and E2EE for votes, or on persistent volumes for durability, depending on your priorities.
+Focus next on consensus for vote tallying (distributed agreement on results), then backend-frontend integration. Digital signatures/E2EE and other enhancements can be done after the demo as needed.
 
 # TODOs (as of 2025-05-12)
 
 - [ ] Prevent election creation with a start time in the past (validate startTime >= now)
 - [ ] (Optional) Decide/fix: Should empty allowedDomains/allowedEmails mean 'open to all'? (Currently not working as intended)
 - [ ] Implement digital signatures and end-to-end encryption (E2EE) after distributed part is complete
-- [ ] Add clock/time synchronization across distributed nodes (for election timing, result visibility, etc.)
 
 # Distributed System Team Guidance
 - You can proceed with distributed system logic (consensus, leader election, mutex/lock, atomic voting) **without** these TODOs being fixed.
