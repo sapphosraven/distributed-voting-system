@@ -22,7 +22,6 @@ export interface ElectionListItem {
 export interface Candidate {
     id: string;
     name: string;
-    photo?: string;
     party?: string;
     description?: string;
 }

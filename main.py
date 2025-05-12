@@ -169,9 +169,9 @@ async def get_candidates():
         # For MVP, we'll return a static list
         # In a full implementation, this would come from a database
         return [
-            {"id": "Candidate_A", "name": "Candidate A", "party": "Party A", "photo": "candidate_a.jpg"},
-            {"id": "Candidate_B", "name": "Candidate B", "party": "Party B", "photo": "candidate_b.jpg"},
-            {"id": "Candidate_C", "name": "Candidate C", "party": "Party C", "photo": "candidate_c.jpg"}
+            {"id": "Candidate_A", "name": "Candidate A", "party": "Party A"},
+            {"id": "Candidate_B", "name": "Candidate B", "party": "Party B"},
+            {"id": "Candidate_C", "name": "Candidate C", "party": "Party C"}
         ]
     except Exception as e:
         logging.error(f"Error fetching candidates: {str(e)}")

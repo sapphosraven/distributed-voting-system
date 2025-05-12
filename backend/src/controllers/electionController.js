@@ -60,6 +60,19 @@ exports.createElection = async (req, res) => {
     let allowedEmailsFinal = allowedEmails || [];
     if (!allowedEmailsFinal.includes(creatorEmail))
       allowedEmailsFinal.push(creatorEmail);
+
+    // Validate and transform candidates: must be array of objects with id, name, party, description (NO photo)
+    const { v4: uuidv4 } = require("uuid");
+    const cleanCandidates = candidates.map((c, idx) => {
+      if (!c.name) throw new Error("Each candidate must have a name");
+      return {
+        id: c.id || uuidv4(),
+        name: c.name,
+        party: c.party || "",
+        description: c.description || "",
+      };
+    });
+
     const election = await Election.create({
       title,
       startTime,
@@ -67,7 +80,7 @@ exports.createElection = async (req, res) => {
       isResultsVisible: !!isResultsVisible,
       allowedDomains: allowedDomains || [],
       allowedEmails: allowedEmailsFinal,
-      candidates,
+      candidates: cleanCandidates,
       creatorEmail,
     });
     console.log("Election created:", election.id);
@@ -87,7 +100,18 @@ exports.getElections = async (req, res) => {
     });
     // Filter by eligibility
     const eligible = elections.filter((e) => isUserEligible(e, userEmail));
-    res.json({ elections: eligible });
+    // Remove photo field from candidates before sending to frontend
+    const electionsClean = eligible.map((election) => {
+      const e = election.toJSON();
+      e.candidates = (e.candidates || []).map((c) => ({
+        id: c.id,
+        name: c.name,
+        party: c.party,
+        description: c.description,
+      }));
+      return e;
+    });
+    res.json({ elections: electionsClean });
   } catch (err) {
     console.error("GetElections error:", err);
     res.status(500).json({ error: "Failed to fetch elections" });
@@ -111,7 +135,18 @@ exports.searchElections = async (req, res) => {
     });
     // Filter by eligibility
     const eligible = elections.filter((e) => isUserEligible(e, userEmail));
-    res.json({ elections: eligible });
+    // Remove photo field from candidates before sending to frontend
+    const electionsClean = eligible.map((election) => {
+      const e = election.toJSON();
+      e.candidates = (e.candidates || []).map((c) => ({
+        id: c.id,
+        name: c.name,
+        party: c.party,
+        description: c.description,
+      }));
+      return e;
+    });
+    res.json({ elections: electionsClean });
   } catch (err) {
     console.error("SearchElections error:", err);
     res.status(500).json({ error: "Failed to search elections" });

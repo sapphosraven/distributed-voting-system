@@ -17,7 +17,7 @@ const CreateElection = () => {
     start_date: "",
     end_date: "",
     eligible_voters: [""],
-    candidates: [{ name: "", photo: "", party: "", description: "" }]
+    candidates: [{ name: "", party: "", description: "" }]
   });
   
   // UI state
@@ -64,7 +64,7 @@ const CreateElection = () => {
   const addCandidate = () => {
     setElection(prev => ({
       ...prev,
-      candidates: [...prev.candidates, { name: "", photo: "", party: "", description: "" }]
+      candidates: [...prev.candidates, { name: "", party: "", description: "" }]
     }));
   };
   
@@ -369,17 +369,6 @@ const CreateElection = () => {
                       placeholder="Political party (optional)"
                     />
                   </div>
-                </div>
-                
-                <div className="mt-3">
-                  <label className="block mb-1 text-sm font-medium">Photo URL</label>
-                  <input
-                    type="text"
-                    value={candidate.photo || ''}
-                    onChange={(e) => handleCandidateChange(index, 'photo', e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    placeholder="Link to candidate photo (optional)"
-                  />
                 </div>
                 
                 <div className="mt-3">

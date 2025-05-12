@@ -72,11 +72,15 @@ exports.castVote = async (req, res) => {
         .json({ error: "You have already voted in this election" });
     }
     // Check candidate is valid
-    if (!election.candidates.includes(candidate)) {
+    // Now candidates is an array of objects, so check by id
+    const validCandidate = (election.candidates || []).find(
+      (c) => c.id === candidate
+    );
+    if (!validCandidate) {
       await releaseLock(lockKey);
       return res.status(400).json({ error: "Invalid candidate" });
     }
-    // Encrypt the vote (for demo, just encrypt candidate)
+    // Encrypt the vote (for demo, just encrypt candidate id)
     const encryptedPayload = encrypt(candidate);
     // Use Redis time for timestamp
     const redisTimestamp = await getRedisTime();
@@ -132,12 +136,10 @@ exports.getVoteResults = async (req, res) => {
       // Consensus tallying
       if (!amILeader()) {
         // Only leader coordinates consensus
-        return res
-          .status(503)
-          .json({
-            error:
-              "Only leader can provide results. Please query the leader node.",
-          });
+        return res.status(503).json({
+          error:
+            "Only leader can provide results. Please query the leader node.",
+        });
       }
       // Number of backend nodes (hardcoded for demo, or count from env)
       const nodeCount = 4;
@@ -173,7 +175,12 @@ exports.getVoteResults = async (req, res) => {
       res.json({
         electionId,
         title: election.title,
-        candidates: election.candidates,
+        candidates: election.candidates.map((c) => ({
+          id: c.id,
+          name: c.name,
+          party: c.party,
+          description: c.description,
+        })),
         tally: majorityTally,
         totalVotes: Object.values(majorityTally).reduce((a, b) => a + b, 0),
         endTime: election.endTime,
@@ -190,9 +197,10 @@ exports.getVoteResults = async (req, res) => {
       }
       // ...proceed to tally (can use local for live)...
       const votes = await Vote.findAll({ where: { electionId } });
+      // Tally votes by candidate id
       const tally = {};
       for (const candidate of election.candidates) {
-        tally[candidate] = 0;
+        tally[candidate.id] = 0;
       }
       for (const v of votes) {
         if (tally[v.candidate] !== undefined) tally[v.candidate]++;
@@ -200,7 +208,12 @@ exports.getVoteResults = async (req, res) => {
       res.json({
         electionId,
         title: election.title,
-        candidates: election.candidates,
+        candidates: election.candidates.map((c) => ({
+          id: c.id,
+          name: c.name,
+          party: c.party,
+          description: c.description,
+        })),
         tally,
         totalVotes: votes.length,
         endTime: election.endTime,

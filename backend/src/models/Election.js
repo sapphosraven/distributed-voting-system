@@ -17,7 +17,7 @@ module.exports = sequelize.define("Election", {
     defaultValue: [],
   },
   candidates: {
-    type: DataTypes.ARRAY(DataTypes.STRING),
+    type: DataTypes.JSONB,
     allowNull: false,
     defaultValue: [],
   },

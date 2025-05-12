@@ -1,14 +1,6 @@
 import { API_ENDPOINTS } from '../config/api';
 import { getToken } from './login';
-
-export interface Candidate {
-  id: string;
-  name: string;
-  photo: string;
-  party?: string;
-  shortDesc?: string;
-  longDesc?: string;
-}
+import { Candidate } from '../types/election';
 
 export interface VoteResponse {
   message: string;

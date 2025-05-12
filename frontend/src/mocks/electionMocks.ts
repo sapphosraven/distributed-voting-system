@@ -41,14 +41,12 @@ export const mockElectionDetails: Record<string, Election> = {
       {
         id: "c1",
         name: "Alice Johnson",
-        photo: "https://randomuser.me/api/portraits/women/44.jpg",
         party: "Progress Party",
         description: "Working for student progress and better facilities"
       },
       {
         id: "c2",
         name: "Bob Smith",
-        photo: "https://randomuser.me/api/portraits/men/32.jpg",
         party: "Excellence Union",
         description: "Striving for academic excellence"
       }
@@ -67,14 +65,12 @@ export const mockElectionDetails: Record<string, Election> = {
       {
         id: "c3",
         name: "Carol Davis",
-        photo: "https://randomuser.me/api/portraits/women/55.jpg",
         party: "Student Voice",
         description: "Representing student concerns and needs"
       },
       {
         id: "c4",
         name: "David Wilson",
-        photo: "https://randomuser.me/api/portraits/men/41.jpg",
         party: "Future Leaders",
         description: "Preparing students for leadership roles"
       }
@@ -93,19 +89,16 @@ export const mockElectionDetails: Record<string, Election> = {
       {
         id: "c5",
         name: "Lions",
-        photo: "https://via.placeholder.com/150?text=Lion",
         description: "Strong and brave"
       },
       {
         id: "c6",
         name: "Eagles",
-        photo: "https://via.placeholder.com/150?text=Eagle",
         description: "Soaring high with vision"
       },
       {
         id: "c7",
         name: "Wolves",
-        photo: "https://via.placeholder.com/150?text=Wolf",
         description: "Teamwork and loyalty"
       }
     ]
