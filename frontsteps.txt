@@ -31,3 +31,116 @@
 - [ ] Build OTP Verification page
 - [ ] Build Elections, Voting, Results pages
 - [ ] Add password change, dev console, polish
+
+---
+
+# Frontend Setup Steps for Distributed Voting System
+
+## 1. Routing Setup (React Router)
+
+- Use `react-router-dom`'s `<Routes>` and `<Route>` in `App.jsx`.
+- Define the following routes:
+  - `/login` → Login page
+  - `/register` → Registration page
+  - `/verify-otp` → OTP verification page (MANDATORY after login/register)
+  - `/elections` → List of eligible elections
+  - `/vote/:electionId` → Voting page for a specific election
+  - `/results/:electionId` → Results page for a specific election
+  - `/dashboard` (optional, for admin/dev)
+- Example:
+  ```jsx
+  <Routes>
+    <Route path="/login" element={<Login />} />
+    <Route path="/register" element={<Register />} />
+    <Route path="/verify-otp" element={<VerifyOtp />} />
+    <Route path="/elections" element={<Elections />} />
+    <Route path="/vote/:electionId" element={<Vote />} />
+    <Route path="/results/:electionId" element={<Results />} />
+    <Route path="/dashboard" element={<Dashboard />} />
+    <Route path="/" element={<Navigate to="/login" replace />} />
+  </Routes>
+  ```
+
+## 2. Data Handling & API Integration (per page)
+
+### /login
+- Fields: `email`, `password`
+- POST `/api/auth/login` with `{ email, password }`
+- On success, store JWT token (if returned) and redirect to `/verify-otp`
+- OTP is mandatory: user must complete `/verify-otp` before accessing any protected route
+- Button to trigger OTP: POST `/api/auth/send-otp` with `{ email }`
+- On logout, clear JWT token from storage
+- Handle and display errors from backend
+
+### /register
+- Fields: `email`, `password`, `confirmPassword`, `name` (if required by backend)
+- POST `/api/auth/register` with `{ email, password, name }`
+- On success, store JWT token (if returned) and redirect to `/verify-otp`
+- OTP is mandatory: user must complete `/verify-otp` before accessing any protected route
+- Button to trigger OTP: POST `/api/auth/send-otp` with `{ email }`
+- Handle and display errors from backend
+
+### /verify-otp
+- Fields: `email`, `otp`
+- POST `/api/auth/verify-otp` with `{ email, otp }`
+- On success, mark user as OTP-verified (set flag in frontend state or storage)
+- Only after OTP verification, allow access to `/elections` and other protected routes
+- Handle and display errors from backend
+
+### /elections
+- GET `/api/elections` (returns list of elections user is eligible for)
+- Display: election `title`, `description`, `status`, `creatorEmail`, `startTime`, `endTime`, `isResultsVisible`
+- Show a button to vote or view results for each election
+- On click, navigate to `/vote/:electionId` or `/results/:electionId`
+- Allow searching elections (GET `/api/elections/search?q=...`)
+
+### /vote/:electionId
+- GET `/api/elections/:electionId` to fetch election details and candidates/options
+- Display: `title`, `description`, `candidates` (each with `id`, `name`, `party`, `description`), `startTime`, `endTime`, `isResultsVisible`
+- Fields: `selectedCandidateId` (radio/select for candidate)
+- POST `/api/vote/cast` with `{ electionId, candidate, signature }` (see backend: candidate = candidate.id, signature = digital signature)
+- Show confirmation and handle errors (e.g., lock failed, already voted, signature rejected)
+- On success, redirect to `/results/:electionId` or show success message
+
+### /results/:electionId
+- GET `/api/vote/results/:electionId` to fetch results (if allowed)
+- Display: `title`, `candidates` (with `id`, `name`, `party`, `description`), `tally`, `totalVotes`, `endTime`, `consensusNodes`
+- Show results in a table or chart
+- Handle errors (e.g., results not available yet, not eligible, must vote first)
+
+### /elections/create (Election Creation)
+- Fields: `title`, `description`, `startTime`, `endTime`, `isResultsVisible` (checkbox), `allowedDomains` (array), `allowedEmails` (array), `candidates` (array of { name, party, description })
+- POST `/api/elections` with {
+    title: string,
+    description: string,
+    startTime: ISO8601 string,
+    endTime: ISO8601 string,
+    isResultsVisible: boolean,
+    allowedDomains: string[],
+    allowedEmails: string[],
+    candidates: [ { name: string, party: string, description: string } ]
+  }
+- On success, show confirmation and update elections list
+- Validate all required fields before submit (at least 2 candidates, time constraints: 10 min–7 days, creator is always eligible)
+- Display backend error messages
+- Only accessible to authenticated/OTP-verified users
+
+### /dashboard (optional)
+- For admin/dev: show test hooks, API call buttons, and debug info
+- Example: buttons to trigger login, OTP, cast vote, simulate errors, etc.
+
+## 3. General Notes
+- All API calls use `/api` as the base URL
+- Use axios or fetch with `withCredentials: true` if backend uses cookies
+- Add detailed console logging for all API calls and state transitions
+- All forms must validate required fields before submitting
+- Display backend error messages to the user
+- Use modular structure: `components/`, `hooks/`, `utils/`, `pages/`
+- Use Cards, Buttons, Inputs, and Tables for UI
+- No placeholders: all fields and API payloads must match backend expectations
+- OTP is enforced after login/register and for sensitive actions (password change, election creation, voting)
+- JWT tokens must be handled: store after login, attach to API calls, and clear on logout
+
+---
+
+This guide ensures every page and API call matches the backend contract and user flow. Adjust field names/types if your backend expects different keys.

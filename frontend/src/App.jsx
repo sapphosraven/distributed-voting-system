@@ -21,7 +21,7 @@ import DynamicBackground from "./components/DynamicBackground";
 function App() {
   return (
     <>
-          <DynamicBackground />
+      <DynamicBackground />
       <Global
         styles={css`
           body {
