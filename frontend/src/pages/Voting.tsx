@@ -2,8 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
 import { getElectionDetails } from "../services/elections";
-import { mockElectionDetails, mockElections } from "../mocks/electionMocks"; // Remove in production
-import { submitVote } from "../services/vote"; // Make sure this exists
+import { submitVote } from "../services/vote";
 import Modal from "../components/common/Modal";
 import { Candidate } from "../types/election";
 
@@ -28,22 +27,11 @@ export const Voting = () => {
   useEffect(() => {
     const fetchElectionDetails = async () => {
       try {
-        // Comment this and uncomment the API call when backend is ready
-        const electionData = mockElectionDetails[electionId];
-        if (!electionData) {
-          throw new Error("Election not found");
-        }
-        
+        const electionData = await getElectionDetails(electionId);
         setElectionTitle(electionData.title);
         setElectionDesc(electionData.description);
         setCandidates(electionData.candidates);
         setLoading(false);
-        
-        // Uncomment when backend is ready
-        // const electionData = await getElectionDetails(electionId);
-        // setElectionTitle(electionData.title);
-        // setElectionDesc(electionData.description);
-        // setCandidates(electionData.candidates);
       } catch (error) {
         console.error("Failed to fetch election details:", error);
         setModalMessage({
@@ -81,26 +69,12 @@ export const Voting = () => {
     
     setVoteSubmitting(true);
     try {
-      // Mock successful vote storage
-      const userVotes = JSON.parse(localStorage.getItem('userVotes') || '{}');
-      userVotes[electionId] = selectedCandidate;
-      localStorage.setItem('userVotes', JSON.stringify(userVotes));
-      
-      // Update the mock election data to mark as voted
-      const updatedMockElections = [...mockElections];
-      const electionIndex = updatedMockElections.findIndex(e => e.id === electionId);
-      if (electionIndex !== -1) {
-        updatedMockElections[electionIndex].hasVoted = true;
-      }
-      
-      // Success message
+      await submitVote(selectedCandidate);
       setModalMessage({
         title: "Success!",
         description: "Your vote has been recorded successfully."
       });
       setShowModal(true);
-      
-      // Close confirm dialog
       setConfirmVoteModal(false);
     } catch (error) {
       console.error(error);

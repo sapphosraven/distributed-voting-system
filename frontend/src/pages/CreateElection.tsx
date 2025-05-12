@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
 import Modal from "../components/common/Modal";
-import { createElection } from "../services/elections";
+import { createElectionRaw } from "../services/elections";
 
 
 // Component to create a new election (multi-step form)
@@ -144,40 +144,27 @@ const CreateElection = () => {
   // Form submission
   const handleSubmit = async () => {
     if (!validateStep(3)) return;
-    
     setLoading(true);
     try {
-      // Generate ID for the new election
-      const newId = String(Date.now());
-      
-      // Create the new election
-      const newElection = {
-        ...election,
-        id: newId,
-        status: 'active',
-        created_by: "alice@example.com" // Current user
-      };
-      
-      // Add to mock data
-      mockElectionDetails[newId] = newElection;
-      mockElections.push({
-        id: newId,
+      // Map frontend fields to backend expectations
+      const payload = {
         title: election.title,
-        description: election.description,
-        end_date: election.end_date,
-        hasVoted: false,
-        status: 'active'
-      });
-      
+        startTime: election.start_date,
+        endTime: election.end_date,
+        allowedDomains: [], // You can add domain logic if needed
+        allowedEmails: election.eligible_voters,
+        candidates: election.candidates.map(({ name, party, description }) => ({ name, party, description })),
+      };
+      await createElectionRaw(payload);
       setModalMessage({
         title: "Success!",
         description: "Your election has been created successfully."
       });
       setShowModal(true);
-    } catch (error) {
+    } catch (error: any) {
       setModalMessage({
         title: "Creation Failed",
-        description: "There was a problem creating your election. Please try again."
+        description: error?.message || "There was a problem creating your election. Please try again."
       });
       setShowModal(true);
     } finally {
@@ -260,6 +247,7 @@ const CreateElection = () => {
                     onChange={handleBasicDetailsChange}
                     className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500"
                     required
+                    step="60"
                   />
                 </div>
                 
@@ -272,6 +260,7 @@ const CreateElection = () => {
                     onChange={handleBasicDetailsChange}
                     className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500"
                     required
+                    step="60"
                   />
                 </div>
               </div>
@@ -507,6 +496,26 @@ const CreateElection = () => {
           }}
         />
       )}
+      <style>
+      {`
+        input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+          filter: invert(1) brightness(0.5) contrast(2);
+          border-radius: 50%;
+          padding: 2px;
+        }
+        input[type="datetime-local"]::-moz-calendar-picker-indicator {
+          filter: invert(1) brightness(0.5) contrast(2);
+          border-radius: 50%;
+          padding: 2px;
+        }
+        input[type="datetime-local"]::-ms-input-placeholder {
+          color: inherit;
+        }
+        input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+          filter: grayscale(1) brightness(0.7);
+        }
+      `}
+      </style>
     </Layout>
   );
 };

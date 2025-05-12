@@ -21,7 +21,13 @@ export const signin = async (payload: { email: string; password: string }): Prom
     throw new Error('Authentication failed');
   }
 
-  return response.json();
+  // Normalize backend response to { access_token, token_type }
+  const data = await response.json();
+  if (data.token) {
+    return { access_token: data.token, token_type: 'bearer' };
+  }
+  // fallback for legacy/other responses
+  return data;
 };
 
 export const getToken = (): string | null => {

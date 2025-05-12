@@ -50,6 +50,23 @@ export const createElection = async (election: Omit<Election, 'id'>): Promise<El
   return response.json();
 };
 
+// Create a new election with raw backend payload
+export const createElectionRaw = async (payload: any): Promise<any> => {
+  const response = await fetch(API_ENDPOINTS.elections, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${getToken()}`
+    },
+    body: JSON.stringify(payload)
+  });
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.error || 'Failed to create election');
+  }
+  return response.json();
+};
+
 // Get elections the user has voted in
 export const getVotedElections = async (): Promise<ElectionListItem[]> => {
   const response = await fetch(API_ENDPOINTS.votedElections, {

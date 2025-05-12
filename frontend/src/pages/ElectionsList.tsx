@@ -27,7 +27,13 @@ export const ElectionsList = () => {
     const fetchElections = async () => {
       try {
         const data = await getEligibleElections();
-        setElections(data as ElectionListItem[]);
+        let electionsArray: ElectionListItem[] = [];
+        if (Array.isArray(data)) {
+          electionsArray = data as ElectionListItem[];
+        } else if (data && typeof data === 'object' && 'elections' in data && Array.isArray((data as any).elections)) {
+          electionsArray = (data as any).elections;
+        }
+        setElections(electionsArray);
         setLoading(false);
       } catch (err) {
         console.error("Failed to fetch elections:", err);
