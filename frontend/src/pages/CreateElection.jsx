@@ -235,7 +235,7 @@ const CreateElection = () => {
       };
       await api.post("/elections", payload, { withCredentials: true });
       setSuccess("Election created!");
-      setTimeout(() => navigate("/elections"), 1200);
+      setTimeout(() => navigate("/elections"), 1000); // Redirect after 1s
     } catch (err) {
       setError(err?.response?.data?.error || "Failed to create election");
     } finally {
