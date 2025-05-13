@@ -166,6 +166,19 @@ export default function Login() {
       >
         {loading ? "Sending OTP..." : "Send OTP to Email"}
       </OtpButton>
+      <div style={{ textAlign: "center", marginBottom: "1rem" }}>
+        <a
+          href="/reset-password-request"
+          style={{
+            color: "var(--color-orange)",
+            textDecoration: "none",
+            fontWeight: 500,
+          }}
+        >
+          Forgot Password?
+        </a>
+      </div>
+      
       <div
         css={css`
           text-align: center;

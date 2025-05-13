@@ -15,10 +15,13 @@ exports.register = async (req, res) => {
   try {
     console.log("Register endpoint hit", req.body);
     const { email, password } = req.body;
-    if (!email || !password)
-      return res.status(400).json({ error: "Email and password required" });
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email and password are required" });
+    }
     const existing = await User.findOne({ where: { email } });
-    if (existing) return res.status(409).json({ error: "User already exists" });
+    if (existing) {
+      return res.status(409).json({ error: "User already exists" });
+    }
     const passwordHash = await bcrypt.hash(password, 10);
     const user = await User.create({ email, passwordHash });
     console.log("User registered:", user.email);

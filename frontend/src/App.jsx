@@ -18,6 +18,8 @@ import Results from "./pages/Results";
 import Dashboard from "./pages/Dashboard";
 import CreateElection from "./pages/CreateElection";
 import DynamicBackground from "./components/DynamicBackground";
+import ResetPasswordRequest from "./pages/ResetPasswordRequest";
+import ResetPassword from "./pages/ResetPassword";
 
 function App() {
   return (
@@ -44,6 +46,8 @@ function App() {
           <Route path="/results/:electionId" element={<Results />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/create-election" element={<CreateElection />} />
+          <Route path="/reset-password-request" element={<ResetPasswordRequest />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/" element={<Navigate to="/login" replace />} />
         </Routes>
       </Router>

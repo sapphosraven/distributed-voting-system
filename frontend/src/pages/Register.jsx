@@ -5,7 +5,6 @@ import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import { motion } from "framer-motion";
 import DynamicBackground from "../components/DynamicBackground";
-import api from '../utils/api';  // Import the api instance 
 
 const Card = styled(motion.div)`
   background: rgba(24, 24, 42, 0.7);
@@ -83,36 +82,46 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // In Register.jsx
+  // Validate email format
+  const validateEmail = (email) => {
+    return /\S+@\S+\.\S+/.test(email);
+  };
 
-// ...existing code...
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+    setLoading(true);
+    console.log("[Register] Attempting registration", { email, password });
 
-const handleRegister = async (e) => {
-  e.preventDefault();
-  setError("");
-  setSuccess("");
-  setLoading(true);
-  console.log("[Register] Attempting registration", { email, password });
+    if (!validateEmail(email)) {
+      setError("Please enter a valid email address");
+      setLoading(false);
+      return;
+    }
+    if (!password || password.length < 6) {
+      setError("Password must be at least 6 characters");
+      setLoading(false);
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      setLoading(false);
+      return;
+    }
 
-  if (password !== confirmPassword) {
-    setError("Passwords do not match");
-    setLoading(false);
-    return;
-  }
-
-  try {
-    const res = await api.post("/auth/register", { email, password });
-    console.log("[Register] Registration response:", res);
-    setSuccess("Registration successful! Redirecting to OTP verification...");
-    setTimeout(() => navigate("/verify-otp"), 1000);
-  } catch (err) {
-    console.error("[Register] Registration error:", err);
-    setError(err?.response?.data?.message || "Registration failed");
-  } finally {
-    setLoading(false);
-  }
-};
-
+    try {
+      const res = await axios.post("/api/auth/register", { email, password });
+      console.log("[Register] Registration response:", res);
+      setSuccess("Registration successful! Redirecting to OTP verification...");
+      setTimeout(() => navigate("/verify-otp"), 1000);
+    } catch (err) {
+      console.error("[Register] Registration error:", err);
+      setError(err?.response?.data?.error || err?.response?.data?.message || "Registration failed");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <>
@@ -131,6 +140,7 @@ const handleRegister = async (e) => {
             autoComplete="username"
             onChange={(e) => setEmail(e.target.value)}
             required
+            disabled={loading}
           />
           <Input
             type="password"
@@ -139,6 +149,7 @@ const handleRegister = async (e) => {
             autoComplete="new-password"
             onChange={(e) => setPassword(e.target.value)}
             required
+            disabled={loading}
           />
           <Input
             type="password"
@@ -147,6 +158,7 @@ const handleRegister = async (e) => {
             autoComplete="new-password"
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
+            disabled={loading}
           />
           {error && <ErrorMsg>{error}</ErrorMsg>}
           {success && <SuccessMsg>{success}</SuccessMsg>}
