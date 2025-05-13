@@ -243,63 +243,6 @@ const CreateElection = () => {
     }
   };
 
-  const handlePreviewJson = (e) => {
-    e.preventDefault();
-    setError("");
-    setSuccess("");
-    const filtered = allowedList.map((v) => v.trim()).filter(Boolean);
-    const allowedDomains = filtered.filter(isDomain);
-    const allowedEmails = filtered.filter(isEmail);
-    const payload = {
-      title,
-      description,
-      startTime: start,
-      endTime: end,
-      isResultsVisible: true,
-      allowedDomains,
-      allowedEmails,
-      candidates: candidates.map((c) => ({
-        name: c.name,
-        party: c.party,
-        description: c.description,
-      })),
-    };
-    // Show in console
-    console.log("[DEBUG] Election JSON payload:", payload);
-    alert("Check the console for the JSON payload.");
-  };
-
-  const handlePreview = (e) => {
-    e.preventDefault();
-    setError("");
-    setSuccess("");
-    const err = validate();
-    if (err) {
-      setError(err);
-      setShowPreview(false);
-      return;
-    }
-    const filtered = allowedList.map((v) => v.trim()).filter(Boolean);
-    const allowedDomains = filtered.filter(isDomain);
-    const allowedEmails = filtered.filter(isEmail);
-    const payload = {
-      title,
-      description,
-      startTime: start,
-      endTime: end,
-      isResultsVisible: true,
-      allowedDomains,
-      allowedEmails,
-      candidates: candidates.map((c) => ({
-        name: c.name,
-        party: c.party,
-        description: c.description,
-      })),
-    };
-    setPreviewJson(JSON.stringify(payload, null, 2));
-    setShowPreview(true);
-  };
-
   return (
     <>
       <DynamicBackground />
@@ -432,49 +375,6 @@ const CreateElection = () => {
           >
             + Add Candidate
           </Button>
-          <Button
-            type="button"
-            onClick={handlePreviewJson}
-            style={{
-              background: "#ffa500",
-              color: "#222",
-              marginBottom: 10,
-              width: "auto",
-              padding: "0.5rem 1.2rem",
-            }}
-          >
-            Preview JSON
-          </Button>
-          <Button
-            type="button"
-            onClick={handlePreview}
-            style={{
-              background: "#888",
-              color: "#fff",
-              marginBottom: 10,
-              width: "auto",
-              padding: "0.5rem 1.2rem",
-              float: "right",
-            }}
-          >
-            Preview JSON
-          </Button>
-          {showPreview && (
-            <pre
-              style={{
-                background: "#18182a",
-                color: "#fff",
-                padding: "1rem",
-                borderRadius: "0.5rem",
-                margin: "1rem 0",
-                fontSize: "0.95rem",
-                overflowX: "auto",
-                maxHeight: 300,
-              }}
-            >
-              {previewJson}
-            </pre>
-          )}
           {error && <ErrorMsg>{error}</ErrorMsg>}
           {success && <SuccessMsg>{success}</SuccessMsg>}
           <Button type="submit" disabled={loading}>
