@@ -101,6 +101,17 @@ const ListRow = styled.div`
   align-items: center;
 `;
 
+const ResultsCheckboxRow = styled.div`
+  background: rgba(22, 22, 42, 0.5);
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  padding: 1.1rem 1.2rem 1.1rem 1.2rem;
+  margin-bottom: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+`;
+
 const CreateElection = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -116,6 +127,7 @@ const CreateElection = () => {
   const [loading, setLoading] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [previewJson, setPreviewJson] = useState("");
+  const [isResultsVisible, setIsResultsVisible] = useState(true);
   const navigate = useNavigate();
 
   const handleCandidateChange = (idx, field, value) => {
@@ -224,7 +236,7 @@ const CreateElection = () => {
         description,
         startTime: start,
         endTime: end,
-        isResultsVisible: true,
+        isResultsVisible,
         allowedDomains,
         allowedEmails,
         candidates: candidates.map((c) => ({
@@ -377,6 +389,30 @@ const CreateElection = () => {
           </Button>
           {error && <ErrorMsg>{error}</ErrorMsg>}
           {success && <SuccessMsg>{success}</SuccessMsg>}
+          <ResultsCheckboxRow>
+            <input
+              type="checkbox"
+              id="isResultsVisible"
+              checked={isResultsVisible}
+              onChange={(e) => setIsResultsVisible(e.target.checked)}
+              style={{
+                width: 20,
+                height: 20,
+                accentColor: "var(--color-purple)",
+              }}
+            />
+            <label
+              htmlFor="isResultsVisible"
+              style={{
+                color: "var(--color-text)",
+                fontSize: "1.05rem",
+                cursor: "pointer",
+                margin: 0,
+              }}
+            >
+              Allow results to be visible before the election ends
+            </label>
+          </ResultsCheckboxRow>
           <Button type="submit" disabled={loading}>
             {loading ? "Creating..." : "Create Election"}
           </Button>
