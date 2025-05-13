@@ -1,35 +1,39 @@
-# Step-by-Step Guide to Complete the Secure Distributed Voting System Frontend (as of 2025-05-12)
+# Step-by-Step Guide to Complete the Secure Distributed Voting System Frontend (as of 2025-05-13)
 
 | Step                                                      | Status      | Notes                                                                                  |
 |-----------------------------------------------------------|-------------|----------------------------------------------------------------------------------------|
-| 1. Project Scaffolding (Vite, HeroUI, Routing, Structure) | ✅ Done     | Modular folders, HeroUI, React Router, color theme, font, dynamic bg                   |
-| 2. Login Page (UI, API, Logging, Theme)                   | ⚠️ Partial  | Modern UI, HeroUI, color theme, dynamic bg, API, error handling, logging               |
-| 3. Register Page (UI, API, Logging, Theme)                | ❌ Not done | Same quality as login, HeroUI, color theme, API, error handling, logging               |
-| 4. OTP Verification Page                                 | ❌ Not done | UI, API, error handling, logging                                                       |
-| 5. Elections List Page                                   | ❌ Not done | List eligible elections, HeroUI Cards/Table, API, loading/error states                 |
-| 6. Voting Page                                           | ❌ Not done | Show election, candidates, voting UI, API, error handling, logging                     |
-| 7. Results Page                                          | ❌ Not done | Show results, consensus status, HeroUI, API, error handling, logging                   |
-| 8. Password Change Flow                                  | ❌ Not done | UI, API, OTP, error handling, logging                                                  |
-| 9. Dev/Admin Test Console (optional)                     | ❌ Not done | Inline test hooks, debug buttons, logs                                                 |
-| 10. End-to-End Testing                                   | ❌ Not done | Manual and inline test hooks for all flows                                             |
-| 11. UX Polish & Mobile Responsiveness                    | ❌ Not done | Final polish, mobile, accessibility, unique touches                                    |
+| 1. Project Scaffolding (Vite, React, Routing, Structure) | ✅ Done     | Modular folders, React Router, color theme, font, dynamic bg                            |
+| 2. Login Page (UI, API, Logging, Theme)                   | ✅ Done     | Modern UI, styled components, color theme, dynamic bg, API, error handling, logging     |
+| 3. Register Page (UI, API, Logging, Theme)                | ⚠️ Partial | UI and routing present, needs full API integration, error handling, logging             |
+| 4. OTP Verification Page                                 | ⚠️ Partial | UI and routing present, needs full API integration, error handling, logging             |
+| 5. Elections List Page                                   | ⚠️ Partial | UI and routing present, needs API, loading/error states, search, create-election button  |
+| 6. Election Creation Page                                | ⚠️ Partial | UI and routing present, needs full validation, API, error handling                      |
+| 7. Voting Page                                           | ⚠️ Partial | UI and routing present, needs API, error handling, logging                              |
+| 8. Results Page                                          | ⚠️ Partial | UI and routing present, needs API, error handling, logging                              |
+| 9. Password Change Flow                                  | ❌ Not done | UI, API, OTP, error handling, logging                                                  |
+| 10. Dev/Admin Test Console (optional)                     | ⚠️ Partial | UI/routing present, needs more test hooks, debug buttons, logs                          |
+| 11. End-to-End Testing                                   | ❌ Not done | Manual and inline test hooks for all flows                                             |
+| 12. UX Polish & Mobile Responsiveness                    | ❌ Not done | Final polish, mobile, accessibility, unique touches                                    |
 
 ---
 
 **Legend:**
-✅ = Complete  ⚠️ = Partially/Assumed  ❌ = Not done  ❌ Skipped = Not required for demo
+✅ = Complete  ⚠️ = Partially/Assumed  ❌ = Not done  ❌ Skipped = Not required for demo
 
 **Change Log:**
-- [2025-05-12] Project scaffolding, color theme, font, and dynamic background set up.
-- [2025-05-12] Login page UI, API, error handling, and logging implemented (pending full test).
+- [2025-05-12] Project scaffolding, color theme, font, and dynamic background set up
+- [2025-05-12] Login page UI, API, error handling, and logging implemented
+- [2025-05-13] App.jsx routes updated to include CreateElection page
+- [2025-05-13] Documentation updated to match actual backend implementation
 
 ---
 
 # Next Steps
-- [ ] Finish and test Login page (API, error, OTP redirect)
 - [ ] Build Register page (UI, API, logging)
 - [ ] Build OTP Verification page
-- [ ] Build Elections, Voting, Results pages
+- [ ] Build Elections list page
+- [ ] Build Election creation page
+- [ ] Build Voting and Results pages
 - [ ] Add password change, dev console, polish
 
 ---
@@ -44,10 +48,11 @@
   - `/register` → Registration page
   - `/verify-otp` → OTP verification page (MANDATORY after login/register)
   - `/elections` → List of eligible elections
+  - `/create-election` → Create a new election
   - `/vote/:electionId` → Voting page for a specific election
   - `/results/:electionId` → Results page for a specific election
   - `/dashboard` (optional, for admin/dev)
-- Example:
+- Current Implementation:
   ```jsx
   <Routes>
     <Route path="/login" element={<Login />} />
@@ -57,90 +62,125 @@
     <Route path="/vote/:electionId" element={<Vote />} />
     <Route path="/results/:electionId" element={<Results />} />
     <Route path="/dashboard" element={<Dashboard />} />
+    <Route path="/create-election" element={<CreateElection />} />
     <Route path="/" element={<Navigate to="/login" replace />} />
   </Routes>
   ```
 
-## 2. Data Handling & API Integration (per page)
+## 2. API Integration & Data Handling (per page)
 
 ### /login
 - Fields: `email`, `password`
 - POST `/api/auth/login` with `{ email, password }`
-- On success, store JWT token (if returned) and redirect to `/verify-otp`
+- On success, store JWT token (in localStorage/sessionStorage) and redirect to `/verify-otp`
 - OTP is mandatory: user must complete `/verify-otp` before accessing any protected route
-- Button to trigger OTP: POST `/api/auth/send-otp` with `{ email }`
+- Button to trigger OTP: POST `/api/auth/request-otp` with `{ email }` (correct endpoint from backend)
 - On logout, clear JWT token from storage
 - Handle and display errors from backend
 
 ### /register
-- Fields: `email`, `password`, `confirmPassword`, `name` (if required by backend)
-- POST `/api/auth/register` with `{ email, password, name }`
+- Fields: `email`, `password`, `confirmPassword` 
+- POST `/api/auth/register` with `{ email, password }`
 - On success, store JWT token (if returned) and redirect to `/verify-otp`
 - OTP is mandatory: user must complete `/verify-otp` before accessing any protected route
-- Button to trigger OTP: POST `/api/auth/send-otp` with `{ email }`
+- Button to trigger OTP: POST `/api/auth/request-otp` with `{ email }`
 - Handle and display errors from backend
 
 ### /verify-otp
 - Fields: `email`, `otp`
 - POST `/api/auth/verify-otp` with `{ email, otp }`
-- On success, mark user as OTP-verified (set flag in frontend state or storage)
-- Only after OTP verification, allow access to `/elections` and other protected routes
+- On success: 
+  - Store returned JWT token from verification response
+  - Mark user as OTP-verified (set flag in frontend state or storage)
+  - Redirect to `/elections`
+- Only after OTP verification, allow access to protected routes
 - Handle and display errors from backend
 
 ### /elections
 - GET `/api/elections` (returns list of elections user is eligible for)
-- Display: election `title`, `description`, `status`, `creatorEmail`, `startTime`, `endTime`, `isResultsVisible`
+- Display: election `title`, `description`, election status (calculated from `startTime`/`endTime`), `creatorEmail`, `startTime`, `endTime`, `isResultsVisible`
 - Show a button to vote or view results for each election
+- Status should be: "Upcoming", "Live", or "Ended" based on current time vs election times
 - On click, navigate to `/vote/:electionId` or `/results/:electionId`
-- Allow searching elections (GET `/api/elections/search?q=...`)
+- Include search functionality with GET `/api/elections/search?q=...`
+- Include button to create new election (navigates to `/create-election`)
+
+### /create-election
+- Fields: `title`, `description`, `startTime`, `endTime`, `isResultsVisible` (checkbox), `allowedDomains` (array), `allowedEmails` (array), `candidates` (array of { name, party, description })
+- POST `/api/elections` with all fields
+- Validate:
+  - At least 2 candidates
+  - Start time is future
+  - End time is after start time (10 min to 7 days range)
+  - Fields meet requirements
+- On success, show confirmation and redirect to `/elections`
+- Handle and display validation errors
 
 ### /vote/:electionId
-- GET `/api/elections/:electionId` to fetch election details and candidates/options
-- Display: `title`, `description`, `candidates` (each with `id`, `name`, `party`, `description`), `startTime`, `endTime`, `isResultsVisible`
+- GET `/api/elections/:electionId` to fetch election details and candidates
+- Display: `title`, `description`, `candidates` (each with `id`, `name`, `party`, `description`), `startTime`, `endTime`
 - Fields: `selectedCandidateId` (radio/select for candidate)
-- POST `/api/vote/cast` with `{ electionId, candidate, signature }` (see backend: candidate = candidate.id, signature = digital signature)
-- Show confirmation and handle errors (e.g., lock failed, already voted, signature rejected)
+- POST `/api/vote/cast` with proper fields:
+  ```javascript
+  {
+    electionId: string,
+    candidate: string, // ID of selected candidate
+    signature: string  // Can be mocked for demo
+  }
+  ```
+- Show confirmation and handle errors:
+  - "Vote being confirmed" during processing
+  - Errors like "Already voted", "Lock failed", "Not eligible", etc.
 - On success, redirect to `/results/:electionId` or show success message
 
 ### /results/:electionId
-- GET `/api/vote/results/:electionId` to fetch results (if allowed)
-- Display: `title`, `candidates` (with `id`, `name`, `party`, `description`), `tally`, `totalVotes`, `endTime`, `consensusNodes`
-- Show results in a table or chart
-- Handle errors (e.g., results not available yet, not eligible, must vote first)
-
-### /elections/create (Election Creation)
-- Fields: `title`, `description`, `startTime`, `endTime`, `isResultsVisible` (checkbox), `allowedDomains` (array), `allowedEmails` (array), `candidates` (array of { name, party, description })
-- POST `/api/elections` with {
-    title: string,
-    description: string,
-    startTime: ISO8601 string,
-    endTime: ISO8601 string,
-    isResultsVisible: boolean,
-    allowedDomains: string[],
-    allowedEmails: string[],
-    candidates: [ { name: string, party: string, description: string } ]
-  }
-- On success, show confirmation and update elections list
-- Validate all required fields before submit (at least 2 candidates, time constraints: 10 min–7 days, creator is always eligible)
-- Display backend error messages
-- Only accessible to authenticated/OTP-verified users
+- GET `/api/vote/results/:electionId` to fetch results
+- Display:
+  - Election `title` and details
+  - Candidate list with vote counts (from `tally` object)
+  - `totalVotes` count
+  - End time
+  - List of consensus nodes (if available)
+- Handle specialized errors:
+  - "Results not visible until election ends"
+  - "You must vote before viewing results"
+  - "Not eligible for this election"
+- Include visualizations (charts/graphs) for vote distribution
 
 ### /dashboard (optional)
 - For admin/dev: show test hooks, API call buttons, and debug info
-- Example: buttons to trigger login, OTP, cast vote, simulate errors, etc.
+- Example buttons:
+  - Trigger login
+  - Send OTP
+  - Cast vote
+  - Simulate signature rejection
+  - Simulate lock failure/retry
+  - View system status (GET `/api/status`)
 
 ## 3. General Notes
 - All API calls use `/api` as the base URL
-- Use axios or fetch with `withCredentials: true` if backend uses cookies
+- Use axios with `withCredentials: true` and Authorization header with JWT token
 - Add detailed console logging for all API calls and state transitions
+- Implement route protection (redirect unauthenticated/unverified users):
+  ```javascript
+  // Example protected route component
+  const ProtectedRoute = ({ children }) => {
+    const isAuthenticated = !!localStorage.getItem('token');
+    const isOtpVerified = localStorage.getItem('otpVerified') === 'true';
+    
+    if (!isAuthenticated) return <Navigate to="/login" replace />;
+    if (!isOtpVerified) return <Navigate to="/verify-otp" replace />;
+    
+    return children;
+  };
+  ```
+- JWT tokens must be handled: store after login/verification, attach to API calls via Authorization header, and clear on logout
+- OTP is enforced after login/register and for sensitive actions like election creation and voting
 - All forms must validate required fields before submitting
 - Display backend error messages to the user
 - Use modular structure: `components/`, `hooks/`, `utils/`, `pages/`
-- Use Cards, Buttons, Inputs, and Tables for UI
-- No placeholders: all fields and API payloads must match backend expectations
-- OTP is enforced after login/register and for sensitive actions (password change, election creation, voting)
-- JWT tokens must be handled: store after login, attach to API calls, and clear on logout
+- Use Cards, Buttons, Inputs, and Tables for UI components
 
 ---
 
-This guide ensures every page and API call matches the backend contract and user flow. Adjust field names/types if your backend expects different keys.
+This guide ensures every page and API call matches the actual backend implementation. Routes and field names are verified against the current backend code.
