@@ -4,6 +4,7 @@ import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import { motion } from "framer-motion";
 import DynamicBackground from "../components/DynamicBackground";
+import { useNavigate } from "react-router-dom";
 
 const Card = styled(motion.div)`
   background: rgba(24, 24, 42, 0.7);
@@ -45,6 +46,7 @@ const Elections = () => {
   const [elections, setElections] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchElections = async () => {
@@ -64,13 +66,75 @@ const Elections = () => {
     fetchElections();
   }, []);
 
-  if (loading) return <LoadingMsg>Loading elections...</LoadingMsg>;
-  if (error) return <ErrorMsg>{error}</ErrorMsg>;
+  if (loading) return (
+    <>
+      <LoadingMsg>Loading elections...</LoadingMsg>
+      <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
+        <button
+          style={{
+            background: "#2d8cff",
+            color: "#fff",
+            border: "none",
+            borderRadius: "0.5rem",
+            padding: "0.7rem 1.5rem",
+            fontWeight: 500,
+            fontSize: "1.1rem",
+            cursor: "pointer",
+            marginBottom: "1rem"
+          }}
+          onClick={() => navigate("/create-election")}
+        >
+          + Create Election
+        </button>
+      </div>
+    </>
+  );
+  if (error) return (
+    <>
+      <ErrorMsg>{error}</ErrorMsg>
+      <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
+        <button
+          style={{
+            background: "#2d8cff",
+            color: "#fff",
+            border: "none",
+            borderRadius: "0.5rem",
+            padding: "0.7rem 1.5rem",
+            fontWeight: 500,
+            fontSize: "1.1rem",
+            cursor: "pointer",
+            marginBottom: "1rem"
+          }}
+          onClick={() => navigate("/create-election")}
+        >
+          + Create Election
+        </button>
+      </div>
+    </>
+  );
 
   return (
     <>
       <DynamicBackground />
       <Title>Eligible Elections</Title>
+      <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
+        <button
+          style={{
+            background: "#2d8cff",
+            color: "#fff",
+            border: "none",
+            borderRadius: "0.5rem",
+            padding: "0.7rem 1.5rem",
+            fontWeight: 500,
+            fontSize: "1.1rem",
+            cursor: "pointer",
+            marginBottom: "1rem"
+          }}
+          onClick={() => navigate("/create-election")}
+        >
+          + Create Election
+        </button>
+      </div>
       <Container>
         {elections.map((election) => (
           <Card key={election.id}>

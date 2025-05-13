@@ -16,6 +16,7 @@ import Elections from "./pages/Elections";
 import Vote from "./pages/Vote";
 import Results from "./pages/Results";
 import Dashboard from "./pages/Dashboard";
+import CreateElection from "./pages/CreateElection";
 import DynamicBackground from "./components/DynamicBackground";
 
 function App() {
@@ -42,6 +43,7 @@ function App() {
           <Route path="/vote/:electionId" element={<Vote />} />
           <Route path="/results/:electionId" element={<Results />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/create-election" element={<CreateElection />} />
           <Route path="/" element={<Navigate to="/login" replace />} />
         </Routes>
       </Router>

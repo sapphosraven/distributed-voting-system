@@ -1,0 +1,257 @@
+import React, { useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import styled from "@emotion/styled";
+import { motion } from "framer-motion";
+import DynamicBackground from "../components/DynamicBackground";
+
+const Card = styled(motion.div)`
+  background: rgba(24, 24, 42, 0.7);
+  border: 1px solid rgba(66, 66, 122, 0.2);
+  border-radius: 1rem;
+  padding: 2.5rem;
+  max-width: 520px;
+  width: 95%;
+  margin: 6vh auto 0 auto;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(10px);
+`;
+
+const Title = styled.h2`
+  color: var(--color-purple);
+  margin-bottom: 1.8rem;
+  text-align: center;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+`;
+
+const Input = styled.input`
+  width: 100%;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1.2rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--color-border);
+  background: rgba(22, 22, 42, 0.5);
+  color: var(--color-text);
+  font-size: 1rem;
+`;
+
+const Textarea = styled.textarea`
+  width: 100%;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1.2rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--color-border);
+  background: rgba(22, 22, 42, 0.5);
+  color: var(--color-text);
+  font-size: 1rem;
+`;
+
+const Select = styled.select`
+  width: 100%;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1.2rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--color-border);
+  background: rgba(22, 22, 42, 0.5);
+  color: var(--color-text);
+  font-size: 1rem;
+`;
+
+const Button = styled.button`
+  width: 100%;
+  margin-bottom: 1rem;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  transition: all 0.2s;
+  background: var(--color-purple-muted);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+  }
+`;
+
+const ErrorMsg = styled.div`
+  color: #ff4d4f;
+  margin-bottom: 1rem;
+  text-align: center;
+  font-size: 0.9rem;
+`;
+
+const SuccessMsg = styled.div`
+  color: #4caf50;
+  margin-bottom: 1rem;
+  text-align: center;
+  font-size: 0.9rem;
+`;
+
+const CandidateRow = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.7rem;
+  align-items: center;
+`;
+
+const RemoveBtn = styled.button`
+  background: #ff4d4f;
+  color: #fff;
+  border: none;
+  border-radius: 0.3rem;
+  padding: 0.3rem 0.7rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+`;
+
+const CreateElection = () => {
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [type, setType] = useState("public");
+  const [start, setStart] = useState("");
+  const [end, setEnd] = useState("");
+  const [candidates, setCandidates] = useState([
+    { name: "", party: "", description: "" },
+    { name: "", party: "", description: "" },
+  ]);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  const handleCandidateChange = (idx, field, value) => {
+    setCandidates((prev) => {
+      const arr = [...prev];
+      arr[idx][field] = value;
+      return arr;
+    });
+  };
+
+  const addCandidate = () => {
+    setCandidates((prev) => [...prev, { name: "", party: "", description: "" }]);
+  };
+
+  const removeCandidate = (idx) => {
+    setCandidates((prev) => prev.length > 2 ? prev.filter((_, i) => i !== idx) : prev);
+  };
+
+  const validate = () => {
+    if (!title.trim()) return "Title is required";
+    if (!start || !end) return "Start and end time required";
+    if (new Date(start) >= new Date(end)) return "Start must be before end";
+    if (new Date(start) < new Date()) return "Start time must be in the future";
+    if (candidates.length < 2) return "At least 2 candidates required";
+    if (candidates.some((c) => !c.name.trim())) return "All candidates need a name";
+    return null;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+    const err = validate();
+    if (err) {
+      setError(err);
+      return;
+    }
+    setLoading(true);
+    try {
+      const payload = {
+        title,
+        description,
+        startTime: start,
+        endTime: end,
+        isResultsVisible: true,
+        allowedDomains: type === "public" ? [] : ["example.com"],
+        allowedEmails: [],
+        candidates: candidates.map((c) => ({ name: c.name, party: c.party, description: c.description })),
+      };
+      await axios.post("/api/elections", payload, { withCredentials: true });
+      setSuccess("Election created!");
+      setTimeout(() => navigate("/elections"), 1200);
+    } catch (err) {
+      setError(err?.response?.data?.error || "Failed to create election");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <>
+      <DynamicBackground />
+      <Card initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease: "easeOut" }}>
+        <Title>Create Election</Title>
+        <form onSubmit={handleSubmit}>
+          <label>
+            Election Title <span style={{ color: 'red' }}>*</span>
+          </label>
+          <Input type="text" placeholder="Election Title" value={title} onChange={(e) => setTitle(e.target.value)} required />
+          <label>
+            Description
+          </label>
+          <Textarea placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
+          <label>
+            Election Type <span style={{ color: 'red' }}>*</span>
+          </label>
+          <Select value={type} onChange={(e) => setType(e.target.value)}>
+            <option value="public">Public</option>
+            <option value="private">Private</option>
+          </Select>
+          <label>
+            Start Date & Time <span style={{ color: 'red' }}>*</span>
+          </label>
+          <Input type="datetime-local" value={start} onChange={(e) => setStart(e.target.value)} required />
+          <label>
+            End Date & Time <span style={{ color: 'red' }}>*</span>
+          </label>
+          <Input type="datetime-local" value={end} onChange={(e) => setEnd(e.target.value)} required />
+          <div style={{ margin: "1.2rem 0 0.5rem 0", fontWeight: 500 }}>
+            Candidates <span style={{ color: 'red' }}>*</span> (at least 2, each must have a name)
+          </div>
+          {candidates.map((c, idx) => (
+            <CandidateRow key={idx}>
+              <Input
+                type="text"
+                placeholder="Name"
+                value={c.name}
+                onChange={(e) => handleCandidateChange(idx, "name", e.target.value)}
+                required
+                style={{ flex: 2 }}
+              />
+              <Input
+                type="text"
+                placeholder="Party (optional)"
+                value={c.party}
+                onChange={(e) => handleCandidateChange(idx, "party", e.target.value)}
+                style={{ flex: 1 }}
+              />
+              <Input
+                type="text"
+                placeholder="Description (optional)"
+                value={c.description}
+                onChange={(e) => handleCandidateChange(idx, "description", e.target.value)}
+                style={{ flex: 2 }}
+              />
+              {candidates.length > 2 && (
+                <RemoveBtn type="button" onClick={() => removeCandidate(idx)} title="Remove candidate">×</RemoveBtn>
+              )}
+            </CandidateRow>
+          ))}
+          <Button type="button" onClick={addCandidate} style={{ background: "#2d8cff", color: "#fff", marginBottom: 10 }}>
+            + Add Candidate
+          </Button>
+          {error && <ErrorMsg>{error}</ErrorMsg>}
+          {success && <SuccessMsg>{success}</SuccessMsg>}
+          <Button type="submit" disabled={loading}>
+            {loading ? "Creating..." : "Create Election"}
+          </Button>
+          <Button type="button" onClick={() => navigate("/elections")}
+          style={{ background: "#444", color: "#fff", marginBottom: 18, width: "auto", padding: "0.5rem 1.2rem" }}>
+          ← Back
+        </Button>
+        </form>
+      </Card>
+    </>
+  );
+};
+
+export default CreateElection;
