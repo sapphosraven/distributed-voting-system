@@ -20,6 +20,7 @@ import CreateElection from "./pages/CreateElection";
 import DynamicBackground from "./components/DynamicBackground";
 import ResetPasswordRequest from "./pages/ResetPasswordRequest";
 import ResetPassword from "./pages/ResetPassword";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
@@ -41,11 +42,11 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/verify-otp" element={<VerifyOtp />} />
-          <Route path="/elections" element={<Elections />} />
-          <Route path="/vote/:electionId" element={<Vote />} />
-          <Route path="/results/:electionId" element={<Results />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/create-election" element={<CreateElection />} />
+          <Route path="/elections" element={<ProtectedRoute><Elections /></ProtectedRoute>} />
+          <Route path="/vote/:electionId" element={<ProtectedRoute><Vote /></ProtectedRoute>} />
+          <Route path="/results/:electionId" element={<ProtectedRoute><Results /></ProtectedRoute>} />
+          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/create-election" element={<ProtectedRoute><CreateElection /></ProtectedRoute>} />
           <Route path="/reset-password-request" element={<ResetPasswordRequest />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/" element={<Navigate to="/login" replace />} />

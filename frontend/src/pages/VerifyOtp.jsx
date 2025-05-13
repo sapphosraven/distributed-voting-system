@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import { motion } from "framer-motion";
 import DynamicBackground from "../components/DynamicBackground";
+import api from "../utils/api";
 
 const Card = styled(motion.div)`
   background: rgba(24, 24, 42, 0.7);
@@ -89,12 +89,18 @@ const VerifyOtp = () => {
     console.log("[VerifyOtp] Attempting OTP verification", { email, otp });
 
     try {
-      const res = await axios.post(
-        "/api/auth/verify-otp",
+      const res = await api.post(
+        "/auth/verify-otp",
         { email, otp },
         { withCredentials: true }
       );
       console.log("[VerifyOtp] OTP verification response:", res);
+      // Store JWT and expiry in localStorage
+      if (res.data && res.data.token) {
+        localStorage.setItem("token", res.data.token);
+        localStorage.setItem("jwt_expiry", Date.now() + 30 * 60 * 1000); // 30 min expiry
+        localStorage.setItem("otpVerified", "true");
+      }
       setSuccess("OTP verified successfully! Redirecting to elections...");
       setTimeout(() => navigate("/elections"), 1000);
     } catch (err) {

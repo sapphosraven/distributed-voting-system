@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import { motion } from "framer-motion";
 import DynamicBackground from "../components/DynamicBackground";
 import { useNavigate } from "react-router-dom";
+import api from "../utils/api";
 
 const Card = styled(motion.div)`
   background: rgba(24, 24, 42, 0.7);
@@ -52,7 +52,7 @@ const Elections = () => {
     const fetchElections = async () => {
       console.log("[Elections] Fetching elections...");
       try {
-        const res = await axios.get("/api/elections", { withCredentials: true });
+        const res = await api.get("/elections", { withCredentials: true });
         console.log("[Elections] Fetched elections:", res.data);
         setElections(res.data);
       } catch (err) {

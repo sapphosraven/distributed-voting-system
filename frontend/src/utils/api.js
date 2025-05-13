@@ -26,8 +26,31 @@ export async function apiFetch(path, options = {}) {
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: '/api',  // Remove the environment variable check
+  baseURL: '/api',
   withCredentials: true,
 });
+
+// Attach JWT to all requests
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  const expiry = localStorage.getItem('jwt_expiry');
+  if (token && expiry && Date.now() < Number(expiry)) {
+    config.headers = config.headers || {};
+    config.headers['Authorization'] = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// Utility: check token expiry and logout
+export function isTokenExpired() {
+  const expiry = localStorage.getItem('jwt_expiry');
+  return !expiry || Date.now() > Number(expiry);
+}
+
+export function logout() {
+  localStorage.removeItem('token');
+  localStorage.removeItem('jwt_expiry');
+  localStorage.removeItem('otpVerified');
+}
 
 export default api;

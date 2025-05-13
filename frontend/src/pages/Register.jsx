@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import { motion } from "framer-motion";
 import DynamicBackground from "../components/DynamicBackground";
+import api, { logout } from "../utils/api";
 
 const Card = styled(motion.div)`
   background: rgba(24, 24, 42, 0.7);
@@ -111,13 +111,18 @@ const Register = () => {
     }
 
     try {
-      const res = await axios.post("/api/auth/register", { email, password });
+      const res = await api.post("/auth/register", { email, password });
       console.log("[Register] Registration response:", res);
-      setSuccess("Registration successful! Redirecting to login...");
-      setTimeout(() => navigate("/login"), 1000); // Redirect to login after registration
+      // Store JWT and expiry if returned
+      if (res.data && res.data.token) {
+        localStorage.setItem("token", res.data.token);
+        localStorage.setItem("jwt_expiry", Date.now() + 30 * 60 * 1000);
+        localStorage.setItem("otpVerified", "true");
+      }
+      setSuccess("Registration successful! Redirecting to OTP verification...");
+      setTimeout(() => navigate("/verify-otp"), 1000); // Redirect to OTP after registration
     } catch (err) {
-      console.error("[Register] Registration error:", err);
-      setError(err?.response?.data?.error || err?.response?.data?.message || "Registration failed");
+      setError(err?.response?.data?.message || "Registration failed");
     } finally {
       setLoading(false);
     }
@@ -190,6 +195,16 @@ const Register = () => {
             Login
           </a>
         </div>
+        <Button
+          type="button"
+          style={{ marginTop: "1rem", background: "#ff4d4f" }}
+          onClick={() => {
+            logout();
+            navigate("/login");
+          }}
+        >
+          Logout
+        </Button>
       </Card>
     </>
   );

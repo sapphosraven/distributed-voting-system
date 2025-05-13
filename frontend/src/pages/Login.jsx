@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import { motion } from "framer-motion";
+import api, { logout } from "../utils/api";
 
 const Card = styled(motion.div)`
   background: rgba(24, 24, 42, 0.7);
@@ -92,8 +92,8 @@ export default function Login() {
     setLoading(true);
     console.log("[Login] Attempting login", { email });
     try {
-      const res = await axios.post(
-        "/api/auth/login",
+      const res = await api.post(
+        "/auth/login",
         { email, password },
         { withCredentials: true }
       );
@@ -114,8 +114,8 @@ export default function Login() {
     setLoading(true);
     console.log("[Login] Triggering OTP send", { email });
     try {
-      const res = await axios.post(
-        "/api/auth/send-otp",
+      const res = await api.post(
+        "/auth/send-otp",
         { email },
         { withCredentials: true }
       );
@@ -166,6 +166,16 @@ export default function Login() {
       >
         {loading ? "Sending OTP..." : "Send OTP to Email"}
       </OtpButton>
+      <Button
+        type="button"
+        style={{ marginTop: "1rem", background: "#ff4d4f" }}
+        onClick={() => {
+          logout();
+          navigate("/login");
+        }}
+      >
+        Logout
+      </Button>
       <div style={{ textAlign: "center", marginBottom: "1rem" }}>
         <a
           href="/reset-password-request"
@@ -178,7 +188,7 @@ export default function Login() {
           Forgot Password?
         </a>
       </div>
-      
+
       <div
         css={css`
           text-align: center;

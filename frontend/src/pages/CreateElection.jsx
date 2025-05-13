@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
+import api from "../utils/api";
 import { useNavigate } from "react-router-dom";
 import styled from "@emotion/styled";
 import { motion } from "framer-motion";
@@ -233,7 +233,7 @@ const CreateElection = () => {
           description: c.description,
         })),
       };
-      await axios.post("/api/elections", payload, { withCredentials: true });
+      await api.post("/elections", payload, { withCredentials: true });
       setSuccess("Election created!");
       setTimeout(() => navigate("/elections"), 1200);
     } catch (err) {
