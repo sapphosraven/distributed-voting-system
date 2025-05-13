@@ -99,7 +99,7 @@ export default function Login() {
       );
       console.log("[Login] Login response:", res);
       setSuccess("Login successful! OTP sent.");
-      setTimeout(() => navigate("/verify-otp"), 1000);
+      setTimeout(() => navigate("/verify-otp"), 1000); // Redirect to OTP after login
     } catch (err) {
       console.error("[Login] Login error:", err);
       setError(err?.response?.data?.message || "Login failed");
