@@ -111,7 +111,7 @@ exports.verifyOtp = async (req, res) => {
     const valid = await verifyOtp(email, otp);
     if (!valid) return res.status(401).json({ error: "Invalid OTP" });
     // Mark login as verified in Redis
-    await redis.set(`login:${email}`, "verified", { EX: 600 });
+    await redis.set(`login:${email}`, "verified", { EX: 3600 });
     // Issue JWT
     const user = await User.findOne({ where: { email } });
     if (!user) return res.status(404).json({ error: "User not found" });

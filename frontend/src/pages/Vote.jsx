@@ -69,7 +69,7 @@ const ErrorMsg = styled.div`
 `;
 
 const Vote = () => {
-  const { id } = useParams();
+  const { electionId } = useParams();
   const navigate = useNavigate();
   const [candidates, setCandidates] = useState([]);
   const [election, setElection] = useState(null);
@@ -77,15 +77,24 @@ const Vote = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [voteError, setVoteError] = useState("");
 
   useEffect(() => {
     async function fetchElection() {
       setLoading(true);
       setError("");
+      setVoteError(""); // Clear vote error on new election load
       try {
-        const res = await api.get(`/elections/${id}`);
-        setElection(res.data);
-        setCandidates(res.data.candidates || []);
+        // Fetch all elections, then find the one with the matching id
+        const res = await api.get("/elections");
+        const allElections = res.data.elections || res.data || [];
+        const found = allElections.find(
+          (e) => String(e.id) === String(electionId)
+        );
+        if (!found) throw new Error("Election not found");
+        setElection(found);
+        setCandidates(found.candidates || []);
       } catch (err) {
         setError("Failed to load election info");
       } finally {
@@ -93,27 +102,39 @@ const Vote = () => {
       }
     }
     fetchElection();
-  }, [id]);
+  }, [electionId]);
 
   const handleVote = (e) => {
     e.preventDefault();
+    setVoteError("");
     if (selected == null) {
-      setError("Please select a candidate.");
+      setVoteError("Please select a candidate.");
       return;
     }
     setShowConfirm(true);
   };
 
-  const handleConfirm = () => {
-    // Dummy: print the vote JSON as the API expects
-    const votePayload = {
-      electionId: id,
-      candidate: candidates[selected]?.id,
-      signature: "dummy-signature",
-    };
-    console.log("[DEBUG] Vote payload:", votePayload);
-    alert("Vote JSON printed to console. Redirecting to elections page.");
-    navigate("/elections");
+  const handleConfirm = async () => {
+    setSubmitting(true);
+    setVoteError("");
+    try {
+      const votePayload = {
+        electionId: electionId,
+        candidate: candidates[selected]?.id,
+        signature: "dummy-signature", // Replace with real signature if available
+      };
+      await api.post("/vote/cast", votePayload, { withCredentials: true });
+      navigate(`/results/${electionId}`);
+    } catch (err) {
+      setVoteError(
+        err?.response?.data?.error ||
+          err?.message ||
+          "Failed to cast vote. Please try again."
+      );
+      // Keep the confirmation dialog open for retry
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (loading)
@@ -122,6 +143,7 @@ const Vote = () => {
         Loading...
       </div>
     );
+  // Only show fatal error (e.g. failed to load election info) as page-level error
   if (error) return <ErrorMsg>{error}</ErrorMsg>;
 
   return (
@@ -148,6 +170,8 @@ const Vote = () => {
               </div>
             </CandidateBtn>
           ))}
+          {/* Only show voteError here, above the submit button */}
+          {voteError && <ErrorMsg>{voteError}</ErrorMsg>}
           <Button
             type="submit"
             style={{ background: "var(--color-purple)", color: "#fff" }}
@@ -174,24 +198,37 @@ const Vote = () => {
               boxShadow: "0 2px 10px #0006",
             }}
           >
-            <div style={{ marginBottom: 16 }}>
-              Are you sure you want to vote for{" "}
-              <b>{candidates[selected]?.name}</b>?
-            </div>
-            <Button
-              type="button"
-              style={{ background: "#ff8800", color: "#fff", marginBottom: 8 }}
-              onClick={handleConfirm}
-            >
-              Confirm Vote
-            </Button>
-            <Button
-              type="button"
-              style={{ background: "#444", color: "#fff" }}
-              onClick={() => setShowConfirm(false)}
-            >
-              Cancel
-            </Button>
+            {submitting ? (
+              <div style={{ margin: 16 }}>Vote being confirmed...</div>
+            ) : (
+              <>
+                <div style={{ marginBottom: 16 }}>
+                  Are you sure you want to vote for{" "}
+                  <b>{candidates[selected]?.name}</b>?
+                </div>
+                <Button
+                  type="button"
+                  style={{
+                    background: "#ff8800",
+                    color: "#fff",
+                    marginBottom: 8,
+                  }}
+                  onClick={handleConfirm}
+                >
+                  Confirm Vote
+                </Button>
+                <Button
+                  type="button"
+                  style={{ background: "#444", color: "#fff" }}
+                  onClick={() => {
+                    setShowConfirm(false);
+                    setVoteError("");
+                  }}
+                >
+                  Cancel
+                </Button>
+              </>
+            )}
           </div>
         )}
       </Card>

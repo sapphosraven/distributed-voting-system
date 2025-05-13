@@ -35,6 +35,9 @@
 - [ ] Build Election creation page
 - [ ] Build Voting and Results pages
 - [ ] Add password change, dev console, polish
+- [ ] Remove 'Send OTP' button from Login page
+- [ ] Correct password reset message
+- [ ] Remove need for email during OTP verification
 
 ---
 
