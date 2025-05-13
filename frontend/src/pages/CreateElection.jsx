@@ -169,9 +169,21 @@ const CreateElection = () => {
     );
 
   // Helper: is email or domain
-  const isEmail = (val) => /@/.test(val) && /^\S+@\S+\.\S+$/.test(val);
-  const isDomain = (val) =>
-    !isEmail(val) && /^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(val);
+  const isEmail = (val) => {
+    const v = val.trim();
+    // Simple, robust email regex
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+  };
+  const isDomain = (val) => {
+    const v = val.trim();
+    // Accepts domains like example.com, sub.domain.co.uk, but not emails
+    // Only allow domain if it does NOT contain '@' and does not start/end with '.' or '-'
+    if (isEmail(v)) return false;
+    if (v.includes("@")) return false;
+    if (/^[.-]/.test(v) || /[.-]$/.test(v)) return false;
+    // Only allow valid domain parts
+    return /^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z]{2,})+$/.test(v);
+  };
 
   const validate = () => {
     if (!title.trim()) return "Title is required";
@@ -179,7 +191,6 @@ const CreateElection = () => {
     if (new Date(start) >= new Date(end)) return "Start must be before end";
     if (new Date(start) < new Date()) return "Start time must be in the future";
     if (candidates.length < 2) return "At least 2 candidates required";
-    // Check all candidate names are filled and no empty candidate rows
     if (candidates.some((c) => !c.name.trim()))
       return "All candidates need a name (no empty candidate fields allowed)";
     // Check all allowedList entries are filled and valid, and no empty rows
@@ -188,7 +199,8 @@ const CreateElection = () => {
       return "At least one allowed domain or email is required";
     if (filtered.some((v) => !v))
       return "No empty allowed domain/email fields allowed";
-    if (filtered.some((v) => !isEmail(v) && !isDomain(v)))
+    // Fix: Only check validity for non-empty entries
+    if (filtered.filter(Boolean).some((v) => !isEmail(v) && !isDomain(v)))
       return "Each entry must be a valid email or domain";
     return null;
   };
