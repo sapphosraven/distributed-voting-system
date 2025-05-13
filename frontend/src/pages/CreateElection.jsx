@@ -26,7 +26,7 @@ const Title = styled.h2`
 `;
 
 const Input = styled.input`
-  width: 100%;
+  width: 96%;
   padding: 0.75rem 1rem;
   margin-bottom: 1.2rem;
   border-radius: 0.5rem;
@@ -34,10 +34,11 @@ const Input = styled.input`
   background: rgba(22, 22, 42, 0.5);
   color: var(--color-text);
   font-size: 1rem;
+  font-family: inherit;
 `;
 
 const Textarea = styled.textarea`
-  width: 100%;
+  width: 96%;
   padding: 0.75rem 1rem;
   margin-bottom: 1.2rem;
   border-radius: 0.5rem;
@@ -45,17 +46,7 @@ const Textarea = styled.textarea`
   background: rgba(22, 22, 42, 0.5);
   color: var(--color-text);
   font-size: 1rem;
-`;
-
-const Select = styled.select`
-  width: 100%;
-  padding: 0.75rem 1rem;
-  margin-bottom: 1.2rem;
-  border-radius: 0.5rem;
-  border: 1px solid var(--color-border);
-  background: rgba(22, 22, 42, 0.5);
-  color: var(--color-text);
-  font-size: 1rem;
+  font-family: inherit;
 `;
 
 const Button = styled.button`
@@ -103,12 +94,19 @@ const RemoveBtn = styled.button`
   font-size: 0.9rem;
 `;
 
+const ListRow = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.7rem;
+  align-items: center;
+`;
+
 const CreateElection = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [type, setType] = useState("public");
   const [start, setStart] = useState("");
   const [end, setEnd] = useState("");
+  const [allowedList, setAllowedList] = useState([""]);
   const [candidates, setCandidates] = useState([
     { name: "", party: "", description: "" },
     { name: "", party: "", description: "" },
@@ -127,12 +125,37 @@ const CreateElection = () => {
   };
 
   const addCandidate = () => {
-    setCandidates((prev) => [...prev, { name: "", party: "", description: "" }]);
+    setCandidates((prev) => [
+      ...prev,
+      { name: "", party: "", description: "" },
+    ]);
   };
 
   const removeCandidate = (idx) => {
-    setCandidates((prev) => prev.length > 2 ? prev.filter((_, i) => i !== idx) : prev);
+    setCandidates((prev) =>
+      prev.length > 2 ? prev.filter((_, i) => i !== idx) : prev
+    );
   };
+
+  const handleAllowedChange = (idx, value) => {
+    setAllowedList((prev) => {
+      const arr = [...prev];
+      arr[idx] = value;
+      return arr;
+    });
+  };
+
+  const addAllowed = () => setAllowedList((prev) => [...prev, ""]);
+
+  const removeAllowed = (idx) =>
+    setAllowedList((prev) =>
+      prev.length > 1 ? prev.filter((_, i) => i !== idx) : prev
+    );
+
+  // Helper: is email or domain
+  const isEmail = (val) => /@/.test(val) && /^\S+@\S+\.\S+$/.test(val);
+  const isDomain = (val) =>
+    !isEmail(val) && /^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(val);
 
   const validate = () => {
     if (!title.trim()) return "Title is required";
@@ -140,7 +163,13 @@ const CreateElection = () => {
     if (new Date(start) >= new Date(end)) return "Start must be before end";
     if (new Date(start) < new Date()) return "Start time must be in the future";
     if (candidates.length < 2) return "At least 2 candidates required";
-    if (candidates.some((c) => !c.name.trim())) return "All candidates need a name";
+    if (candidates.some((c) => !c.name.trim()))
+      return "All candidates need a name";
+    const filtered = allowedList.map((v) => v.trim()).filter(Boolean);
+    if (filtered.length === 0)
+      return "At least one allowed domain or email is required";
+    if (filtered.some((v) => !isEmail(v) && !isDomain(v)))
+      return "Each entry must be a valid email or domain";
     return null;
   };
 
@@ -155,15 +184,22 @@ const CreateElection = () => {
     }
     setLoading(true);
     try {
+      const filtered = allowedList.map((v) => v.trim()).filter(Boolean);
+      const allowedDomains = filtered.filter(isDomain);
+      const allowedEmails = filtered.filter(isEmail);
       const payload = {
         title,
         description,
         startTime: start,
         endTime: end,
         isResultsVisible: true,
-        allowedDomains: type === "public" ? [] : ["example.com"],
-        allowedEmails: [],
-        candidates: candidates.map((c) => ({ name: c.name, party: c.party, description: c.description })),
+        allowedDomains,
+        allowedEmails,
+        candidates: candidates.map((c) => ({
+          name: c.name,
+          party: c.party,
+          description: c.description,
+        })),
       };
       await axios.post("/api/elections", payload, { withCredentials: true });
       setSuccess("Election created!");
@@ -178,34 +214,86 @@ const CreateElection = () => {
   return (
     <>
       <DynamicBackground />
-      <Card initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease: "easeOut" }}>
+      <Card
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7, ease: "easeOut" }}
+      >
         <Title>Create Election</Title>
         <form onSubmit={handleSubmit}>
           <label>
-            Election Title <span style={{ color: 'red' }}>*</span>
+            Election Title <span style={{ color: "red" }}>*</span>
           </label>
-          <Input type="text" placeholder="Election Title" value={title} onChange={(e) => setTitle(e.target.value)} required />
+          <Input
+            type="text"
+            placeholder="Election Title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            required
+          />
+          <label>Election Description</label>
+          <Textarea
+            placeholder="Election Description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={3}
+          />
           <label>
-            Description
+            Start Date & Time <span style={{ color: "red" }}>*</span>
           </label>
-          <Textarea placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
+          <Input
+            type="datetime-local"
+            value={start}
+            onChange={(e) => setStart(e.target.value)}
+            required
+          />
           <label>
-            Election Type <span style={{ color: 'red' }}>*</span>
+            End Date & Time <span style={{ color: "red" }}>*</span>
           </label>
-          <Select value={type} onChange={(e) => setType(e.target.value)}>
-            <option value="public">Public</option>
-            <option value="private">Private</option>
-          </Select>
-          <label>
-            Start Date & Time <span style={{ color: 'red' }}>*</span>
-          </label>
-          <Input type="datetime-local" value={start} onChange={(e) => setStart(e.target.value)} required />
-          <label>
-            End Date & Time <span style={{ color: 'red' }}>*</span>
-          </label>
-          <Input type="datetime-local" value={end} onChange={(e) => setEnd(e.target.value)} required />
+          <Input
+            type="datetime-local"
+            value={end}
+            onChange={(e) => setEnd(e.target.value)}
+            required
+          />
+          <label>Allowed Domains or Emails (at least one required)</label>
+          {allowedList.map((entry, idx) => (
+            <ListRow key={"allowed-" + idx}>
+              <Input
+                type="text"
+                placeholder="e.g. example.com or user@example.com"
+                value={entry}
+                onChange={(e) => handleAllowedChange(idx, e.target.value)}
+                required
+                style={{ flex: 2 }}
+              />
+              {allowedList.length > 1 && (
+                <RemoveBtn
+                  type="button"
+                  onClick={() => removeAllowed(idx)}
+                  title="Remove entry"
+                >
+                  ×
+                </RemoveBtn>
+              )}
+            </ListRow>
+          ))}
+          <Button
+            type="button"
+            onClick={addAllowed}
+            style={{
+              background: "#2d8cff",
+              color: "#fff",
+              marginBottom: 10,
+              width: "auto",
+              padding: "0.5rem 1.2rem",
+            }}
+          >
+            + Add Domain or Email
+          </Button>
           <div style={{ margin: "1.2rem 0 0.5rem 0", fontWeight: 500 }}>
-            Candidates <span style={{ color: 'red' }}>*</span> (at least 2, each must have a name)
+            Candidates <span style={{ color: "red" }}>*</span> (at least 2, each
+            must have a name)
           </div>
           {candidates.map((c, idx) => (
             <CandidateRow key={idx}>
@@ -213,7 +301,9 @@ const CreateElection = () => {
                 type="text"
                 placeholder="Name"
                 value={c.name}
-                onChange={(e) => handleCandidateChange(idx, "name", e.target.value)}
+                onChange={(e) =>
+                  handleCandidateChange(idx, "name", e.target.value)
+                }
                 required
                 style={{ flex: 2 }}
               />
@@ -221,22 +311,36 @@ const CreateElection = () => {
                 type="text"
                 placeholder="Party (optional)"
                 value={c.party}
-                onChange={(e) => handleCandidateChange(idx, "party", e.target.value)}
+                onChange={(e) =>
+                  handleCandidateChange(idx, "party", e.target.value)
+                }
                 style={{ flex: 1 }}
               />
               <Input
                 type="text"
                 placeholder="Description (optional)"
                 value={c.description}
-                onChange={(e) => handleCandidateChange(idx, "description", e.target.value)}
+                onChange={(e) =>
+                  handleCandidateChange(idx, "description", e.target.value)
+                }
                 style={{ flex: 2 }}
               />
               {candidates.length > 2 && (
-                <RemoveBtn type="button" onClick={() => removeCandidate(idx)} title="Remove candidate">×</RemoveBtn>
+                <RemoveBtn
+                  type="button"
+                  onClick={() => removeCandidate(idx)}
+                  title="Remove candidate"
+                >
+                  ×
+                </RemoveBtn>
               )}
             </CandidateRow>
           ))}
-          <Button type="button" onClick={addCandidate} style={{ background: "#2d8cff", color: "#fff", marginBottom: 10 }}>
+          <Button
+            type="button"
+            onClick={addCandidate}
+            style={{ background: "#2d8cff", color: "#fff", marginBottom: 10 }}
+          >
             + Add Candidate
           </Button>
           {error && <ErrorMsg>{error}</ErrorMsg>}
@@ -244,10 +348,19 @@ const CreateElection = () => {
           <Button type="submit" disabled={loading}>
             {loading ? "Creating..." : "Create Election"}
           </Button>
-          <Button type="button" onClick={() => navigate("/elections")}
-          style={{ background: "#444", color: "#fff", marginBottom: 18, width: "auto", padding: "0.5rem 1.2rem" }}>
-          ← Back
-        </Button>
+          <Button
+            type="button"
+            onClick={() => navigate("/elections")}
+            style={{
+              background: "#444",
+              color: "#fff",
+              marginBottom: 18,
+              width: "auto",
+              padding: "0.5rem 1.2rem",
+            }}
+          >
+            ← Back
+          </Button>
         </form>
       </Card>
     </>
