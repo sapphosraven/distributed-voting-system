@@ -114,6 +114,8 @@ const CreateElection = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewJson, setPreviewJson] = useState("");
   const navigate = useNavigate();
 
   const handleCandidateChange = (idx, field, value) => {
@@ -125,6 +127,11 @@ const CreateElection = () => {
   };
 
   const addCandidate = () => {
+    // Only add if all current candidate names are filled
+    if (candidates.some((c) => !c.name.trim())) {
+      setError("Please fill all candidate names before adding more.");
+      return;
+    }
     setCandidates((prev) => [
       ...prev,
       { name: "", party: "", description: "" },
@@ -145,7 +152,16 @@ const CreateElection = () => {
     });
   };
 
-  const addAllowed = () => setAllowedList((prev) => [...prev, ""]);
+  const addAllowed = () => {
+    // Only add if all current allowedList fields are filled
+    if (allowedList.some((v) => !v.trim())) {
+      setError(
+        "Please fill all allowed domain/email fields before adding more."
+      );
+      return;
+    }
+    setAllowedList((prev) => [...prev, ""]);
+  };
 
   const removeAllowed = (idx) =>
     setAllowedList((prev) =>
@@ -153,9 +169,21 @@ const CreateElection = () => {
     );
 
   // Helper: is email or domain
-  const isEmail = (val) => /@/.test(val) && /^\S+@\S+\.\S+$/.test(val);
-  const isDomain = (val) =>
-    !isEmail(val) && /^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(val);
+  const isEmail = (val) => {
+    const v = val.trim();
+    // Simple, robust email regex
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+  };
+  const isDomain = (val) => {
+    const v = val.trim();
+    // Accepts domains like example.com, sub.domain.co.uk, but not emails
+    // Only allow domain if it does NOT contain '@' and does not start/end with '.' or '-'
+    if (isEmail(v)) return false;
+    if (v.includes("@")) return false;
+    if (/^[.-]/.test(v) || /[.-]$/.test(v)) return false;
+    // Only allow valid domain parts
+    return /^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z]{2,})+$/.test(v);
+  };
 
   const validate = () => {
     if (!title.trim()) return "Title is required";
@@ -164,11 +192,15 @@ const CreateElection = () => {
     if (new Date(start) < new Date()) return "Start time must be in the future";
     if (candidates.length < 2) return "At least 2 candidates required";
     if (candidates.some((c) => !c.name.trim()))
-      return "All candidates need a name";
-    const filtered = allowedList.map((v) => v.trim()).filter(Boolean);
-    if (filtered.length === 0)
+      return "All candidates need a name (no empty candidate fields allowed)";
+    // Check all allowedList entries are filled and valid, and no empty rows
+    const filtered = allowedList.map((v) => v.trim());
+    if (filtered.length === 0 || filtered.every((v) => !v))
       return "At least one allowed domain or email is required";
-    if (filtered.some((v) => !isEmail(v) && !isDomain(v)))
+    if (filtered.some((v) => !v))
+      return "No empty allowed domain/email fields allowed";
+    // Fix: Only check validity for non-empty entries
+    if (filtered.filter(Boolean).some((v) => !isEmail(v) && !isDomain(v)))
       return "Each entry must be a valid email or domain";
     return null;
   };
@@ -209,6 +241,63 @@ const CreateElection = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handlePreviewJson = (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+    const filtered = allowedList.map((v) => v.trim()).filter(Boolean);
+    const allowedDomains = filtered.filter(isDomain);
+    const allowedEmails = filtered.filter(isEmail);
+    const payload = {
+      title,
+      description,
+      startTime: start,
+      endTime: end,
+      isResultsVisible: true,
+      allowedDomains,
+      allowedEmails,
+      candidates: candidates.map((c) => ({
+        name: c.name,
+        party: c.party,
+        description: c.description,
+      })),
+    };
+    // Show in console
+    console.log("[DEBUG] Election JSON payload:", payload);
+    alert("Check the console for the JSON payload.");
+  };
+
+  const handlePreview = (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+    const err = validate();
+    if (err) {
+      setError(err);
+      setShowPreview(false);
+      return;
+    }
+    const filtered = allowedList.map((v) => v.trim()).filter(Boolean);
+    const allowedDomains = filtered.filter(isDomain);
+    const allowedEmails = filtered.filter(isEmail);
+    const payload = {
+      title,
+      description,
+      startTime: start,
+      endTime: end,
+      isResultsVisible: true,
+      allowedDomains,
+      allowedEmails,
+      candidates: candidates.map((c) => ({
+        name: c.name,
+        party: c.party,
+        description: c.description,
+      })),
+    };
+    setPreviewJson(JSON.stringify(payload, null, 2));
+    setShowPreview(true);
   };
 
   return (
@@ -343,6 +432,49 @@ const CreateElection = () => {
           >
             + Add Candidate
           </Button>
+          <Button
+            type="button"
+            onClick={handlePreviewJson}
+            style={{
+              background: "#ffa500",
+              color: "#222",
+              marginBottom: 10,
+              width: "auto",
+              padding: "0.5rem 1.2rem",
+            }}
+          >
+            Preview JSON
+          </Button>
+          <Button
+            type="button"
+            onClick={handlePreview}
+            style={{
+              background: "#888",
+              color: "#fff",
+              marginBottom: 10,
+              width: "auto",
+              padding: "0.5rem 1.2rem",
+              float: "right",
+            }}
+          >
+            Preview JSON
+          </Button>
+          {showPreview && (
+            <pre
+              style={{
+                background: "#18182a",
+                color: "#fff",
+                padding: "1rem",
+                borderRadius: "0.5rem",
+                margin: "1rem 0",
+                fontSize: "0.95rem",
+                overflowX: "auto",
+                maxHeight: 300,
+              }}
+            >
+              {previewJson}
+            </pre>
+          )}
           {error && <ErrorMsg>{error}</ErrorMsg>}
           {success && <SuccessMsg>{success}</SuccessMsg>}
           <Button type="submit" disabled={loading}>
