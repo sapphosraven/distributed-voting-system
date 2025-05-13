@@ -113,8 +113,8 @@ const Register = () => {
     try {
       const res = await axios.post("/api/auth/register", { email, password });
       console.log("[Register] Registration response:", res);
-      setSuccess("Registration successful! Redirecting to OTP verification...");
-      setTimeout(() => navigate("/verify-otp"), 1000);
+      setSuccess("Registration successful! Redirecting to login...");
+      setTimeout(() => navigate("/login"), 1000); // Redirect to login after registration
     } catch (err) {
       console.error("[Register] Registration error:", err);
       setError(err?.response?.data?.error || err?.response?.data?.message || "Registration failed");
