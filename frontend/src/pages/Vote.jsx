@@ -215,8 +215,39 @@ const Vote = () => {
         Loading...
       </div>
     );
-  // Only show fatal error (e.g. failed to load election info) as page-level error
-  if (error) return <ErrorMsg>{error}</ErrorMsg>;
+  // Improved error UX: show user-friendly message and back button if not eligible
+  if (error) {
+    let userMsg = error;
+    if (
+      error === "Not eligible for this election" ||
+      error === "You are not eligible to vote in this election" ||
+      error === "Failed to load election info"
+    ) {
+      userMsg = "You are not eligible to vote in this election.";
+    }
+    return (
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: 220,
+        }}
+      >
+        <ErrorMsg style={{ marginBottom: 24, fontSize: "1.1rem" }}>
+          {userMsg}
+        </ErrorMsg>
+        <Button
+          type="button"
+          onClick={() => navigate("/elections")}
+          style={{ background: "#444", color: "#fff", width: 220 }}
+        >
+          ← Back to Elections
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <>
