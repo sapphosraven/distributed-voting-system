@@ -69,6 +69,48 @@ const ErrorMsg = styled.div`
   font-size: 0.9rem;
 `;
 
+const SuccessMsg = styled.div`
+  color: #4caf50;
+  margin-bottom: 1rem;
+  text-align: center;
+  font-size: 1.05rem;
+  font-weight: 500;
+`;
+
+// Helper to format UTC date string as dd/mm/yyyy hh:mm am/pm
+function formatDateTime(dt) {
+  if (!dt) return "";
+  const date = new Date(dt);
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  let hours = date.getHours();
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  const ampm = hours >= 12 ? "PM" : "AM";
+  hours = hours % 12;
+  if (hours === 0) hours = 12;
+  return `${day}/${month}/${year} ${hours}:${minutes} ${ampm}`;
+}
+
+// Helper to format UTC date string as dd/mm/yyyy hh:mm am/pm in local time
+function formatDateTimeLocalFromUTCString(dtStr) {
+  if (!dtStr) return "";
+  // Parse as UTC, then convert to local
+  // dtStr may be in 'M/D/YYYY, h:mm:ss AM/PM' (US locale)
+  // new Date(dtStr + ' UTC') ensures it's parsed as UTC
+  const date = new Date(dtStr + " UTC");
+  if (isNaN(date.getTime())) return dtStr;
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  let hours = date.getHours();
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  const ampm = hours >= 12 ? "PM" : "AM";
+  hours = hours % 12;
+  if (hours === 0) hours = 12;
+  return `${day}/${month}/${year} ${hours}:${minutes} ${ampm}`;
+}
+
 const Vote = () => {
   const { electionId } = useParams();
   const navigate = useNavigate();
@@ -80,6 +122,7 @@ const Vote = () => {
   const [showConfirm, setShowConfirm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [voteError, setVoteError] = useState("");
+  const [success, setSuccess] = useState("");
 
   useEffect(() => {
     async function fetchElection() {
@@ -127,7 +170,9 @@ const Vote = () => {
         signature: "dummy-signature", // Replace with real signature if available
       };
       await api.post("/vote/cast", votePayload, { withCredentials: true });
-      navigate(`/results/${electionId}`);
+      setSuccess("Vote cast successfully! Redirecting to results...");
+      setTimeout(() => navigate(`/results/${electionId}`), 1500);
+      return;
     } catch (err) {
       if (handleAuthError(err, navigate, setVoteError)) return;
       setVoteError(() => {
@@ -135,6 +180,19 @@ const Vote = () => {
         if (
           err?.response?.data?.error?.startsWith("Voting has not started yet.")
         ) {
+          // Try to extract the date from the error string (format: Voting has not started yet. Voting opens at 5/14/2025, 12:16:00 PM)
+          const match = err.response.data.error.match(
+            /Voting opens at ([^\"]+)/
+          );
+          if (match && match[1]) {
+            // match[1] is in mm/dd/yyyy, hh:mm:ss AM/PM (US locale, UTC)
+            const formatted = formatDateTimeLocalFromUTCString(match[1]);
+            return (
+              "Voting has not started yet. Voting opens at: " +
+              formatted +
+              " (your local time)"
+            );
+          }
           return err.response.data.error;
         }
         return (
@@ -213,6 +271,8 @@ const Vote = () => {
           >
             {submitting ? (
               <div style={{ margin: 16 }}>Vote being confirmed...</div>
+            ) : success ? (
+              <SuccessMsg>{success}</SuccessMsg>
             ) : (
               <>
                 <div style={{ marginBottom: 16 }}>

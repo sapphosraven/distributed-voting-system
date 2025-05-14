@@ -269,10 +269,7 @@ const CreateElection = () => {
   // Convert local datetime to UTC ISO string for backend
   function toUtcIso(dt) {
     if (!dt) return dt;
-    const date = new Date(dt);
-    return new Date(
-      date.getTime() - date.getTimezoneOffset() * 60000
-    ).toISOString();
+    return new Date(dt).toISOString();
   }
 
   // Helper to format date as dd/mm/yyyy and time as hh:mm am/pm
