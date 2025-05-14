@@ -124,12 +124,36 @@ const LoadingMsg = styled.div`
   margin-top: 1rem;
 `;
 
+const OrangeButton = styled.button`
+  width: 100%;
+  margin-top: 12px;
+  background: var(--color-orange);
+  color: #fff;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 1.08rem;
+  font-weight: 500;
+  padding: 0.7rem 1.2rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  &:hover:enabled {
+    filter: brightness(1.1);
+    transform: translateY(-2px);
+  }
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+`;
+
 const Elections = () => {
   const [elections, setElections] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [filter, setFilter] = useState("live");
+  const [voteStatus, setVoteStatus] = useState({}); // { [electionId]: true/false }
+  const [showVoteMsg, setShowVoteMsg] = useState({}); // { [electionId]: true/false }
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -138,11 +162,19 @@ const Elections = () => {
       setError("");
       try {
         const res = await api.get("/elections", { withCredentials: true });
-        setElections(res.data.elections || res.data || []);
+        const list = res.data.elections || res.data || [];
+        setElections(list);
+        // Fetch vote status for each election (mock: random for demo)
+        // TODO: Replace with real API if available
+        const status = {};
+        list.forEach((e) => {
+          // For demo, randomly assign voted/not voted
+          status[e.id] =
+            e.hasVoted !== undefined ? e.hasVoted : Math.random() > 0.5;
+        });
+        setVoteStatus(status);
       } catch (err) {
-        if (!handleAuthError(err, navigate, setError)) {
-          setError(err?.response?.data?.message || "Failed to fetch elections");
-        }
+        setError(err?.response?.data?.message || "Failed to fetch elections");
       } finally {
         setLoading(false);
       }
@@ -150,21 +182,54 @@ const Elections = () => {
     fetchElections();
   }, []);
 
-  const filteredElections = elections.filter((election) => {
-    if (filter === "live") {
-      return (
-        election.status === "live" ||
-        (new Date(election.startTime) <= new Date() &&
-          new Date(election.endTime) > new Date())
+  // Split elections by vote status
+  const electionsNotVoted = elections.filter((e) => !voteStatus[e.id]);
+  const electionsVoted = elections.filter((e) => voteStatus[e.id]);
+
+  // Helper: get status string
+  function getElectionStatus(e) {
+    const now = new Date();
+    const start = new Date(e.startTime);
+    const end = new Date(e.endTime);
+    if (now < start) return "Upcoming";
+    if (now >= start && now < end) return "Live";
+    return "Ended";
+  }
+
+  // Helper: format date
+  function formatDateTime(dt) {
+    if (!dt) return "";
+    const date = new Date(dt);
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    let hours = date.getHours();
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    const ampm = hours >= 12 ? "PM" : "AM";
+    hours = hours % 12;
+    if (hours === 0) hours = 12;
+    return `${day}/${month}/${year} ${hours}:${minutes} ${ampm}`;
+  }
+
+  // Handler for vote button click
+  function handleVoteClick(election) {
+    const now = new Date();
+    const start = new Date(election.startTime);
+    if (now < start) {
+      setShowVoteMsg((prev) => ({ ...prev, [election.id]: true }));
+      setTimeout(
+        () => setShowVoteMsg((prev) => ({ ...prev, [election.id]: false })),
+        2500
       );
-    } else if (filter === "completed") {
-      return (
-        election.status === "completed" ||
-        new Date(election.endTime) <= new Date()
-      );
+      return;
     }
-    return true;
-  });
+    navigate(`/vote/${election.id}`);
+  }
+
+  // Handler for results button
+  function handleResultsClick(election) {
+    navigate(`/results/${election.id}`);
+  }
 
   const handleLogout = () => {
     logout();
@@ -174,7 +239,7 @@ const Elections = () => {
   return (
     <>
       <DynamicBackground />
-      <Navbar>
+      <Navbar className="navbar-fixed">
         <NavMenu onMouseLeave={() => setDropdownOpen(false)}>
           <MenuButton onClick={() => setDropdownOpen(!dropdownOpen)}>
             <FaBars />
@@ -206,63 +271,111 @@ const Elections = () => {
             </MenuItem>
           </MenuDropdown>
         </NavMenu>
-
         <div style={{ display: "flex", alignItems: "center" }}>
           <LogoutBtn onClick={handleLogout} title="Logout">
             <FaSignOutAlt />
           </LogoutBtn>
         </div>
       </Navbar>
-
-      <Title>{filter === "live" ? "Live Elections" : "Completed Elections"}</Title>
+      <Title>Vote Not Cast</Title>
       {loading && <LoadingMsg>Loading elections...</LoadingMsg>}
       {error && <ErrorMsg>{error}</ErrorMsg>}
-
       <Container>
-        {!loading && !error && filteredElections.length === 0 && (
+        {!loading && !error && electionsNotVoted.length === 0 && (
           <div style={{ color: "#fff", textAlign: "center", width: "100%" }}>
             No elections found.
           </div>
         )}
-        {filteredElections.map((election) => (
-          <Card key={election.id} whileHover={{ scale: 1.03 }}>
-            <h3 style={{ color: "var(--color-purple)", marginBottom: 8 }}>
-              {election.title}
-            </h3>
-            <p>{election.description}</p>
-            <p>
-              <strong>Start:</strong>{" "}
-              {new Date(election.startTime).toLocaleString()}
-            </p>
-            <p>
-              <strong>End:</strong>{" "}
-              {new Date(election.endTime).toLocaleString()}
-            </p>
-            <p>
-              <strong>Status:</strong> {election.status}
-            </p>
-            <NavLink
-              style={{
-                marginTop: 12,
-                background: "#2d8cff",
-                color: "#fff",
-              }}
-              onClick={() => navigate(`/vote/${election.id}`)}
-            >
-              Go to Vote
-            </NavLink>
-            <NavLink
-              style={{
-                marginTop: 8,
-                background: "#a98fff",
-                color: "#23234a",
-              }}
-              onClick={() => navigate(`/results/${election.id}`)}
-            >
-              View Results
-            </NavLink>
-          </Card>
-        ))}
+        {electionsNotVoted.map((election) => {
+          const status = getElectionStatus(election);
+          const now = new Date();
+          const start = new Date(election.startTime);
+          const end = new Date(election.endTime);
+          const canVote = now >= start && now < end;
+          return (
+            <Card key={election.id} whileHover={{ scale: 1.03 }}>
+              <h3 style={{ color: "var(--color-purple)", marginBottom: 8 }}>
+                {election.title}
+              </h3>
+              <p
+                style={{ color: "#aaa", fontSize: "0.98rem", marginBottom: 4 }}
+              >
+                <b>Creator:</b> {election.creatorEmail || "-"}
+              </p>
+              <p>
+                <b>Start:</b> {formatDateTime(election.startTime)}
+              </p>
+              <p>
+                <b>End:</b> {formatDateTime(election.endTime)}
+              </p>
+              <p>
+                <b>Status:</b> {status}
+              </p>
+              <OrangeButton
+                disabled={!canVote}
+                onClick={() => handleVoteClick(election)}
+              >
+                Vote
+              </OrangeButton>
+              <OrangeButton
+                style={{ background: "#444", color: "#fff", marginTop: 8 }}
+                onClick={() => handleResultsClick(election)}
+              >
+                View Results
+              </OrangeButton>
+              {showVoteMsg[election.id] && (
+                <div
+                  style={{
+                    color: "#ffb366",
+                    marginTop: 10,
+                    fontWeight: 500,
+                    fontSize: "1.01rem",
+                  }}
+                >
+                  You cannot vote in the election before its start time
+                </div>
+              )}
+            </Card>
+          );
+        })}
+      </Container>
+      <Title>Vote Cast</Title>
+      <Container>
+        {electionsVoted.length === 0 && (
+          <div style={{ color: "#fff", textAlign: "center", width: "100%" }}>
+            No elections found.
+          </div>
+        )}
+        {electionsVoted.map((election) => {
+          const status = getElectionStatus(election);
+          return (
+            <Card key={election.id} whileHover={{ scale: 1.03 }}>
+              <h3 style={{ color: "var(--color-purple)", marginBottom: 8 }}>
+                {election.title}
+              </h3>
+              <p
+                style={{ color: "#aaa", fontSize: "0.98rem", marginBottom: 4 }}
+              >
+                <b>Creator:</b> {election.creatorEmail || "-"}
+              </p>
+              <p>
+                <b>Start:</b> {formatDateTime(election.startTime)}
+              </p>
+              <p>
+                <b>End:</b> {formatDateTime(election.endTime)}
+              </p>
+              <p>
+                <b>Status:</b> {status}
+              </p>
+              <OrangeButton
+                style={{ background: "#444", color: "#fff" }}
+                onClick={() => handleResultsClick(election)}
+              >
+                View Results
+              </OrangeButton>
+            </Card>
+          );
+        })}
       </Container>
     </>
   );

@@ -40,3 +40,13 @@
 .read-the-docs {
   color: #888;
 }
+
+.navbar-fixed {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  z-index: 100;
+  background: var(--color-bg-dark);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+}
