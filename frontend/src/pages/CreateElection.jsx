@@ -300,7 +300,10 @@ const CreateElection = () => {
             onChange={(e) => setEnd(e.target.value)}
             required
           />
-          <label>Allowed Domains or Emails (at least one required)</label>
+          <label>
+            Allowed Domains or Emails <span style={{ color: "red" }}>*</span>{" "}
+            (at least one required)
+          </label>
           {allowedList.map((entry, idx) => (
             <ListRow key={"allowed-" + idx}>
               <Input
@@ -408,9 +411,13 @@ const CreateElection = () => {
                 fontSize: "1.05rem",
                 cursor: "pointer",
                 margin: 0,
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
               }}
             >
-              Allow results to be visible before the election ends
+              Allow results to be visible before the election ends{" "}
+              <span style={{ color: "red" }}>*</span>
             </label>
           </ResultsCheckboxRow>
           <Button type="submit" disabled={loading}>
