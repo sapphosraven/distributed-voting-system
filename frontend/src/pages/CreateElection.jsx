@@ -112,6 +112,54 @@ const ResultsCheckboxRow = styled.div`
   gap: 0.9rem;
 `;
 
+// Custom styled checkbox for results visibility
+const CustomCheckboxWrapper = styled.label`
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  position: relative;
+  user-select: none;
+`;
+const HiddenCheckbox = styled.input`
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+`;
+const StyledCheckbox = styled.span`
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+  background: #2a1440;
+  border: 2.5px solid #fff;
+  margin-right: 0.9rem;
+  position: relative;
+  transition: box-shadow 0.2s;
+  box-shadow: 0 2px 8px #0003;
+  &:after {
+    content: "";
+    display: block;
+    position: absolute;
+    left: 6px;
+    top: 2px;
+    width: 8px;
+    height: 14px;
+    border: solid #fff;
+    border-width: 0 4px 4px 0;
+    opacity: 0;
+    border-radius: 2px;
+    transform: scale(0.8) rotate(45deg);
+    transition: opacity 0.15s;
+  }
+`;
+const CheckedCheckbox = styled(StyledCheckbox)`
+  background: #3a225a;
+  &:after {
+    opacity: 1;
+  }
+`;
+
 const CreateElection = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -275,13 +323,7 @@ const CreateElection = () => {
             onChange={(e) => setTitle(e.target.value)}
             required
           />
-          <label>Election Description</label>
-          <Textarea
-            placeholder="Election Description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            rows={3}
-          />
+          {/* Removed Election Description field */}
           <label>
             Start Date & Time <span style={{ color: "red" }}>*</span>
           </label>
@@ -329,7 +371,7 @@ const CreateElection = () => {
             type="button"
             onClick={addAllowed}
             style={{
-              background: "#2d8cff",
+              background: "#ff8800",
               color: "#fff",
               marginBottom: 10,
               width: "auto",
@@ -386,39 +428,32 @@ const CreateElection = () => {
           <Button
             type="button"
             onClick={addCandidate}
-            style={{ background: "#2d8cff", color: "#fff", marginBottom: 10 }}
+            style={{ background: "#ff8800", color: "#fff", marginBottom: 10 }}
           >
             + Add Candidate
           </Button>
           {error && <ErrorMsg>{error}</ErrorMsg>}
           {success && <SuccessMsg>{success}</SuccessMsg>}
           <ResultsCheckboxRow>
-            <input
-              type="checkbox"
-              id="isResultsVisible"
-              checked={isResultsVisible}
-              onChange={(e) => setIsResultsVisible(e.target.checked)}
-              style={{
-                width: 20,
-                height: 20,
-                accentColor: "var(--color-purple)",
-              }}
-            />
-            <label
-              htmlFor="isResultsVisible"
-              style={{
-                color: "var(--color-text)",
-                fontSize: "1.05rem",
-                cursor: "pointer",
-                margin: 0,
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-              }}
-            >
-              Allow results to be visible before the election ends{" "}
-              <span style={{ color: "red" }}>*</span>
-            </label>
+            <CustomCheckboxWrapper>
+              <HiddenCheckbox
+                type="checkbox"
+                id="isResultsVisible"
+                checked={isResultsVisible}
+                onChange={(e) => setIsResultsVisible(e.target.checked)}
+              />
+              {isResultsVisible ? <CheckedCheckbox /> : <StyledCheckbox />}
+              <span
+                style={{
+                  color: "var(--color-text)",
+                  fontSize: "1.05rem",
+                  marginLeft: 2,
+                }}
+              >
+                Allow results to be visible before the election ends{" "}
+                <span style={{ color: "red" }}>*</span>
+              </span>
+            </CustomCheckboxWrapper>
           </ResultsCheckboxRow>
           <Button type="submit" disabled={loading}>
             {loading ? "Creating..." : "Create Election"}

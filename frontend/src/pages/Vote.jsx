@@ -155,6 +155,7 @@ const Vote = () => {
         transition={{ duration: 0.7, ease: "easeOut" }}
       >
         <Title>{election?.title || "Vote"}</Title>
+        
         <form onSubmit={handleVote}>
           {candidates.map((c, idx) => (
             <CandidateBtn

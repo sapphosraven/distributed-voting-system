@@ -119,8 +119,8 @@ const Register = () => {
         localStorage.setItem("jwt_expiry", Date.now() + 30 * 60 * 1000);
         localStorage.setItem("otpVerified", "true");
       }
-      setSuccess("Registration successful! Redirecting to OTP verification...");
-      setTimeout(() => navigate("/verify-otp"), 1000); // Redirect to OTP after registration
+      setSuccess("Registration successful! Redirecting to login page...");
+      setTimeout(() => navigate("/login"), 1000); // Redirect to login after registration
     } catch (err) {
       setError(err?.response?.data?.message || "Registration failed");
     } finally {
