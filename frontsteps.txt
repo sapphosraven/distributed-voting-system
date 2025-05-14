@@ -1,15 +1,15 @@
-# Step-by-Step Guide to Complete the Secure Distributed Voting System Frontend (as of 2025-05-13)
+# Step-by-Step Guide to Complete the Secure Distributed Voting System Frontend (as of 2025-05-14)
 
 | Step                                                      | Status      | Notes                                                                                  |
 |-----------------------------------------------------------|-------------|----------------------------------------------------------------------------------------|
 | 1. Project Scaffolding (Vite, React, Routing, Structure) | ✅ Done     | Modular folders, React Router, color theme, font, dynamic bg                            |
 | 2. Login Page (UI, API, Logging, Theme)                   | ✅ Done     | Modern UI, styled components, color theme, dynamic bg, API, error handling, logging     |
-| 3. Register Page (UI, API, Logging, Theme)                | ⚠️ Partial | UI and routing present, needs full API integration, error handling, logging             |
-| 4. OTP Verification Page                                 | ⚠️ Partial | UI and routing present, needs full API integration, error handling, logging             |
-| 5. Elections List Page                                   | ⚠️ Partial | UI and routing present, needs API, loading/error states, search, create-election button  |
-| 6. Election Creation Page                                | ⚠️ Partial | UI and routing present, needs full validation, API, error handling                      |
-| 7. Voting Page                                           | ⚠️ Partial | UI and routing present, needs API, error handling, logging                              |
-| 8. Results Page                                          | ⚠️ Partial | UI and routing present, needs API, error handling, logging                              |
+| 3. Register Page (UI, API, Logging, Theme)                | ✅ Done     | UI and routing present, full API integration, error handling, logging                   |
+| 4. OTP Verification Page                                 | ✅ Done     | UI and routing present, full API integration, error handling, logging                   |
+| 5. Elections List Page                                   | ✅ Done     | UI and routing present, API, loading/error states, search, create-election button        |
+| 6. Election Creation Page                                | ✅ Done     | UI and routing present, full validation, API, error handling                            |
+| 7. Voting Page                                           | ✅ Done     | UI and routing present, API, error handling, logging, eligibility UX                    |
+| 8. Results Page                                          | ✅ Done     | UI and routing present, API, error handling, logging, provisional results message        |
 | 9. Password Change Flow                                  | ❌ Not done | UI, API, OTP, error handling, logging                                                  |
 | 10. Dev/Admin Test Console (optional)                     | ⚠️ Partial | UI/routing present, needs more test hooks, debug buttons, logs                          |
 | 11. End-to-End Testing                                   | ❌ Not done | Manual and inline test hooks for all flows                                             |
@@ -25,19 +25,17 @@
 - [2025-05-12] Login page UI, API, error handling, and logging implemented
 - [2025-05-13] App.jsx routes updated to include CreateElection page
 - [2025-05-13] Documentation updated to match actual backend implementation
+- [2025-05-14] Register, OTP, Elections, CreateElection, Vote, and Results pages fully implemented with robust error handling and eligibility UX. Provisional results message added. Redundant UI removed. Eligibility errors now user-friendly. 
+- [2025-05-14] TODO: Add 'Resend OTP' button to OTP verification page for better UX.
 
 ---
 
 # Next Steps
-- [ ] Build Register page (UI, API, logging)
-- [ ] Build OTP Verification page
-- [ ] Build Elections list page
-- [ ] Build Election creation page
-- [ ] Build Voting and Results pages
-- [ ] Add password change, dev console, polish
-- [ ] Remove 'Send OTP' button from Login page
-- [ ] Correct password reset message
-- [ ] Remove need for email during OTP verification
+- [ ] Add 'Resend OTP' button to OTP verification page
+- [ ] Build Password change flow (UI, API, logging)
+- [ ] Add more test hooks and debug buttons to Dev/Admin console
+- [ ] End-to-end manual and inline test hooks for all flows
+- [ ] Final UX polish, mobile responsiveness, accessibility
 
 ---
 
