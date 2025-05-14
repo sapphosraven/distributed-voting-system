@@ -1,0 +1,117 @@
+\documentclass[12pt,a4paper]{report}
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{geometry}
+\usepackage{graphicx}
+\geometry{margin=1in}
+
+\title{Distributed Voting System\\\large Information Security Project (CS-484)}
+\author{Areesha Tariq(425560), Shahliza Ahmed(413950),\\ Muhammad Zikrullah Rehman(416430)\\National University of Sciences and Technology}
+\date{Instructor: Dr. Madiha Khalid\\Date: 14th May 2025\\Class: BSCS 12C}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+This report presents the design and implementation of a secure, distributed, and end-to-end encrypted online voting system, engineered as an advanced Identity and Access Management (IAM) solution for organizations, schools, and institutions. The system is designed to integrate seamlessly with environments where users are assigned institutional email addresses with specific domains, leveraging this existing trust boundary for eligibility and access control. Built with Node.js, PostgreSQL, Redis, Docker Swarm, and a modern React/Vite frontend, the system integrates multi-factor authentication, cryptographic protections, and distributed consensus to ensure robust confidentiality, integrity, and availability. Users authenticate via password and OTP, and all voting data is encrypted and digitally signed, with secure transmission and verification for access control. The system was rigorously tested for security, usability, and resilience, demonstrating compliance with modern information security and distributed systems best practices. The complete codebase is provided as a publicly accessible GitHub repository at: \url{[link]}.
+\end{abstract}
+
+\tableofcontents
+
+\chapter{Introduction}
+The distributed voting system is designed to address the challenges of secure, transparent, and reliable online elections in a distributed environment, with a strong focus on Identity and Access Management (IAM) for organizations, schools, and institutions. By leveraging institutional email domains, the system ensures that only authorized members of an institution can participate, controlling \textbf{who} can vote. The distributed backend enforces voting windows and location-based eligibility, controlling \textbf{when} and \textbf{where} voting is permitted. By integrating cryptographic primitives, distributed consensus, and layered access controls, the system ensures that all actions are authenticated and auditable, and the confidentiality and integrity of votes and identity attributes are preserved throughout their lifecycle. The architecture is engineered to resist a wide range of threats, including unauthorized access, replay attacks, double voting, and data tampering, while maintaining usability and scalability for real-world deployment.
+
+\chapter{Project Objectives}
+The primary objective is to deliver a secure, distributed IAM platform for online voting that guarantees:
+\begin{itemize}
+  \item \textbf{Confidentiality}: All sensitive data, especially votes and identity attributes, are encrypted end-to-end using asymmetric cryptography.
+  \item \textbf{Integrity}: Digital signatures and distributed consensus protocols ensure that data cannot be altered or forged.
+  \item \textbf{Availability}: The system remains operational and consistent even in the presence of node failures, leveraging leader election and replication.
+  \item \textbf{Authentication and Authorization}: Multi-factor authentication (password + OTP) and JWT-based access control restrict all actions to verified users. Institutional email domains are used for seamless user onboarding and access.
+  \item \textbf{Auditability}: All actions are logged and can be traced to authenticated identities, supporting accountability and forensic analysis.
+  \item \textbf{Usability}: A modern, responsive frontend enables seamless participation for all users, with clear feedback and error handling.
+  \item \textbf{Innovation}: The system supports institutional email-based identity verification, enhancing both security and user experience.
+\end{itemize}
+
+\chapter{System Architecture}
+% System diagram image
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.9\textwidth]{IS System Diagram.jpg}
+    \caption{Distributed Voting System - System Architecture}
+    \label{fig:system-architecture}
+\end{figure}
+The system is composed of three tightly integrated layers:
+\begin{enumerate}
+  \item \textbf{Frontend (React/Vite)}: Provides the user interface for registration, login, OTP verification, election management, voting, and results. All authentication tokens and OTP states are managed securely in browser storage. API calls are protected by JWTs and OTP verification flags, and sensitive actions require multi-factor authentication.
+  \item \textbf{Backend (Node.js/Express)}: Implements all IAM, election, and voting logic. Key features include:
+    \begin{itemize}
+      \item \textit{User Management}: Registration, login, password change, OTP verification, and institutional email onboarding. Passwords are hashed with bcrypt, and OTPs are rate-limited and delivered via email.
+      \item \textit{JWT Middleware}: All protected routes require a valid JWT, enforcing session integrity and access control.
+      \item \textit{OTP Enforcement}: Middleware ensures OTP verification is completed before sensitive actions (election creation, voting, password change).
+      \item \textit{Election and Voting}: Only eligible users (by domain or email) can view and participate in elections. Each vote is encrypted and digitally signed before storage.
+      \item \textit{Distributed Consensus}: Leader election (Raft-like), distributed locks, and consensus-based tallying ensure consistency and fault tolerance across backend nodes.
+      \item \textit{Replication}: Votes are replicated across nodes using Redis pub/sub, ensuring durability and availability.
+      \item \textit{Audit Logging}: All critical actions (auth, vote, consensus, replication, identity verification) are logged for accountability.
+    \end{itemize}
+  \item \textbf{Infrastructure (Docker Swarm, PostgreSQL, Redis)}: The system is containerized for scalable deployment. PostgreSQL stores user, election, and identity data, while Redis is used for OTPs, distributed locks, time synchronization, and pub/sub for replication and consensus.
+\end{enumerate}
+All communication occurs over HTTPS, and secrets (such as RSA keys) are managed via Docker secrets for secure key management.
+
+\chapter{Development Process}
+\section{Phase I: Foundation and Security Middleware}
+The backend was scaffolded with Express, CORS, and JSON parsing. JWT authentication and OTP enforcement middleware were implemented to protect all sensitive endpoints. PostgreSQL and Redis connections were established, and Docker Swarm was configured for multi-node deployment.
+
+\section{Phase II: User Registration, Multi-Factor Authentication, and Institutional Email}
+User registration and login flows were implemented with bcrypt password hashing and email-based OTP delivery. OTPs are rate-limited per account and expire after a short window, mitigating brute-force and replay attacks. JWTs are issued upon successful login and OTP verification. Users can also onboard using institutional email, with identity attributes verified securely on the backend for access control.
+
+\section{Phase III: Election Management and Eligibility}
+Election creation, listing, and eligibility logic were developed. Only authenticated and OTP-verified users can create elections, specifying allowed domains or email lists for voter eligibility. The frontend provides intuitive forms and error feedback for all flows.
+
+\section{Phase IV: Secure Voting, Encryption, and Digital Signatures}
+The voting flow enforces eligibility, prevents double voting, and ensures atomicity via distributed locks. Each vote is encrypted and digitally signed using RSA before storage, guaranteeing confidentiality and non-repudiation. The backend verifies signatures and enforces time-based voting windows using synchronized Redis time.
+
+\section{Phase V: Distributed Consensus, Replication, and Results}
+Leader election and consensus protocols were implemented to ensure only the leader node accepts votes. Votes are replicated to all nodes via Redis pub/sub. After election end, consensus-based tallying is triggered, and results are aggregated and verified across all nodes. The frontend visualizes results with charts and provides clear feedback on election status.
+
+\section{Phase VI: Testing, Audit, and UX}
+Manual and inline tests were executed for all flows, including registration, OTP, institutional email onboarding, voting, consensus, and failover. Audit logs were reviewed for accountability. The frontend was polished for accessibility, responsiveness, and error handling.
+
+\chapter{Security Measures}
+\begin{itemize}
+  \item \textbf{Cryptography}: All votes and identity attributes are encrypted and digitally signed using RSA. Private keys are securely managed via Docker secrets. JWTs protect all API calls, and passwords are hashed with bcrypt.
+  \item \textbf{Multi-Factor Authentication}: OTPs are enforced for all sensitive actions, with per-account rate limiting and expiry.
+  \item \textbf{Institutional Email}: Identity attributes are verified using institutional email domains, ensuring secure access control.
+  \item \textbf{Access Control}: JWT and OTP middleware enforce strict authentication and authorization. Only eligible users can access elections and cast votes.
+  \item \textbf{Distributed Security}: Leader election, distributed locks, and consensus protocols prevent race conditions, double voting, and data conflicts. Replication ensures availability and durability.
+  \item \textbf{Auditability}: All critical actions are logged, supporting accountability and forensic analysis.
+  \item \textbf{Resilience}: The system tolerates node failures via leader failover and vote replication. Time synchronization via Redis ensures consistent enforcement of election windows.
+  \item \textbf{Frontend Security}: All tokens and OTP states are managed securely in browser storage. Route protection and error handling prevent unauthorized access and information leakage.
+  \item \textbf{Minimal Exposure Principle}: To further reduce risk, our backend is designed to never send any sensitive information to the frontend. Instead, it enforces strict access control and only exposes the minimum required data, leveraging institutional email and domain-based eligibility. This approach minimizes the attack surface and aligns with the IAM principle of least privilege.
+\end{itemize}
+
+\chapter{Testing Strategy and Results}
+A comprehensive testing strategy was adopted to ensure the security, reliability, and usability of the distributed voting system. Unit and integration tests were performed for all backend and frontend flows, including registration, login, OTP, institutional email onboarding, election creation, voting, consensus, and failover. Manual testing was conducted using tools such as Insomnia to simulate real-world attack scenarios, including replay attacks, unauthorized access attempts, and double voting. The system's resilience was validated by imitating node failures and network partitions, confirming that leader election and replication mechanisms maintained availability and consistency. Security tests confirmed that unauthorized actions are blocked, double voting is prevented, and all cryptographic operations (encryption, signature verification) are enforced. Usability tests ensured a seamless experience for both traditional and institutional email-based authentication flows. Performance testing demonstrated that the system remains responsive and robust under load, and audit logs were reviewed to verify accountability for all critical actions.
+
+\chapter{Deployment and Usage}
+To deploy locally, clone the repository, install dependencies in both backend and frontend, and configure environment variables and Docker secrets for RSA keys. Start the backend via Docker Swarm and the frontend via Vite. Users register, verify their identity via OTP or institutional email, view eligible elections, cast encrypted votes, and view results after consensus-based tallying. All actions are protected by multi-factor authentication and JWT-based access control.
+
+\chapter{Evaluation and Innovation}
+\section{Security and Robustness}
+The system enforces layered security controls, including cryptographic protections, distributed consensus, and strict access control, ensuring resilience against a wide range of attacks and failures.
+
+\section{Usability and User Experience}
+A modern, responsive frontend and support for institutional email technologies provide a seamless and accessible experience for all users.
+
+\section{Innovation and Uniqueness}
+The integration of institutional email-based identity verification and distributed consensus for secure voting distinguishes the system as a forward-thinking IAM solution.
+
+\section{Documentation and Presentation}
+This report documents the development process, security measures, and testing results. A live demonstration and presentation are available to showcase the system's features and security implementations.
+
+\chapter{Conclusion and Future Work}
+The distributed voting system demonstrates a secure, scalable, and resilient approach to online elections, integrating IAM, cryptography, and distributed consensus. By enforcing strong encryption, digital signatures, multi-factor authentication, and institutional email verification, the system achieves strong confidentiality, integrity, and availability guarantees. Future work includes advanced audit logging, support for federated identity providers, biometric authentication, and ongoing penetration testing to further strengthen the platform.
+
+\end{document}

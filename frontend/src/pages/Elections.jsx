@@ -3,22 +3,42 @@ import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import { motion } from "framer-motion";
 import DynamicBackground from "../components/DynamicBackground";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import api, { logout } from "../utils/api";
 import { FaSignOutAlt, FaBars } from "react-icons/fa";
 
 // Styled Components
 const Navbar = styled.nav`
-  width: 100%;
+  width: 100vw;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
   background: rgba(24, 24, 42, 0.95);
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 1rem 2.5rem;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-  position: sticky;
-  top: 0;
-  z-index: 10;
+`;
+
+const NavbarContent = styled.div`
+  display: flex;
+  align-items: center;
+  width: 100vw;
+  justify-content: space-between;
+  padding-left: -4.5rem;
+  padding-right: 5.5rem;
+`;
+
+const NavTitle = styled.div`
+  color: var(--color-orange);
+  font-size: 1.8rem;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  margin-right: 2.5rem;
+  user-select: none;
 `;
 
 const NavMenu = styled.div`
@@ -83,6 +103,8 @@ const LogoutBtn = styled.button`
     background: #ff4d4f22;
     border-radius: 0.5rem;
   }
+  position: relative;
+  right: 0;
 `;
 
 const Card = styled(motion.div)`
@@ -141,9 +163,26 @@ const OrangeButton = styled.button`
     transform: translateY(-2px);
   }
   &:disabled {
-    opacity: 0.6;
+    background: #b0b0b0 !important;
+    color: #e0e0e0 !important;
+    opacity: 1 !important;
     cursor: not-allowed;
+    filter: grayscale(0.5);
   }
+`;
+
+const ResultsButton = styled(OrangeButton)`
+  background: var(--color-purple);
+  color: #fff;
+  margin-top: 8px;
+  &:hover:enabled {
+    filter: brightness(1.1);
+    background: #7c4dff;
+  }
+`;
+
+const MainContent = styled.div`
+  padding-top: 80px;
 `;
 
 const Elections = () => {
@@ -154,6 +193,7 @@ const Elections = () => {
   const [filter, setFilter] = useState("live");
   const [voteStatus, setVoteStatus] = useState({}); // { [electionId]: true/false }
   const [showVoteMsg, setShowVoteMsg] = useState({}); // { [electionId]: true/false }
+  const location = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -182,9 +222,24 @@ const Elections = () => {
     fetchElections();
   }, []);
 
-  // Split elections by vote status
-  const electionsNotVoted = elections.filter((e) => !voteStatus[e.id]);
-  const electionsVoted = elections.filter((e) => voteStatus[e.id]);
+  // Sync filter with URL query param
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tab = params.get("tab");
+    if (tab === "completed" || tab === "live") {
+      setFilter(tab);
+    }
+  }, [location.search]);
+
+  // Update URL when filter changes
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (filter !== params.get("tab")) {
+      params.set("tab", filter);
+      navigate({ search: params.toString() }, { replace: true });
+    }
+    // eslint-disable-next-line
+  }, [filter]);
 
   // Helper: get status string
   function getElectionStatus(e) {
@@ -195,6 +250,18 @@ const Elections = () => {
     if (now >= start && now < end) return "Live";
     return "Ended";
   }
+
+  // --- Classification logic update ---
+  // Only classify as Vote Cast/Not Cast for live elections
+  const liveElections = elections.filter(
+    (e) => getElectionStatus(e) === "Live"
+  );
+  const completedElections = elections.filter(
+    (e) => getElectionStatus(e) === "Ended"
+  );
+
+  const electionsNotVoted = liveElections.filter((e) => !voteStatus[e.id]);
+  const electionsVoted = liveElections.filter((e) => voteStatus[e.id]);
 
   // Helper: format date
   function formatDateTime(dt) {
@@ -228,7 +295,10 @@ const Elections = () => {
 
   // Handler for results button
   function handleResultsClick(election) {
-    navigate(`/results/${election.id}`);
+    // Preserve current tab in query params when navigating to results
+    const params = new URLSearchParams(location.search);
+    const tab = params.get("tab") || filter;
+    navigate(`/results/${election.id}?tab=${tab}`);
   }
 
   const handleLogout = () => {
@@ -236,147 +306,212 @@ const Elections = () => {
     navigate("/login");
   };
 
+  // --- UI rendering update ---
   return (
     <>
       <DynamicBackground />
       <Navbar className="navbar-fixed">
-        <NavMenu onMouseLeave={() => setDropdownOpen(false)}>
-          <MenuButton onClick={() => setDropdownOpen(!dropdownOpen)}>
-            <FaBars />
-          </MenuButton>
-          <MenuDropdown open={dropdownOpen}>
-            <MenuItem
-              onClick={() => {
-                setFilter("live");
-                setDropdownOpen(false);
-              }}
-            >
-              Live Elections
-            </MenuItem>
-            <MenuItem
-              onClick={() => {
-                setFilter("completed");
-                setDropdownOpen(false);
-              }}
-            >
-              Completed Elections
-            </MenuItem>
-            <MenuItem
-              onClick={() => {
-                navigate("/create-election");
-                setDropdownOpen(false);
-              }}
-            >
-              + Create Election
-            </MenuItem>
-          </MenuDropdown>
-        </NavMenu>
-        <div style={{ display: "flex", alignItems: "center" }}>
-          <LogoutBtn onClick={handleLogout} title="Logout">
-            <FaSignOutAlt />
-          </LogoutBtn>
-        </div>
-      </Navbar>
-      <Title>Vote Not Cast</Title>
-      {loading && <LoadingMsg>Loading elections...</LoadingMsg>}
-      {error && <ErrorMsg>{error}</ErrorMsg>}
-      <Container>
-        {!loading && !error && electionsNotVoted.length === 0 && (
-          <div style={{ color: "#fff", textAlign: "center", width: "100%" }}>
-            No elections found.
-          </div>
-        )}
-        {electionsNotVoted.map((election) => {
-          const status = getElectionStatus(election);
-          const now = new Date();
-          const start = new Date(election.startTime);
-          const end = new Date(election.endTime);
-          const canVote = now >= start && now < end;
-          return (
-            <Card key={election.id} whileHover={{ scale: 1.03 }}>
-              <h3 style={{ color: "var(--color-purple)", marginBottom: 8 }}>
-                {election.title}
-              </h3>
-              <p
-                style={{ color: "#aaa", fontSize: "0.98rem", marginBottom: 4 }}
-              >
-                <b>Creator:</b> {election.creatorEmail || "-"}
-              </p>
-              <p>
-                <b>Start:</b> {formatDateTime(election.startTime)}
-              </p>
-              <p>
-                <b>End:</b> {formatDateTime(election.endTime)}
-              </p>
-              <p>
-                <b>Status:</b> {status}
-              </p>
-              <OrangeButton
-                disabled={!canVote}
-                onClick={() => handleVoteClick(election)}
-              >
-                Vote
-              </OrangeButton>
-              <OrangeButton
-                style={{ background: "#444", color: "#fff", marginTop: 8 }}
-                onClick={() => handleResultsClick(election)}
-              >
-                View Results
-              </OrangeButton>
-              {showVoteMsg[election.id] && (
-                <div
-                  style={{
-                    color: "#ffb366",
-                    marginTop: 10,
-                    fontWeight: 500,
-                    fontSize: "1.01rem",
+        <NavbarContent>
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <NavMenu onMouseLeave={() => setDropdownOpen(false)}>
+              <MenuButton onClick={() => setDropdownOpen(!dropdownOpen)}>
+                <FaBars />
+              </MenuButton>
+              <MenuDropdown open={dropdownOpen}>
+                <MenuItem
+                  onClick={() => {
+                    setFilter("live");
+                    setDropdownOpen(false);
                   }}
                 >
-                  You cannot vote in the election before its start time
+                  Live Elections
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    setFilter("completed");
+                    setDropdownOpen(false);
+                  }}
+                >
+                  Completed Elections
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    navigate("/create-election");
+                    setDropdownOpen(false);
+                  }}
+                >
+                  Create Election
+                </MenuItem>
+              </MenuDropdown>
+            </NavMenu>
+            <NavTitle>Distributed Voting System</NavTitle>
+          </div>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "flex-end",
+              minWidth: 0,
+            }}
+          >
+            <LogoutBtn onClick={handleLogout} title="Logout">
+              <FaSignOutAlt />
+            </LogoutBtn>
+          </div>
+        </NavbarContent>
+      </Navbar>
+      <MainContent>
+        {filter === "live" && (
+          <>
+            <Title>Vote Not Cast</Title>
+            {loading && <LoadingMsg>Loading elections...</LoadingMsg>}
+            {error && <ErrorMsg>{error}</ErrorMsg>}
+            <Container>
+              {!loading && !error && electionsNotVoted.length === 0 && (
+                <div
+                  style={{ color: "#fff", textAlign: "center", width: "100%" }}
+                >
+                  No elections found.
                 </div>
               )}
-            </Card>
-          );
-        })}
-      </Container>
-      <Title>Vote Cast</Title>
-      <Container>
-        {electionsVoted.length === 0 && (
-          <div style={{ color: "#fff", textAlign: "center", width: "100%" }}>
-            No elections found.
-          </div>
+              {electionsNotVoted.map((election) => {
+                const now = new Date();
+                const start = new Date(election.startTime);
+                const end = new Date(election.endTime);
+                const canVote = now >= start && now < end;
+                return (
+                  <Card key={election.id} whileHover={{ scale: 1.03 }}>
+                    <h3
+                      style={{ color: "var(--color-purple)", marginBottom: 8 }}
+                    >
+                      {election.title}
+                    </h3>
+                    <p
+                      style={{
+                        color: "#aaa",
+                        fontSize: "0.98rem",
+                        marginBottom: 4,
+                      }}
+                    >
+                      <b>Creator:</b> {election.creatorEmail || "-"}
+                    </p>
+                    <p>
+                      <b>Start:</b> {formatDateTime(election.startTime)}
+                    </p>
+                    <p>
+                      <b>End:</b> {formatDateTime(election.endTime)}
+                    </p>
+                    <p>
+                      <b>Status:</b> Live
+                    </p>
+                    <OrangeButton
+                      disabled={!canVote}
+                      onClick={() => handleVoteClick(election)}
+                    >
+                      Vote
+                    </OrangeButton>
+                    <ResultsButton onClick={() => handleResultsClick(election)}>
+                      View Results
+                    </ResultsButton>
+                    {showVoteMsg[election.id] && (
+                      <div
+                        style={{
+                          color: "#ffb366",
+                          marginTop: 10,
+                          fontWeight: 500,
+                          fontSize: "1.01rem",
+                        }}
+                      >
+                        You cannot vote in the election before its start time
+                      </div>
+                    )}
+                  </Card>
+                );
+              })}
+            </Container>
+            <Title>Vote Cast</Title>
+            <Container>
+              {electionsVoted.length === 0 && (
+                <div
+                  style={{ color: "#fff", textAlign: "center", width: "100%" }}
+                >
+                  No elections found.
+                </div>
+              )}
+              {electionsVoted.map((election) => (
+                <Card key={election.id} whileHover={{ scale: 1.03 }}>
+                  <h3 style={{ color: "var(--color-purple)", marginBottom: 8 }}>
+                    {election.title}
+                  </h3>
+                  <p
+                    style={{
+                      color: "#aaa",
+                      fontSize: "0.98rem",
+                      marginBottom: 4,
+                    }}
+                  >
+                    <b>Creator:</b> {election.creatorEmail || "-"}
+                  </p>
+                  <p>
+                    <b>Start:</b> {formatDateTime(election.startTime)}
+                  </p>
+                  <p>
+                    <b>End:</b> {formatDateTime(election.endTime)}
+                  </p>
+                  <p>
+                    <b>Status:</b> Live
+                  </p>
+                  <ResultsButton onClick={() => handleResultsClick(election)}>
+                    View Results
+                  </ResultsButton>
+                </Card>
+              ))}
+            </Container>
+          </>
         )}
-        {electionsVoted.map((election) => {
-          const status = getElectionStatus(election);
-          return (
-            <Card key={election.id} whileHover={{ scale: 1.03 }}>
-              <h3 style={{ color: "var(--color-purple)", marginBottom: 8 }}>
-                {election.title}
-              </h3>
-              <p
-                style={{ color: "#aaa", fontSize: "0.98rem", marginBottom: 4 }}
-              >
-                <b>Creator:</b> {election.creatorEmail || "-"}
-              </p>
-              <p>
-                <b>Start:</b> {formatDateTime(election.startTime)}
-              </p>
-              <p>
-                <b>End:</b> {formatDateTime(election.endTime)}
-              </p>
-              <p>
-                <b>Status:</b> {status}
-              </p>
-              <OrangeButton
-                style={{ background: "#444", color: "#fff" }}
-                onClick={() => handleResultsClick(election)}
-              >
-                View Results
-              </OrangeButton>
-            </Card>
-          );
-        })}
-      </Container>
+        {filter === "completed" && (
+          <>
+            <Title>Completed Elections</Title>
+            <Container>
+              {completedElections.length === 0 && (
+                <div
+                  style={{ color: "#fff", textAlign: "center", width: "100%" }}
+                >
+                  No completed elections found.
+                </div>
+              )}
+              {completedElections.map((election) => (
+                <Card key={election.id} whileHover={{ scale: 1.03 }}>
+                  <h3 style={{ color: "var(--color-purple)", marginBottom: 8 }}>
+                    {election.title}
+                  </h3>
+                  <p
+                    style={{
+                      color: "#aaa",
+                      fontSize: "0.98rem",
+                      marginBottom: 4,
+                    }}
+                  >
+                    <b>Creator:</b> {election.creatorEmail || "-"}
+                  </p>
+                  <p>
+                    <b>Start:</b> {formatDateTime(election.startTime)}
+                  </p>
+                  <p>
+                    <b>End:</b> {formatDateTime(election.endTime)}
+                  </p>
+                  <p>
+                    <b>Status:</b> Ended
+                  </p>
+                  <ResultsButton onClick={() => handleResultsClick(election)}>
+                    View Results
+                  </ResultsButton>
+                </Card>
+              ))}
+            </Container>
+          </>
+        )}
+      </MainContent>
     </>
   );
 };
