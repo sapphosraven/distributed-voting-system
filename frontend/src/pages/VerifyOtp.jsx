@@ -75,7 +75,8 @@ const SuccessMsg = styled.div`
 `;
 
 const VerifyOtp = () => {
-  const [email, setEmail] = useState("");
+  // Get email from localStorage if available (set during login)
+  const [email, setEmail] = useState(() => localStorage.getItem("email") || "");
   const [otp, setOtp] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -123,14 +124,7 @@ const VerifyOtp = () => {
       >
         <Title>Verify OTP</Title>
         <form onSubmit={handleVerifyOtp}>
-          <Input
-            type="email"
-            placeholder="Email"
-            value={email}
-            autoComplete="username"
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
+          {/* Removed email input, email is carried from login */}
           <Input
             type="text"
             placeholder="OTP"

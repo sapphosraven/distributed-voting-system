@@ -86,12 +86,20 @@ exports.castVote = async (req, res) => {
     const redisTimestamp = await getRedisTime();
     // Prevent voting before election start
     const electionStart = new Date(election.startTime).getTime();
+    const electionEnd = new Date(election.endTime).getTime();
     if (redisTimestamp < electionStart) {
       await releaseLock(lockKey);
       return res.status(403).json({
         error: `Voting has not started yet. Voting opens at ${new Date(
           election.startTime
         ).toLocaleString()}`,
+      });
+    }
+    // Prevent voting after election end
+    if (redisTimestamp >= electionEnd) {
+      await releaseLock(lockKey);
+      return res.status(403).json({
+        error: `Election has ended. Voting is closed.`,
       });
     }
     // Store the vote (anonymity: do not expose candidate in response)

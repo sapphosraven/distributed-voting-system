@@ -99,6 +99,8 @@ export default function Login() {
         { withCredentials: true }
       );
       console.log("[Login] Login response:", res);
+      // Store email in localStorage for OTP verification
+      localStorage.setItem("email", email);
       setSuccess("Login successful! OTP sent.");
       setTimeout(() => navigate("/verify-otp"), 1000); // Redirect to OTP after login
     } catch (err) {
@@ -162,23 +164,7 @@ export default function Login() {
           {loading ? "Logging in..." : "Login"}
         </Button>
       </form>
-      <OtpButton
-        type="button"
-        onClick={handleSendOtp}
-        disabled={loading || !email}
-      >
-        {loading ? "Sending OTP..." : "Send OTP to Email"}
-      </OtpButton>
-      <Button
-        type="button"
-        style={{ marginTop: "1rem", background: "#ff4d4f" }}
-        onClick={() => {
-          logout();
-          navigate("/login");
-        }}
-      >
-        Logout
-      </Button>
+      {/* Removed Send OTP and Logout buttons as they are redundant */}
       <div style={{ textAlign: "center", marginBottom: "1rem" }}>
         <a
           href="/reset-password-request"

@@ -103,8 +103,8 @@ const Results = () => {
       try {
         // Fetch election info and results from correct backend endpoint
         const res = await api.get(`/vote/results/${electionId}`);
-        // Backend returns: { electionId, title, candidates, tally, ... }
-        setElection({ title: res.data.title });
+        // Backend returns: { electionId, title, candidates, tally, endTime, ... }
+        setElection({ title: res.data.title, endTime: res.data.endTime });
         // Map tally to candidate objects for display
         const resultsArr = (res.data.candidates || []).map((c) => ({
           ...c,
@@ -125,8 +125,7 @@ const Results = () => {
           } else if (msg === "You must vote before viewing results") {
             msg = "You must vote before you can view the results.";
           } else if (msg === "Results not visible until election ends") {
-            msg =
-              "Results are hidden by the election creator until the election ends.";
+            msg = "Results are hidden until the election ends.";
           }
           setError(msg);
         }
@@ -136,6 +135,21 @@ const Results = () => {
     }
     fetchResults();
   }, [electionId]);
+
+  // Helper to format date as local string
+  function formatDateTimeLocal(dt) {
+    if (!dt) return "";
+    const date = new Date(dt);
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    let hours = date.getHours();
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    const ampm = hours >= 12 ? "PM" : "AM";
+    hours = hours % 12;
+    if (hours === 0) hours = 12;
+    return `${day}/${month}/${year} ${hours}:${minutes} ${ampm}`;
+  }
 
   // Calculate total votes for bar chart
   const totalVotes = results.reduce((sum, c) => sum + (c.votes || 0), 0);
@@ -182,6 +196,25 @@ const Results = () => {
         transition={{ duration: 0.7, ease: "easeOut" }}
       >
         <Title>{election?.title || "Election Results"}</Title>
+        {/* Provisional results message if election is live */}
+        {election?.endTime && new Date() < new Date(election.endTime) && (
+          <div
+            style={{
+              background: "#fffbe6",
+              color: "#ad7b00",
+              borderRadius: 8,
+              padding: "0.8rem 1.2rem",
+              marginBottom: 18,
+              fontWeight: 500,
+              textAlign: "center",
+              fontSize: "1.08rem",
+              border: "1px solid #ffe58f",
+            }}
+          >
+            Results are provisional, will be finalized on{" "}
+            {formatDateTimeLocal(election.endTime)}
+          </div>
+        )}
         {results.length === 0 ? (
           <div style={{ color: "#fff", textAlign: "center", margin: "2rem 0" }}>
             No results available yet.

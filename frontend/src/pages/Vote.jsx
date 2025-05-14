@@ -182,18 +182,20 @@ const Vote = () => {
         ) {
           // Try to extract the date from the error string (format: Voting has not started yet. Voting opens at 5/14/2025, 12:16:00 PM)
           const match = err.response.data.error.match(
-            /Voting opens at ([^\"]+)/
+            /Voting opens at ([^"]+)/
           );
           if (match && match[1]) {
             // match[1] is in mm/dd/yyyy, hh:mm:ss AM/PM (US locale, UTC)
             const formatted = formatDateTimeLocalFromUTCString(match[1]);
-            return (
-              "Voting has not started yet. Voting opens at: " +
-              formatted +
-              " (your local time)"
-            );
+            return "Voting has not started yet. Voting opens at: " + formatted;
           }
           return err.response.data.error;
+        }
+        // Show a user-friendly error if voting is attempted after the election end
+        if (
+          err?.response?.data?.error === "Election has ended. Voting is closed."
+        ) {
+          return "Voting is closed. This election has ended.";
         }
         return (
           err?.response?.data?.error ||

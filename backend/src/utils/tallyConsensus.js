@@ -28,7 +28,7 @@ async function initTallyConsensus(onTallyRequest) {
       if (!election) return;
       const votes = await Vote.findAll({ where: { electionId } });
       const tally = {};
-      for (const candidate of election.candidates) tally[candidate] = 0;
+      for (const candidate of election.candidates) tally[candidate.id] = 0;
       for (const v of votes)
         if (tally[v.candidate] !== undefined) tally[v.candidate]++;
       // Respond with tally
