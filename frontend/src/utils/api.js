@@ -1,6 +1,9 @@
 // API utility with base URL /api and detailed console logging
+// Set BASE_URL to https:// if running in production or if backend is on a different host
 
-const BASE_URL = "/api";
+const BASE_URL = process.env.NODE_ENV === 'production'
+  ? 'https://your-production-domain/api'
+  : '/api';
 
 export async function apiFetch(path, options = {}) {
   const url = `${BASE_URL}${path}`;

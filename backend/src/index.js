@@ -9,6 +9,8 @@ const raft = require("./utils/raft");
 const statusRoutes = require("./routes/status");
 const { initReplication } = require("./utils/replication");
 const { initTallyConsensus } = require("./utils/tallyConsensus");
+const fs = require('fs');
+const https = require('https');
 
 const app = express();
 app.use(cors());
@@ -27,8 +29,13 @@ initDb()
     await initReplication();
     // Start tally consensus (subscribe to tally requests)
     await initTallyConsensus();
-    app.listen(process.env.PORT, () => {
-      console.log(`Backend listening on port ${process.env.PORT}`);
+    const PORT = process.env.PORT || 443;
+    const httpsOptions = {
+      key: fs.readFileSync(process.env.HTTPS_KEY_PATH),
+      cert: fs.readFileSync(process.env.HTTPS_CERT_PATH)
+    };
+    https.createServer(httpsOptions, app).listen(PORT, () => {
+      console.log(`HTTPS server running on port ${PORT}`);
     });
   })
   .catch((err) => {

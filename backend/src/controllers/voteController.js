@@ -6,6 +6,7 @@ const { amILeader, getLeader } = require("../utils/raft");
 const { getRedisTime } = require("../utils/time");
 const { acquireLock, releaseLock } = require("../utils/lock");
 const { requestConsensusTally } = require("../utils/tallyConsensus");
+const { sign } = require("../utils/signer");
 const os = require("os");
 
 // Helper: check if user is eligible for an election
@@ -103,10 +104,13 @@ exports.castVote = async (req, res) => {
       });
     }
     // Store the vote (anonymity: do not expose candidate in response)
+    // Sign the vote payload (candidate + electionId + userId for uniqueness)
+    const votePayload = `${candidate}:${electionId}:${userId}`;
+    const voteSignature = sign(votePayload);
     const vote = await Vote.create({
       candidate, // for demo, but in real system, only store encryptedPayload
       encryptedPayload,
-      signature,
+      signature: voteSignature,
       userId,
       electionId,
       createdAt: new Date(redisTimestamp),
@@ -117,7 +121,7 @@ exports.castVote = async (req, res) => {
       electionId,
       candidate,
       encryptedPayload,
-      signature,
+      signature: voteSignature,
       timestamp: redisTimestamp,
       nodeId: process.env.NODE_ID,
     });
@@ -128,7 +132,7 @@ exports.castVote = async (req, res) => {
       redisTimestamp,
     });
     await releaseLock(lockKey);
-    res.json({ message: "Vote cast successfully" });
+    res.json({ message: "Vote cast successfully", signature: voteSignature });
   } catch (err) {
     if (lockKey) await releaseLock(lockKey);
     console.error("CastVote error:", err);
