@@ -58,7 +58,7 @@ exports.login = async (req, res) => {
     await storeOtp(email, otp);
     await sendOtpEmail(email, otp);
     // Store a temporary login session in Redis (expires in 10 min)
-    await redis.set(`login:${email}`, "pending", { EX: 600 });
+    await redis.set(`login:${email}`, "pending", { EX: 3600 });
     res.json({
       message: "OTP sent to email. Please verify OTP to complete login.",
       email,
