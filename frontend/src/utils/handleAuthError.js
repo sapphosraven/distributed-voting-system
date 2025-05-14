@@ -8,15 +8,11 @@ export function handleAuthError(err, navigate, setError) {
     err?.response?.data?.message ||
     err?.message ||
     "";
-  if (
-    status === 401 ||
-    status === 403 ||
-    (status === 500 && /token|auth|session|jwt|otp/i.test(msg))
-  ) {
+  if (status === 500 && /token|auth|session|jwt|otp/i.test(msg)) {
     logout();
     if (setError)
       setError("Session expired or login required. Please log in again.");
-    setTimeout(() => navigate("/login", { replace: true }), 1200);
+    setTimeout(() => navigate("/login", { replace: true }), 2000);
     return true;
   }
   return false;
