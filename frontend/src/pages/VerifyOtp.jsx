@@ -5,6 +5,7 @@ import styled from "@emotion/styled";
 import { motion } from "framer-motion";
 import DynamicBackground from "../components/DynamicBackground";
 import api from "../utils/api";
+import { handleAuthError } from "../utils/handleAuthError";
 
 const Card = styled(motion.div)`
   background: rgba(24, 24, 42, 0.7);
@@ -104,8 +105,9 @@ const VerifyOtp = () => {
       setSuccess("OTP verified successfully! Redirecting to elections...");
       setTimeout(() => navigate("/elections"), 1000);
     } catch (err) {
-      console.error("[VerifyOtp] OTP verification error:", err);
-      setError(err?.response?.data?.message || "OTP verification failed");
+      if (!handleAuthError(err, navigate, setError)) {
+        setError(err?.response?.data?.message || "OTP verification failed");
+      }
     } finally {
       setLoading(false);
     }

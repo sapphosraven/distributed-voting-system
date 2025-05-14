@@ -4,6 +4,7 @@ import styled from "@emotion/styled";
 import { motion } from "framer-motion";
 import api from "../utils/api";
 import DynamicBackground from "../components/DynamicBackground";
+import { handleAuthError } from "../utils/handleAuthError";
 
 const Card = styled(motion.div)`
   background: rgba(24, 24, 42, 0.7);
@@ -76,7 +77,9 @@ export default function ResetPasswordRequest() {
       await api.post("/auth/request-password-reset", { email });
       setMsg("If this email is registered, a reset link has been sent.");
     } catch (err) {
-      setMsg("If this email is registered, a reset link has been sent.");
+      if (!handleAuthError(err, navigate, setError)) {
+        setMsg("If this email is registered, a reset link has been sent.");
+      }
     } finally {
       setLoading(false);
     }
@@ -85,7 +88,11 @@ export default function ResetPasswordRequest() {
   return (
     <>
       <DynamicBackground />
-      <Card initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease: "easeOut" }}>
+      <Card
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7, ease: "easeOut" }}
+      >
         <Title>Reset Password</Title>
         <form onSubmit={handleSubmit}>
           <Input
@@ -102,7 +109,13 @@ export default function ResetPasswordRequest() {
             {loading ? "Sending..." : "Send Reset Link"}
           </Button>
         </form>
-        <Button type="button" style={{ background: "#444", color: "#fff" }} onClick={() => navigate("/login")}>Back to Login</Button>
+        <Button
+          type="button"
+          style={{ background: "#444", color: "#fff" }}
+          onClick={() => navigate("/login")}
+        >
+          Back to Login
+        </Button>
       </Card>
     </>
   );

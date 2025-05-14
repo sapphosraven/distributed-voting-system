@@ -4,6 +4,7 @@ import styled from "@emotion/styled";
 import { motion } from "framer-motion";
 import api from "../utils/api";
 import DynamicBackground from "../components/DynamicBackground";
+import { handleAuthError } from "../utils/handleAuthError";
 
 const Card = styled(motion.div)`
   background: rgba(24, 24, 42, 0.7);
@@ -80,7 +81,9 @@ export default function ResetPassword() {
     setMsg("");
     setError("");
     if (!validatePassword(password)) {
-      setError("Password must be at least 8 characters, include uppercase, lowercase, and a number.");
+      setError(
+        "Password must be at least 8 characters, include uppercase, lowercase, and a number."
+      );
       return;
     }
     if (password !== confirm) {
@@ -92,7 +95,9 @@ export default function ResetPassword() {
       await api.post("/auth/reset-password", { token, password });
       setMsg("Password updated successfully. You may now log in.");
     } catch (err) {
-      setError(err?.response?.data?.message || "Token invalid or expired.");
+      if (!handleAuthError(err, navigate, setError)) {
+        setError(err?.response?.data?.message || "Token invalid or expired.");
+      }
     } finally {
       setLoading(false);
     }
@@ -101,7 +106,11 @@ export default function ResetPassword() {
   return (
     <>
       <DynamicBackground />
-      <Card initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease: "easeOut" }}>
+      <Card
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7, ease: "easeOut" }}
+      >
         <Title>Set New Password</Title>
         <form onSubmit={handleSubmit}>
           <Input
@@ -126,7 +135,13 @@ export default function ResetPassword() {
             {loading ? "Resetting..." : "Reset Password"}
           </Button>
         </form>
-        <Button type="button" style={{ background: "#444", color: "#fff" }} onClick={() => navigate("/login")}>Back to Login</Button>
+        <Button
+          type="button"
+          style={{ background: "#444", color: "#fff" }}
+          onClick={() => navigate("/login")}
+        >
+          Back to Login
+        </Button>
       </Card>
     </>
   );

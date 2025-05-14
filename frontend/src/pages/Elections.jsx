@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import DynamicBackground from "../components/DynamicBackground";
 import { useNavigate } from "react-router-dom";
 import api from "../utils/api";
+import { handleAuthError } from "../utils/handleAuthError";
 
 const Card = styled(motion.div)`
   background: rgba(24, 24, 42, 0.7);
@@ -56,8 +57,9 @@ const Elections = () => {
         console.log("[Elections] Fetched elections:", res.data);
         setElections(res.data);
       } catch (err) {
-        console.error("[Elections] Error fetching elections:", err);
-        setError(err?.response?.data?.message || "Failed to fetch elections");
+        if (!handleAuthError(err, navigate, setError)) {
+          setError(err?.response?.data?.message || "Failed to fetch elections");
+        }
       } finally {
         setLoading(false);
       }
@@ -66,52 +68,54 @@ const Elections = () => {
     fetchElections();
   }, []);
 
-  if (loading) return (
-    <>
-      <LoadingMsg>Loading elections...</LoadingMsg>
-      <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
-        <button
-          style={{
-            background: "#2d8cff",
-            color: "#fff",
-            border: "none",
-            borderRadius: "0.5rem",
-            padding: "0.7rem 1.5rem",
-            fontWeight: 500,
-            fontSize: "1.1rem",
-            cursor: "pointer",
-            marginBottom: "1rem"
-          }}
-          onClick={() => navigate("/create-election")}
-        >
-          + Create Election
-        </button>
-      </div>
-    </>
-  );
-  if (error) return (
-    <>
-      <ErrorMsg>{error}</ErrorMsg>
-      <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
-        <button
-          style={{
-            background: "#2d8cff",
-            color: "#fff",
-            border: "none",
-            borderRadius: "0.5rem",
-            padding: "0.7rem 1.5rem",
-            fontWeight: 500,
-            fontSize: "1.1rem",
-            cursor: "pointer",
-            marginBottom: "1rem"
-          }}
-          onClick={() => navigate("/create-election")}
-        >
-          + Create Election
-        </button>
-      </div>
-    </>
-  );
+  if (loading)
+    return (
+      <>
+        <LoadingMsg>Loading elections...</LoadingMsg>
+        <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
+          <button
+            style={{
+              background: "#2d8cff",
+              color: "#fff",
+              border: "none",
+              borderRadius: "0.5rem",
+              padding: "0.7rem 1.5rem",
+              fontWeight: 500,
+              fontSize: "1.1rem",
+              cursor: "pointer",
+              marginBottom: "1rem",
+            }}
+            onClick={() => navigate("/create-election")}
+          >
+            + Create Election
+          </button>
+        </div>
+      </>
+    );
+  if (error)
+    return (
+      <>
+        <ErrorMsg>{error}</ErrorMsg>
+        <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
+          <button
+            style={{
+              background: "#2d8cff",
+              color: "#fff",
+              border: "none",
+              borderRadius: "0.5rem",
+              padding: "0.7rem 1.5rem",
+              fontWeight: 500,
+              fontSize: "1.1rem",
+              cursor: "pointer",
+              marginBottom: "1rem",
+            }}
+            onClick={() => navigate("/create-election")}
+          >
+            + Create Election
+          </button>
+        </div>
+      </>
+    );
 
   return (
     <>
@@ -128,7 +132,7 @@ const Elections = () => {
             fontWeight: 500,
             fontSize: "1.1rem",
             cursor: "pointer",
-            marginBottom: "1rem"
+            marginBottom: "1rem",
           }}
           onClick={() => navigate("/create-election")}
         >
@@ -141,10 +145,12 @@ const Elections = () => {
             <h3>{election.title}</h3>
             <p>{election.description}</p>
             <p>
-              <strong>Start:</strong> {new Date(election.startTime).toLocaleString()}
+              <strong>Start:</strong>{" "}
+              {new Date(election.startTime).toLocaleString()}
             </p>
             <p>
-              <strong>End:</strong> {new Date(election.endTime).toLocaleString()}
+              <strong>End:</strong>{" "}
+              {new Date(election.endTime).toLocaleString()}
             </p>
             <p>
               <strong>Status:</strong> {election.status}

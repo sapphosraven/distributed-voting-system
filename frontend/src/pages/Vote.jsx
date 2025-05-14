@@ -4,6 +4,7 @@ import api from "../utils/api";
 import styled from "@emotion/styled";
 import { motion } from "framer-motion";
 import DynamicBackground from "../components/DynamicBackground";
+import { handleAuthError } from "../utils/handleAuthError";
 
 const Card = styled(motion.div)`
   background: rgba(24, 24, 42, 0.7);
@@ -96,7 +97,9 @@ const Vote = () => {
         setElection(found);
         setCandidates(found.candidates || []);
       } catch (err) {
-        setError("Failed to load election info");
+        if (!handleAuthError(err, navigate, setError)) {
+          setError("Failed to load election info");
+        }
       } finally {
         setLoading(false);
       }
@@ -126,11 +129,20 @@ const Vote = () => {
       await api.post("/vote/cast", votePayload, { withCredentials: true });
       navigate(`/results/${electionId}`);
     } catch (err) {
-      setVoteError(
-        err?.response?.data?.error ||
+      if (handleAuthError(err, navigate, setVoteError)) return;
+      setVoteError(() => {
+        // Show a soft error if voting has not started yet
+        if (
+          err?.response?.data?.error?.startsWith("Voting has not started yet.")
+        ) {
+          return err.response.data.error;
+        }
+        return (
+          err?.response?.data?.error ||
           err?.message ||
           "Failed to cast vote. Please try again."
-      );
+        );
+      });
       // Keep the confirmation dialog open for retry
     } finally {
       setSubmitting(false);
@@ -155,7 +167,7 @@ const Vote = () => {
         transition={{ duration: 0.7, ease: "easeOut" }}
       >
         <Title>{election?.title || "Vote"}</Title>
-        
+
         <form onSubmit={handleVote}>
           {candidates.map((c, idx) => (
             <CandidateBtn

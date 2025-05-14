@@ -4,6 +4,7 @@ import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import { motion } from "framer-motion";
 import api, { logout } from "../utils/api";
+import { handleAuthError } from "../utils/handleAuthError";
 
 const Card = styled(motion.div)`
   background: rgba(24, 24, 42, 0.7);
@@ -101,8 +102,9 @@ export default function Login() {
       setSuccess("Login successful! OTP sent.");
       setTimeout(() => navigate("/verify-otp"), 1000); // Redirect to OTP after login
     } catch (err) {
-      console.error("[Login] Login error:", err);
-      setError(err?.response?.data?.message || "Login failed");
+      if (!handleAuthError(err, navigate, setError)) {
+        setError(err?.response?.data?.message || "Login failed");
+      }
     } finally {
       setLoading(false);
     }
@@ -122,8 +124,9 @@ export default function Login() {
       console.log("[Login] OTP send response:", res);
       setSuccess("OTP sent to your email.");
     } catch (err) {
-      console.error("[Login] OTP send error:", err);
-      setError(err?.response?.data?.message || "Failed to send OTP");
+      if (!handleAuthError(err, navigate, setError)) {
+        setError(err?.response?.data?.message || "Failed to send OTP");
+      }
     } finally {
       setLoading(false);
     }

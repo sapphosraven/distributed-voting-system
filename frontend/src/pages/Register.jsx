@@ -5,6 +5,7 @@ import styled from "@emotion/styled";
 import { motion } from "framer-motion";
 import DynamicBackground from "../components/DynamicBackground";
 import api, { logout } from "../utils/api";
+import { handleAuthError } from "../utils/handleAuthError";
 
 const Card = styled(motion.div)`
   background: rgba(24, 24, 42, 0.7);
@@ -122,7 +123,9 @@ const Register = () => {
       setSuccess("Registration successful! Redirecting to login page...");
       setTimeout(() => navigate("/login"), 1000); // Redirect to login after registration
     } catch (err) {
-      setError(err?.response?.data?.message || "Registration failed");
+      if (!handleAuthError(err, navigate, setError)) {
+        setError(err?.response?.data?.message || "Registration failed");
+      }
     } finally {
       setLoading(false);
     }

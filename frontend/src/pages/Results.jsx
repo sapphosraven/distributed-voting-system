@@ -4,6 +4,7 @@ import api from "../utils/api";
 import styled from "@emotion/styled";
 import { motion } from "framer-motion";
 import DynamicBackground from "../components/DynamicBackground";
+import { handleAuthError } from "../utils/handleAuthError";
 
 const Card = styled(motion.div)`
   background: rgba(24, 24, 42, 0.7);
@@ -111,22 +112,24 @@ const Results = () => {
         }));
         setResults(resultsArr);
       } catch (err) {
-        // Enhanced error handling for user-friendly messages
-        let msg =
-          err?.response?.data?.error ||
-          err?.response?.data?.message ||
-          err?.message ||
-          "Failed to load results";
-        // Map backend error to user-friendly message
-        if (msg === "Not eligible for this election") {
-          msg = "You are not allowed to view results for this election.";
-        } else if (msg === "You must vote before viewing results") {
-          msg = "You must vote before you can view the results.";
-        } else if (msg === "Results not visible until election ends") {
-          msg =
-            "Results are hidden by the election creator until the election ends.";
+        if (!handleAuthError(err, navigate, setError)) {
+          // Enhanced error handling for user-friendly messages
+          let msg =
+            err?.response?.data?.error ||
+            err?.response?.data?.message ||
+            err?.message ||
+            "Failed to load results";
+          // Map backend error to user-friendly message
+          if (msg === "Not eligible for this election") {
+            msg = "You are not allowed to view results for this election.";
+          } else if (msg === "You must vote before viewing results") {
+            msg = "You must vote before you can view the results.";
+          } else if (msg === "Results not visible until election ends") {
+            msg =
+              "Results are hidden by the election creator until the election ends.";
+          }
+          setError(msg);
         }
-        setError(msg);
       } finally {
         setLoading(false);
       }

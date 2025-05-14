@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import styled from "@emotion/styled";
 import { motion } from "framer-motion";
 import DynamicBackground from "../components/DynamicBackground";
+import { handleAuthError } from "../utils/handleAuthError";
 
 const Card = styled(motion.div)`
   background: rgba(24, 24, 42, 0.7);
@@ -265,6 +266,30 @@ const CreateElection = () => {
     return null;
   };
 
+  // Convert local datetime to UTC ISO string for backend
+  function toUtcIso(dt) {
+    if (!dt) return dt;
+    const date = new Date(dt);
+    return new Date(
+      date.getTime() - date.getTimezoneOffset() * 60000
+    ).toISOString();
+  }
+
+  // Helper to format date as dd/mm/yyyy and time as hh:mm am/pm
+  function formatDateTime(dt) {
+    if (!dt) return "";
+    const date = new Date(dt);
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    let hours = date.getHours();
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    const ampm = hours >= 12 ? "pm" : "am";
+    hours = hours % 12;
+    if (hours === 0) hours = 12;
+    return `${day}/${month}/${year} ${hours}:${minutes} ${ampm}`;
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -282,8 +307,8 @@ const CreateElection = () => {
       const payload = {
         title,
         description,
-        startTime: start,
-        endTime: end,
+        startTime: toUtcIso(start),
+        endTime: toUtcIso(end),
         isResultsVisible,
         allowedDomains,
         allowedEmails,
@@ -297,7 +322,9 @@ const CreateElection = () => {
       setSuccess("Election created!");
       setTimeout(() => navigate("/elections"), 1000); // Redirect after 1s
     } catch (err) {
-      setError(err?.response?.data?.error || "Failed to create election");
+      if (!handleAuthError(err, navigate, setError)) {
+        setError(err?.response?.data?.error || "Failed to create election");
+      }
     } finally {
       setLoading(false);
     }

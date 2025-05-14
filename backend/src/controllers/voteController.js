@@ -84,6 +84,16 @@ exports.castVote = async (req, res) => {
     const encryptedPayload = encrypt(candidate);
     // Use Redis time for timestamp
     const redisTimestamp = await getRedisTime();
+    // Prevent voting before election start
+    const electionStart = new Date(election.startTime).getTime();
+    if (redisTimestamp < electionStart) {
+      await releaseLock(lockKey);
+      return res.status(403).json({
+        error: `Voting has not started yet. Voting opens at ${new Date(
+          election.startTime
+        ).toLocaleString()}`,
+      });
+    }
     // Store the vote (anonymity: do not expose candidate in response)
     const vote = await Vote.create({
       candidate, // for demo, but in real system, only store encryptedPayload
@@ -187,44 +197,46 @@ exports.getVoteResults = async (req, res) => {
         consensusNodes: responses.map((r) => r.nodeId),
       });
       return;
-    } else if (election.isResultsVisible) {
-      // Election live, results visible: only users who have voted can view
+    } else {
+      // If results are hidden but user hasn't voted, show the vote-required message instead of results-hidden
       const vote = await Vote.findOne({ where: { userId, electionId } });
       if (!vote) {
         return res
           .status(403)
           .json({ error: "You must vote before viewing results" });
       }
-      // ...proceed to tally (can use local for live)...
-      const votes = await Vote.findAll({ where: { electionId } });
-      // Tally votes by candidate id
-      const tally = {};
-      for (const candidate of election.candidates) {
-        tally[candidate.id] = 0;
+      if (election.isResultsVisible) {
+        // Election live, results visible: only users who have voted can view
+        const votes = await Vote.findAll({ where: { electionId } });
+        // Tally votes by candidate id
+        const tally = {};
+        for (const candidate of election.candidates) {
+          tally[candidate.id] = 0;
+        }
+        for (const v of votes) {
+          if (tally[v.candidate] !== undefined) tally[v.candidate]++;
+        }
+        res.json({
+          electionId,
+          title: election.title,
+          candidates: election.candidates.map((c) => ({
+            id: c.id,
+            name: c.name,
+            party: c.party,
+            description: c.description,
+          })),
+          tally,
+          totalVotes: votes.length,
+          endTime: election.endTime,
+          consensusNodes: [process.env.NODE_ID],
+        });
+        return;
+      } else {
+        // Election live, results not visible
+        return res
+          .status(403)
+          .json({ error: "Results not visible until election ends" });
       }
-      for (const v of votes) {
-        if (tally[v.candidate] !== undefined) tally[v.candidate]++;
-      }
-      res.json({
-        electionId,
-        title: election.title,
-        candidates: election.candidates.map((c) => ({
-          id: c.id,
-          name: c.name,
-          party: c.party,
-          description: c.description,
-        })),
-        tally,
-        totalVotes: votes.length,
-        endTime: election.endTime,
-        consensusNodes: [process.env.NODE_ID],
-      });
-      return;
-    } else {
-      // Election live, results not visible
-      return res
-        .status(403)
-        .json({ error: "Results not visible until election ends" });
     }
   } catch (err) {
     console.error("GetVoteResults error:", err);
