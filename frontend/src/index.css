@@ -48,7 +48,7 @@ body {
   overflow-x: hidden;
 }
 
-body::before {
+/* body::before {
   content: "";
   position: absolute;
   top: -50%;
@@ -63,9 +63,9 @@ body::before {
   );
   animation: rotate 60s linear infinite;
   z-index: -1;
-}
+} */
 
-body::after {
+/* body::after {
   content: "";
   position: absolute;
   top: -50%;
@@ -80,7 +80,7 @@ body::after {
   );
   animation: rotate 40s linear infinite reverse;
   z-index: -1;
-}
+} */
 
 @keyframes rotate {
   0% {

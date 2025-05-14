@@ -33,6 +33,7 @@ function App() {
             padding: 0;
             background: linear-gradient(120deg, #1a1333 0%, #23234a 100%);
             min-height: 100vh;
+            min-width: 100vw;
             font-family: "Inter", sans-serif;
           }
         `}
@@ -42,12 +43,50 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/verify-otp" element={<VerifyOtp />} />
-          <Route path="/elections" element={<ProtectedRoute><Elections /></ProtectedRoute>} />
-          <Route path="/vote/:electionId" element={<ProtectedRoute><Vote /></ProtectedRoute>} />
-          <Route path="/results/:electionId" element={<ProtectedRoute><Results /></ProtectedRoute>} />
-          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-          <Route path="/create-election" element={<ProtectedRoute><CreateElection /></ProtectedRoute>} />
-          <Route path="/reset-password-request" element={<ResetPasswordRequest />} />
+          <Route
+            path="/elections"
+            element={
+              <ProtectedRoute>
+                <Elections />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/vote/:electionId"
+            element={
+              <ProtectedRoute>
+                <Vote />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/results/:electionId"
+            element={
+              <ProtectedRoute>
+                <Results />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/create-election"
+            element={
+              <ProtectedRoute>
+                <CreateElection />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/reset-password-request"
+            element={<ResetPasswordRequest />}
+          />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/" element={<Navigate to="/login" replace />} />
         </Routes>
