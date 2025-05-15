@@ -5,6 +5,10 @@ secrets:
     file: ./secrets/private.pem
   rsa_public:
     file: ./secrets/public.pem
+  ssl_key:
+    file: ./secrets/ssl.key
+  ssl_crt:
+    file: ./secrets/ssl.crt
 
 services:
   backend1:
@@ -20,6 +24,10 @@ services:
         target: /secrets/private.pem
       - source: rsa_public
         target: /secrets/public.pem
+      - source: ssl_key
+        target: /secrets/ssl.key
+      - source: ssl_crt
+        target: /secrets/ssl.crt
     depends_on:
       - redis
       - postgres
@@ -42,6 +50,10 @@ services:
         target: /secrets/private.pem
       - source: rsa_public
         target: /secrets/public.pem
+      - source: ssl_key
+        target: /secrets/ssl.key
+      - source: ssl_crt
+        target: /secrets/ssl.crt
     depends_on:
       - redis
       - postgres
@@ -55,6 +67,11 @@ services:
     image: redis:alpine
     ports:
       - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
   postgres:
     image: postgres:14
     environment:
@@ -65,6 +82,12 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./secrets:/secrets:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
 volumes:
   postgres_data:
