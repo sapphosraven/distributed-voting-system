@@ -1,5 +1,6 @@
 const Election = require("../models/Election");
 const { Op } = require("sequelize");
+const Vote = require("../models/Vote");
 
 // Helper: check if user is eligible for an election
 function isUserEligible(election, userEmail) {
@@ -95,11 +96,21 @@ exports.getElections = async (req, res) => {
   try {
     console.log("GetElections endpoint hit");
     const userEmail = req.user.email;
+    const userId = req.user.id;
     const elections = await Election.findAll({
       order: [["startTime", "DESC"]],
     });
     // Filter by eligibility
     const eligible = elections.filter((e) => isUserEligible(e, userEmail));
+    // For each election, check if user has voted
+    const electionIds = eligible.map((e) => e.id);
+    const votes = await Vote.findAll({
+      where: { userId, electionId: electionIds },
+    });
+    const votedMap = {};
+    votes.forEach((v) => {
+      votedMap[v.electionId] = true;
+    });
     // Remove photo field from candidates before sending to frontend
     const electionsClean = eligible.map((election) => {
       const e = election.toJSON();
@@ -109,6 +120,7 @@ exports.getElections = async (req, res) => {
         party: c.party,
         description: c.description,
       }));
+      e.hasVoted = !!votedMap[e.id];
       return e;
     });
     res.json({ elections: electionsClean });
@@ -124,7 +136,7 @@ exports.searchElections = async (req, res) => {
     const { q, creator } = req.query;
     let where = {};
     if (q) {
-      where.title = { [Op.iLike]: `%${q}%` };
+      where.title = { [Op.iLike]: `%{q}%` };
     }
     if (creator) {
       where.creatorEmail = creator;

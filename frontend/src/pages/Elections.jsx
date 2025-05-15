@@ -371,7 +371,7 @@ const Elections = () => {
                 <div
                   style={{ color: "#fff", textAlign: "center", width: "100%" }}
                 >
-                  No elections found.
+                  No elections fit this criteria.
                 </div>
               )}
               {electionsNotVoted.map((election) => {
@@ -435,7 +435,7 @@ const Elections = () => {
                 <div
                   style={{ color: "#fff", textAlign: "center", width: "100%" }}
                 >
-                  No elections found.
+                  No elections fit this criteria.
                 </div>
               )}
               {electionsVoted.map((election) => (
@@ -477,7 +477,7 @@ const Elections = () => {
                 <div
                   style={{ color: "#fff", textAlign: "center", width: "100%" }}
                 >
-                  No completed elections found.
+                  No elections fit this criteria.
                 </div>
               )}
               {completedElections.map((election) => (

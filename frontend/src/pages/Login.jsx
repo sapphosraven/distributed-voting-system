@@ -140,6 +140,20 @@ export default function Login() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.7, ease: "easeOut" }}
     >
+      {/* Website Title */}
+      <h1
+        style={{
+          color: "#fff",
+          textAlign: "center",
+          fontWeight: 700,
+          fontSize: "2rem",
+          marginBottom: "1.2rem",
+          letterSpacing: "1px",
+          textShadow: "0 2px 8px #0004",
+        }}
+      >
+        Distributed Voting System
+      </h1>
       <Title>Sign In</Title>
       <form onSubmit={handleLogin}>
         <Input

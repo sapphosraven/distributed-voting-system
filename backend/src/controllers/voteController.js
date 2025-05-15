@@ -136,6 +136,33 @@ exports.castVote = async (req, res) => {
   } catch (err) {
     if (lockKey) await releaseLock(lockKey);
     console.error("CastVote error:", err);
+    // Detailed debugging
+    if (err && err.stack) {
+      console.error("CastVote stack:", err.stack);
+    }
+    if (err && err.message) {
+      console.error("CastVote message:", err.message);
+    }
+    if (err && err.cause) {
+      console.error("CastVote cause:", err.cause);
+    }
+    // Log only defined variables to avoid ReferenceError
+    const debugContext = {};
+    if (typeof userId !== "undefined") debugContext.userId = userId;
+    if (typeof userEmail !== "undefined") debugContext.userEmail = userEmail;
+    if (typeof electionId !== "undefined") debugContext.electionId = electionId;
+    if (typeof candidate !== "undefined") debugContext.candidate = candidate;
+    if (typeof encryptedPayload !== "undefined")
+      debugContext.encryptedPayload = encryptedPayload;
+    if (typeof signature !== "undefined") debugContext.signature = signature;
+    if (typeof votePayload !== "undefined")
+      debugContext.votePayload = votePayload;
+    if (typeof voteSignature !== "undefined")
+      debugContext.voteSignature = voteSignature;
+    if (typeof redisTimestamp !== "undefined")
+      debugContext.redisTimestamp = redisTimestamp;
+    if (typeof election !== "undefined") debugContext.election = election;
+    console.error("CastVote debug context:", debugContext);
     res.status(500).json({ error: "Failed to cast vote" });
   }
 };

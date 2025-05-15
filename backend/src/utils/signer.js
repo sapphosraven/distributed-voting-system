@@ -38,4 +38,4 @@ exports.verify = (data, sig) =>
     Buffer.from(sig, "base64")
   );
 
-module.exports = { signPayloadWithPemFile };
+exports.signPayloadWithPemFile = signPayloadWithPemFile;
