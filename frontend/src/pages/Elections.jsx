@@ -112,6 +112,7 @@ const Card = styled(motion.div)`
   border: 1px solid rgba(66, 66, 122, 0.2);
   border-radius: 1rem;
   padding: 1.5rem;
+  text-align: left;
   margin: 1rem;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
   backdrop-filter: blur(10px);
@@ -377,7 +378,7 @@ const Elections = () => {
       <MainContent>
         {filter === "live" && (
           <>
-          <VoteTitle>Live Elections</VoteTitle>
+            <VoteTitle>Live Elections</VoteTitle>
             <SubTitle>Vote Not Cast</SubTitle>
             {loading && <LoadingMsg>Loading elections...</LoadingMsg>}
             {error && <ErrorMsg>{error}</ErrorMsg>}
@@ -417,7 +418,8 @@ const Elections = () => {
                       <b>End:</b> {formatDateTime(election.endTime)}
                     </p>
                     <p>
-                      <b>Status:</b> Live
+                      <b>Status:</b>{" "}
+                      <span style={{ color: "green" }}>Live</span>
                     </p>
                     <OrangeButton
                       disabled={!canVote}
@@ -474,7 +476,7 @@ const Elections = () => {
                     <b>End:</b> {formatDateTime(election.endTime)}
                   </p>
                   <p>
-                    <b>Status:</b> Live
+                    <b>Status:</b> <span style={{ color: "green" }}>Live</span>
                   </p>
                   <ResultsButton onClick={() => handleResultsClick(election)}>
                     View Results
@@ -516,7 +518,7 @@ const Elections = () => {
                     <b>End:</b> {formatDateTime(election.endTime)}
                   </p>
                   <p>
-                    <b>Status:</b> Ended
+                    <b>Status:</b> <span style={{ color: "red" }}>Ended</span>
                   </p>
                   <ResultsButton onClick={() => handleResultsClick(election)}>
                     View Results
