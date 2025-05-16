@@ -5,7 +5,7 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "https://localhost:5001", // changed to https
+        target: "https://localhost:5002", // changed to https
         changeOrigin: true,
         secure: false, // allow self-signed certs
         ws: true,

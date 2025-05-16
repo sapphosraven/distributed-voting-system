@@ -121,7 +121,19 @@ const Card = styled(motion.div)`
   flex: 1 1 320px;
 `;
 
-const Title = styled.h2`
+const Title = styled.h1`
+  color: var(--color-purple);
+  text-align: centre;
+  margin: 0rem 0 4rem;
+`;
+
+const VoteTitle = styled.h1`
+  color: var(--color-purple);
+  text-align: centre;
+  margin: 4rem 0 4rem;
+`;
+
+const SubTitle = styled.h2`
   color: var(--color-purple);
   text-align: center;
   margin: 2rem 0 1rem;
@@ -130,6 +142,7 @@ const Title = styled.h2`
 const Container = styled.div`
   display: flex;
   flex-wrap: wrap;
+  text-align: centre;
   justify-content: center;
   padding: 2rem;
 `;
@@ -183,6 +196,7 @@ const ResultsButton = styled(OrangeButton)`
 
 const MainContent = styled.div`
   padding-top: 80px;
+  text-align: centre;
 `;
 
 const Elections = () => {
@@ -363,7 +377,8 @@ const Elections = () => {
       <MainContent>
         {filter === "live" && (
           <>
-            <Title>Vote Not Cast</Title>
+          <VoteTitle>Live Elections</VoteTitle>
+            <SubTitle>Vote Not Cast</SubTitle>
             {loading && <LoadingMsg>Loading elections...</LoadingMsg>}
             {error && <ErrorMsg>{error}</ErrorMsg>}
             <Container>
@@ -429,7 +444,7 @@ const Elections = () => {
                 );
               })}
             </Container>
-            <Title>Vote Cast</Title>
+            <SubTitle>Vote Cast</SubTitle>
             <Container>
               {electionsVoted.length === 0 && (
                 <div
