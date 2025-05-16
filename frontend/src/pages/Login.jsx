@@ -179,18 +179,7 @@ export default function Login() {
         </Button>
       </form>
       {/* Removed Send OTP and Logout buttons as they are redundant */}
-      <div style={{ textAlign: "center", marginBottom: "1rem" }}>
-        <a
-          href="/reset-password-request"
-          style={{
-            color: "var(--color-orange)",
-            textDecoration: "none",
-            fontWeight: 500,
-          }}
-        >
-          Forgot Password?
-        </a>
-      </div>
+    
 
       <div
         css={css`
