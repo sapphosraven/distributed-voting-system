@@ -1,94 +1,174 @@
-# Distributed Voting Backend (JWT-Protected)
+# Distributed Voting System
 
-This is a minimal FastAPI-based backend for a voting system using JWT for authentication.
+A secure, fault-tolerant distributed voting platform built with Node.js, React, and Redis, implementing parallel and distributed computing principles.
 
-## Features
+## Overview
 
-- Login with dummy credentials
-- Get a JWT token
-- Submit a vote using the token
+This distributed voting system demonstrates advanced distributed computing concepts including:
 
-## Run Instructions
+- **Raft-inspired Leader Election**: Ensures a single leader node processes votes at any time
+- **Consensus Protocol**: Lightweight consensus mechanism where nodes independently tally votes
+- **Distributed Mutex**: Redis-based locks prevent race conditions during concurrent operations
+- **Vote Replication**: Redis pub/sub ensures reliable real-time vote replication across nodes
+- **Time Synchronization**: Consistent timestamps for election timing and vote validation
+- **Multi-Factor Authentication**: JWT-based auth with rate limiting for security
 
-1. Install dependencies:
+## System Architecture
 
-````bash
-pip install -r requirements.txt
+### Backend (Node.js/Express)
 
-#Start the server:
+- **Distributed Consensus**: Leader-based voting with Redis TTL mechanism
+- **Data Storage**: PostgreSQL database with Sequelize ORM
+- **Replication**: Vote data synchronization across nodes using Redis pub/sub
+- **Security**: JWT authentication, RSA encryption for vote data
+- **API**: RESTful endpoints for elections, voting, and results
 
-uvicorn main:app --reload
-#
-#test the login and vote
+### Frontend (React)
 
- .\test_login_vote.ps1
+- Modern, responsive user interface
+- Real-time election status updates
+- Secure authentication flow
+- Results visualization
 
-## API Gateway Architecture (IMPORTANT)
+### Infrastructure
 
-- **All frontend and test scripts must use the API Gateway at `http://localhost:8000` for all API calls.**
-- **Do NOT attempt to call voting nodes directly (e.g., `localhost:5001`, `localhost:5002`, etc.) from the host or frontend.**
-- **The API Gateway forwards requests to the distributed voting nodes using Docker-internal hostnames (e.g., `voting-node-1:5000`).**
-- **Voting nodes are only accessible from within the Docker network, not from the host.**
+- Docker containerization for consistent deployment
+- Redis for distributed state management and pub/sub
+- Multiple backend nodes for fault tolerance
+- PostgreSQL for persistent storage
 
-### Example
+## Key Files and Components
 
-- To create an election, POST to `http://localhost:8000/elections`
-- To vote, POST to `http://localhost:8000/vote`
-- To get results, GET `http://localhost:8000/results`
+- **Raft Implementation**: Leader election and consensus mechanism
+- **Distributed Locking**: Atomicity for concurrent operations
+- **Vote Replication**: Real-time data synchronization
+- **Tally Consensus**: Agreement on election results across nodes
+- **Time Synchronization**: Consistent timing across the system
 
-**If you run test scripts or use the frontend, always use the API Gateway URL.**
+## Getting Started
 
-# React + TypeScript + Vite
+### Prerequisites
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+- Docker and Docker Compose
+- Node.js 16+ and npm
+- Redis server (for local development)
 
-Currently, two official plugins are available:
+### Installation and Setup
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+1. Clone the repository
 
-## Expanding the ESLint configuration
+   ```
+   git clone https://github.com/yourusername/distributed-voting-system.git
+   cd distributed-voting-system
+   ```
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+2. Generate RSA keys for encryption (if not already present)
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-````
+   ```
+   mkdir -p secrets
+   ssh-keygen -t rsa -b 4096 -m PEM -f secrets/private.pem
+   openssl rsa -in secrets/private.pem -pubout -outform PEM -out secrets/public.pem
+   ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+3. Create environment files for backend
 
-```js
-// eslint.config.js
-import reactX from "eslint-plugin-react-x";
-import reactDom from "eslint-plugin-react-dom";
+   Create a `.env` file in the `backend` directory with the following content:
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    "react-x": reactX,
-    "react-dom": reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs["recommended-typescript"].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-});
+   ```
+   # JWT Authentication
+   JWT_SECRET=your_secure_jwt_secret_here
+
+   # PostgreSQL Configuration
+   POSTGRES_DB=voting_db
+   POSTGRES_USER=user
+   POSTGRES_PASSWORD=password
+   POSTGRES_HOST=postgres
+
+   # Redis Configuration
+   REDIS_HOST=redis
+   REDIS_PORT=6379
+
+   # RSA Key Paths
+   RSA_PRIVATE_KEY_PATH=/secrets/private.pem
+   RSA_PUBLIC_KEY_PATH=/secrets/public.pem
+
+   # For HTTPS (Optional - only for production)
+   # HTTPS_KEY_PATH=/secrets/ssl.key
+   # HTTPS_CERT_PATH=/secrets/ssl.crt
+
+   # Email OTP Configuration
+   SENDGRID_API_KEY=your_sendgrid_api_key
+   SENDGRID_FROM_EMAIL=noreply@yourdomain.com
+
+   # For development/testing (Remove in production)
+   OTP_DISABLED=true
+   ```
+
+4. Generate a secure JWT secret
+
+   ```powershell
+   openssl rand -base64 64
+   ```
+
+   Copy the output and use it as your JWT_SECRET in the `.env` file.
+
+5. Generate SSL certificates (optional, for HTTPS in production)
+
+   ```powershell
+   mkdir -p secrets
+   openssl req -x509 -newkey rsa:4096 -keyout secrets/ssl.key -out secrets/ssl.crt -days 365 -nodes -subj "/CN=localhost"
+   ```
+
+6. For production deployment, update frontend API configuration
+
+   In `frontend/src/utils/api.js`, update the production URL:
+
+   ```javascript
+   const BASE_URL =
+     process.env.NODE_ENV === "production"
+       ? "https://your-production-domain/api"
+       : "/api";
+   ```
+
+7. Start the entire system (backend containers and frontend)
+
+   ```
+   npm start
+   ```
+
+   Or start components individually:
+
+   - For backend: `npm run backend`
+   - For frontend: `npm run frontend`
+   - For local development: `npm run local`
+
+### Development Mode
+
+For local development without Docker:
+
 ```
+npm run backend-local
+npm run frontend
+```
+
+## API Endpoints
+
+- **Authentication**: `POST /api/auth/login`
+- **Elections**:
+  - Create: `POST /api/elections`
+  - List: `GET /api/elections`
+  - Details: `GET /api/elections/:id`
+- **Voting**: `POST /api/vote`
+- **Results**: `GET /api/elections/:id/results`
+- **System Status**: `GET /api/status`
+
+## Deployment Notes
+
+- Multiple backend nodes can be added by extending the docker-compose.yml
+- For production deployment, configure proper TLS termination
+- Redis persistence should be enabled in production environments
+- Consider implementing a proper load balancer for production deployments
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
