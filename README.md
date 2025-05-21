@@ -62,7 +62,26 @@ This distributed voting system demonstrates advanced distributed computing conce
    cd distributed-voting-system
    ```
 
-2. Generate RSA keys for encryption (if not already present)
+2. Install dependencies
+
+   Install npm packages in the root, frontend, and backend directories:
+
+   ```
+   # Install root dependencies
+   npm install
+
+   # Install backend dependencies
+   cd backend
+   npm install
+   cd ..
+
+   # Install frontend dependencies
+   cd frontend
+   npm install
+   cd ..
+   ```
+
+3. Generate RSA keys for encryption (if not already present)
 
    ```
    mkdir -p secrets
@@ -70,7 +89,7 @@ This distributed voting system demonstrates advanced distributed computing conce
    openssl rsa -in secrets/private.pem -pubout -outform PEM -out secrets/public.pem
    ```
 
-3. Create environment files for backend
+4. Create environment files for backend
 
    Create a `.env` file in the `backend` directory with the following content:
 
@@ -98,28 +117,25 @@ This distributed voting system demonstrates advanced distributed computing conce
 
    # Email OTP Configuration
    SENDGRID_API_KEY=your_sendgrid_api_key
-   SENDGRID_FROM_EMAIL=noreply@yourdomain.com
-
-   # For development/testing (Remove in production)
+   SENDGRID_FROM_EMAIL=noreply@yourdomain.com   # For development/testing (Remove in production)
    OTP_DISABLED=true
    ```
 
-4. Generate a secure JWT secret
+5. Generate a secure JWT secret
 
-   ```powershell
+   ````powershell
    openssl rand -base64 64
-   ```
+   ```   Copy the output and use it as your JWT_SECRET in the `.env` file.
 
-   Copy the output and use it as your JWT_SECRET in the `.env` file.
+   ````
 
-5. Generate SSL certificates (optional, for HTTPS in production)
+6. Generate SSL certificates (optional, for HTTPS in production)
 
    ```powershell
-   mkdir -p secrets
-   openssl req -x509 -newkey rsa:4096 -keyout secrets/ssl.key -out secrets/ssl.crt -days 365 -nodes -subj "/CN=localhost"
+   mkdir -p secrets   openssl req -x509 -newkey rsa:4096 -keyout secrets/ssl.key -out secrets/ssl.crt -days 365 -nodes -subj "/CN=localhost"
    ```
 
-6. For production deployment, update frontend API configuration
+7. For production deployment, update frontend API configuration
 
    In `frontend/src/utils/api.js`, update the production URL:
 
@@ -130,7 +146,7 @@ This distributed voting system demonstrates advanced distributed computing conce
        : "/api";
    ```
 
-7. Start the entire system (backend containers and frontend)
+8. Start the entire system (backend containers and frontend)
 
    ```
    npm start
